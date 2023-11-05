@@ -1,6 +1,8 @@
 ﻿[cmdletbinding()]
 param()
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 Try {
     $applications = 'Curl', 'Powershell', 'WinSCP', 'VSCode', 'Notepad++', 'PuTTY'
     $numberOfVersionsToKeep = 3
