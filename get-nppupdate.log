@@ -1,7 +1,0 @@
-﻿11/02/2023 08:32:32: Checking for Notepad++ updates...
-	[INFO] Latest version from https://notepad-plus-plus.org/downloads/ is: 0.57.2
-	[ERROR] An error occurred...
-		@{PSMessageDetails=; Exception=System.Management.Automation.ItemNotFoundException: Cannot find path 'Z:\Scripts\Notepad++' because it does not exist.
-   at System.Management.Automation.SessionStateInternal.GetChildItems(String path, Boolean recurse, UInt32 depth, CmdletProviderContext context)
-   at Microsoft.PowerShell.Commands.GetChildItemCommand.ProcessRecord(); TargetObject=Z:\Scripts\Notepad++; CategoryInfo=ObjectNotFound: (Z:\Scripts\Notepad++:String) [Get-ChildItem], ItemNotFoundException; FullyQualifiedErrorId=PathNotFound,Microsoft.PowerShell.Commands.GetChildItemCommand; ErrorDetails=; InvocationInfo=System.Management.Automation.InvocationInfo; ScriptStackTrace=at <ScriptBlock>, Z:\Scripts\Get-Updates.ps1: line 57
-at <ScriptBlock>, <No file>: line 1; PipelineIterationInfo=System.Collections.ObjectModel.ReadOnlyCollection`1[System.Int32]}
