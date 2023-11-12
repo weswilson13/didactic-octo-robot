@@ -1,0 +1,1 @@
+powershell.exe -ExecutionPolicy Bypass -Command "\\192.168.1.4\NAS01\Scripts\Export-GasReceiptPDFs.ps1"

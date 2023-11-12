@@ -1,0 +1,1 @@
+start /max W:\Sysinternals\RDCMan.exe W:\Sysinternals\HomeLab.rdg
