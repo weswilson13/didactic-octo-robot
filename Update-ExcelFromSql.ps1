@@ -11,22 +11,22 @@ param(
     [Parameter(Mandatory=$true)]
     [String]$Database
     ,
-    [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
-    [String]$PathToExcel
+    [Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [String]$Path
     ,
     [Parameter(Mandatory=$false)]
     [String]$WorksheetName
     ,
     [Parameter(Mandatory=$false)]
-    [String]$Query = "Select * from hm_accounts"
+    [String]$SQL = "Select * from hm_accounts"
+    ,
+    [Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [String]$Title
 )
 
 $PSBoundParameters.Remove("ServerInstance")
-$PSBoundParameters.Remove("PathToExcel")
 $PSBoundParameters.Add("Connection", $ServerInstance)
 $PSboundParameters.Add("MsSqlServer", $true)
-$PSboundParameters.Add("SQL", $Query)
-$PSboundParameters.Add("Path", $PathToExcel)
 $PSboundParameters.Add("RangeName", "Data")
 
 $PSBoundParameters | out-string | Write-Verbose
