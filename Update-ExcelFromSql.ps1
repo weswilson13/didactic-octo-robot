@@ -1,42 +1,26 @@
 using Module ImportExcel
 
-# example
-# Update-ExcelFromSql.ps1 -ServerInstance "SQ02,9999" -Database hmaildb -PathToExcel "\\raspberrypi4-1\nas04\testExcel.xlsx"
+New-PSDrive -Name T -Root \\raspberrypi4-1\nas04 -PSProvider Filesystem -ErrorAction SilentlyContinue | Out-Null
 
-[CmdletBinding()]
-param(
-    [Parameter(Mandatory=$true)]
-    [String]$ServerInstance
-    ,
-    [Parameter(Mandatory=$true)]
-    [String]$Database
-    ,
-    [Parameter(Mandatory=$true)]
-    [String]$Path
-    # ,
-    # [Parameter(Mandatory=$false, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-    # [String]$WorksheetName
-    # ,
-    # [Parameter(Mandatory=$false)]
-    # [String]$Query = "Select * from hm_accounts"
-    # ,
-    # [Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-    # [String]$Title
-)
+$serverInstance = "SQ02\MYSQLSERVER,9999"
+$database = "AdventureWorks2019"
+$path = "T:\November2023.xlsx"
 
-$PSBoundParameters.Remove("ServerInstance")
-$PSBoundParameters.Add("Connection", $ServerInstance)
-$PSboundParameters.Add("MsSqlServer", $true)
-$PSboundParameters.Add("RangeName", "Data")
-# $PSboundParameters.Add("SQL", $Query)
+$parameters = @{
+    Connection = $serverInstance
+    MsSqlServer = $true
+    Database = $database
+    Path = $path
+    RangeName = "Data"
+}
 
-$PSBoundParameters | Out-String | Write-Verbose
+$parameters | Out-String | Write-Verbose
 
 $departments = (Invoke-Sqlcmd -ServerInstance $ServerInstance -Database $Database -Query "Select distinct Name from [HumanResources].[Department]").Name
 $departments | Out-String | Write-Verbose
 
 foreach ($dept in $departments) {
-    Copy-ExcelWorksheet -SourceWorkbook \\raspberrypi4-1\nas04\template.xlsx -SourceWorksheet "Sheet1" -DestinationWorkbook $Path -DestinationWorksheet $dept
-    $PSBoundParameters["SQL"]="select * from [HumanResources].[vEmployeeDepartment] where department='$dept'"
-    Send-SQLDataToExcel @PSBoundParameters -WorksheetName $dept -Title "Monthly Asset Inventory ($dept) $(Get-Date -Format 'MMMM yyyy')" -KillExcel -AutoSize
+    Copy-ExcelWorksheet -SourceWorkbook \\raspberrypi4-1\nas04\template.xlsx -SourceWorksheet "Sheet1" -DestinationWorkbook $path -DestinationWorksheet $dept
+    $parameters["SQL"] = "select * from [HumanResources].[vEmployeeDepartment] where department='$dept'"
+    Send-SQLDataToExcel @parameters -WorksheetName $dept -Title "Monthly Asset Inventory ($dept) $(Get-Date -Format 'MMMM yyyy')" -KillExcel -AutoSize -
 }

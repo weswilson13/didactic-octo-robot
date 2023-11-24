@@ -10,17 +10,11 @@ param(
     [Parameter(Mandatory=$true)]
     [String]$Database
     ,
-    [Parameter(Mandatory=$false)]
-    [String]$Table = "hm_accounts"
-    ,
-    [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+    [Parameter(Mandatory=$true)]
     [String]$PathToExcel
     ,
-    [Parameter(Mandatory=$false)]
-    [String]$WorksheetName
-    ,
-    [Parameter(Mandatory=$false)]
-    [String]$Query = "Select @@SPID SPID"
+    [Parameter(Mandatory=$false, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [String[]]$WorksheetName
 )
 
 Begin {
@@ -36,31 +30,38 @@ Begin {
 #region drop the tmpTable if it exists
     $sqlCmd.CommandText = "Drop Table if exists ##tmpTable"
     Write-Verbose $sqlCmd.CommandText
-    $sqlCmd.ExecuteNonQuery()
+    $sqlCmd.ExecuteNonQuery() | Out-Null
 #endregion
 
 #region create tmpTable from the existing table then truncate to prepare for the new data
-    $sqlCmd.CommandText = "SELECT * INTO ##tmpTable FROM [$Table]; TRUNCATE TABLE ##tmpTable;"
+    $sqlCmd.CommandText = "SELECT * INTO ##tmpTable FROM [HumanResources].[vEmployeeDepartment]; TRUNCATE TABLE ##tmpTable;"
     Write-Verbose $sqlCmd.CommandText
-    $sqlCmd.ExecuteNonQuery()
+    $sqlCmd.ExecuteNonQuery() | Out-Null
 #endregion
 }
 
 Process {
 #region insert the new data into the tmpTable
-    $SQL = ConvertFrom-ExcelToSQLInsert -Path $PathToExcel -TableName "##tmpTable" -UseMsSqlSyntax
+    $SQL = ConvertFrom-ExcelToSQLInsert -Path $PathToExcel -TableName "##tmpTable" -WorksheetName $WorksheetName -UseMsSqlSyntax -StartRow 2 -DataOnly -SingleQuoteStyle "''" -ConvertEmptyStringsToNull
     $SQL.foreach({
-        $sqlCmd.CommandText = "SET IDENTITY_INSERT ##tmpTable ON; $_"
+        #$sqlCmd.CommandText = "SET IDENTITY_INSERT ##tmpTable ON; $_"
+        Write-Host $_
+        $sqlCmd.CommandText = $_
         Write-Verbose $sqlCmd.CommandText
-        $sqlCmd.ExecuteNonQuery() 
+        $sqlCmd.ExecuteNonQuery() | Out-Null 
     })
 #endregion
 }
 
 End {
+# #region remove rows of empty data from tmpTable
+#     $sqlCmd.CommandText =  "DELETE FROM ##tmpTable WHERE BusinessEntityID=0"
+#     $sqlCmd.ExecuteNonQuery() | Out-Null 
+# #endregion
+
 #region merge the tmpTable (source) with the original table (target)
-    $sqlCmd.CommandText =  "MERGE esqlProductTarget T
-                            USING esqlProductSource S
+    $sqlCmd.CommandText =   "MERGE esqlProductTarget T
+                            USING #tmpTable S
                             ON (S.ProductID = T.ProductID)
                             WHEN MATCHED 
                                 THEN UPDATE
@@ -74,13 +75,15 @@ End {
                             THEN DELETES
                             OUTPUT S.ProductID, `$action into @MergeLog;"
     Write-Verbose $sqlCmd.CommandText
-    $sqlCmd.ExecuteNonQuery() 
+    $sqlCmd.ExecuteNonQuery() | Out-Null 
 #endregion
+
+start-sleep 30
 
 #region drop the tmpTable
     $sqlCmd.CommandText = "Drop Table if exists ##tmpTable"
     Write-Verbose $sqlCmd.CommandText
-    $sqlCmd.ExecuteNonQuery()
+    $sqlCmd.ExecuteNonQuery() | Out-Null
 #endregion
 
 #region cleanup 
