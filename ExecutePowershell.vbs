@@ -1,0 +1,2 @@
+Set objShell = CreateObject("WScript.Shell")
+objShell.Run("powershell.exe -ExecutionPolicy Bypass -File \\raspberrypi4-1\nas01\Scripts\didactic-octo-robot\Update-ExcelFromSql.ps1 -ServerInstance ""SQ02,9999"" -Database hmaildb -PathToExcel ""\\raspberrypi4-1\nas04\testExcel.xlsx""")
