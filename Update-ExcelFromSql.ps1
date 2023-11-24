@@ -36,6 +36,7 @@ $departments = (Invoke-Sqlcmd -ServerInstance $ServerInstance -Database $Databas
 $departments | Out-String | Write-Verbose
 
 foreach ($dept in $departments) {
+    Copy-ExcelWorksheet -SourceWorkbook \\raspberrypi4-1\nas04\template.xlsx -SourceWorksheet "Sheet1" -DestinationWorkbook $Path -DestinationWorksheet $dept
     $PSBoundParameters["SQL"]="select * from [HumanResources].[vEmployeeDepartment] where department='$dept'"
-    Send-SQLDataToExcel @PSBoundParameters -WorksheetName $dept -Title "Monthly Asset Inventory ($dept) $(Get-Date -Format 'MMMM yyyy')"
+    Send-SQLDataToExcel @PSBoundParameters -WorksheetName $dept -Title "Monthly Asset Inventory ($dept) $(Get-Date -Format 'MMMM yyyy')" -KillExcel -AutoSize
 }
