@@ -1,5 +1,8 @@
 using Module ImportExcel
 
+# example
+# Update-ExcelFromSql.ps1 -ServerInstance "SQ02,9999" -Database hmaildb -PathToExcel "\\raspberrypi4-1\nas04\testExcel.xlsx"
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
