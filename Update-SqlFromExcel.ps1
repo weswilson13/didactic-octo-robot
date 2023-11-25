@@ -41,23 +41,25 @@ Begin {
 }
 
 Process {
+    foreach ($worksheet in $WorksheetName) {
 #region insert the new data into the tmpTable
-    $SQL = ConvertFrom-ExcelToSQLInsert -Path $PathToExcel -TableName "##tmpTable" -WorksheetName $WorksheetName -UseMsSqlSyntax -StartRow 2 -DataOnly -SingleQuoteStyle "''" -ConvertEmptyStringsToNull
-    $SQL.foreach({
-        #$sqlCmd.CommandText = "SET IDENTITY_INSERT ##tmpTable ON; $_"
-        Write-Host $_
-        $sqlCmd.CommandText = $_
-        Write-Verbose $sqlCmd.CommandText
-        $sqlCmd.ExecuteNonQuery() | Out-Null 
-    })
+        $SQL = ConvertFrom-ExcelToSQLInsert -Path $PathToExcel -TableName "##tmpTable" -WorksheetName $worksheet -UseMsSqlSyntax -StartRow 2 -DataOnly -SingleQuoteStyle "''" -ConvertEmptyStringsToNull
+        $SQL.foreach({
+            #$sqlCmd.CommandText = "SET IDENTITY_INSERT ##tmpTable ON; $_"
+            Write-Host $_
+            $sqlCmd.CommandText = $_
+            Write-Verbose $sqlCmd.CommandText
+            $sqlCmd.ExecuteNonQuery() | Out-Null 
+        })
 #endregion
+    }
 }
 
 End {
-# #region remove rows of empty data from tmpTable
-#     $sqlCmd.CommandText =  "DELETE FROM ##tmpTable WHERE BusinessEntityID=0"
-#     $sqlCmd.ExecuteNonQuery() | Out-Null 
-# #endregion
+#region remove rows of empty data from tmpTable
+    $sqlCmd.CommandText =  "DELETE FROM ##tmpTable WHERE BusinessEntityID=0"
+    $sqlCmd.ExecuteNonQuery() | Out-Null 
+#endregion
 
 #region merge the tmpTable (source) with the original table (target)
     $sqlCmd.CommandText =   "MERGE esqlProductTarget T
