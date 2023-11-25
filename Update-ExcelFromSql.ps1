@@ -4,7 +4,7 @@ $dateString = Get-Date -Format 'MMMM yyyy'
 
 #region requires modification
     #region create drive mappings
-        New-PSDrive -Name T -Root "\\raspberrypi4-1\nas04" -PSProvider Filesystem -Persist -ErrorAction SilentlyContinue | Out-Null
+        New-PSDrive -Name T -Root "\\raspberrypi4-1\nas04" -PSProvider Filesystem -Scope Global -ErrorAction SilentlyContinue | Out-Null
     #endregion
     $serverInstance = "SQ02\MYSQLSERVER,9999"
     $database = "AdventureWorks2019"
@@ -42,4 +42,7 @@ foreach ($dept in $departments) {
     Write-Host "Done."
 }
 
-Remove-PSDrive -Name T -PSProvider FileSystem -Force
+# ensure only the first tab is selected to prevent users from modifying all tabs
+$pkg = Open-ExcelPackage -Path $parameters.path -KillExcel
+Select-Worksheet -ExcelPackage $pkg -WorksheetName $departments[0]
+Close-ExcelPackage -ExcelPackage $pkg 

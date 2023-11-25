@@ -73,14 +73,12 @@ End {
                             WHEN NOT MATCHED BY TARGET
                             THEN INSERT (ProductID, Name, ProductNumber, Color)
                                 VALUES (S.ProductID, S.Name, S.ProductNumber, S.Color)
-                            WHEN NOT MATCHED BY SOURCE
-                            THEN DELETES
                             OUTPUT S.ProductID, `$action into @MergeLog;"
     Write-Verbose $sqlCmd.CommandText
     $sqlCmd.ExecuteNonQuery() | Out-Null 
 #endregion
 
-start-sleep 30
+# start-sleep 30
 
 #region drop the tmpTable
     $sqlCmd.CommandText = "Drop Table if exists ##tmpTable"
