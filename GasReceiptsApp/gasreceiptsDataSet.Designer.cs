@@ -295,6 +295,8 @@ namespace GasReceiptsApp {
             
             private global::System.Data.DataColumn columnReceiptAttached;
             
+            private global::System.Data.DataColumn columnLinkToPdf;
+            
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public receiptsDataTable() {
@@ -394,6 +396,14 @@ namespace GasReceiptsApp {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public global::System.Data.DataColumn LinkToPdfColumn {
+                get {
+                    return this.columnLinkToPdf;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -429,7 +439,7 @@ namespace GasReceiptsApp {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public receiptsRow AddreceiptsRow(System.DateTime PurchaseDate, decimal TotalCost, double NumberGallons, string Vehicle, short TaxYear, string LicensePlate, string ReceiptAttached) {
+            public receiptsRow AddreceiptsRow(System.DateTime PurchaseDate, decimal TotalCost, double NumberGallons, string Vehicle, short TaxYear, string LicensePlate, string ReceiptAttached, string LinkToPdf) {
                 receiptsRow rowreceiptsRow = ((receiptsRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         null,
@@ -439,7 +449,8 @@ namespace GasReceiptsApp {
                         Vehicle,
                         TaxYear,
                         LicensePlate,
-                        ReceiptAttached};
+                        ReceiptAttached,
+                        LinkToPdf};
                 rowreceiptsRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowreceiptsRow);
                 return rowreceiptsRow;
@@ -477,6 +488,7 @@ namespace GasReceiptsApp {
                 this.columnTaxYear = base.Columns["TaxYear"];
                 this.columnLicensePlate = base.Columns["LicensePlate"];
                 this.columnReceiptAttached = base.Columns["ReceiptAttached"];
+                this.columnLinkToPdf = base.Columns["LinkToPdf"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -498,6 +510,8 @@ namespace GasReceiptsApp {
                 base.Columns.Add(this.columnLicensePlate);
                 this.columnReceiptAttached = new global::System.Data.DataColumn("ReceiptAttached", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnReceiptAttached);
+                this.columnLinkToPdf = new global::System.Data.DataColumn("LinkToPdf", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnLinkToPdf);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
                                 this.columnID}, true));
                 this.columnID.AutoIncrement = true;
@@ -511,6 +525,7 @@ namespace GasReceiptsApp {
                 this.columnLicensePlate.MaxLength = 10;
                 this.columnReceiptAttached.ReadOnly = true;
                 this.columnReceiptAttached.MaxLength = 5;
+                this.columnLinkToPdf.MaxLength = 100;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -771,6 +786,22 @@ namespace GasReceiptsApp {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public string LinkToPdf {
+                get {
+                    try {
+                        return ((string)(this[this.tablereceipts.LinkToPdfColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'LinkToPdf\' in table \'receipts\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tablereceipts.LinkToPdfColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public bool IsTotalCostNull() {
                 return this.IsNull(this.tablereceipts.TotalCostColumn);
             }
@@ -839,6 +870,18 @@ namespace GasReceiptsApp {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public void SetReceiptAttachedNull() {
                 this[this.tablereceipts.ReceiptAttachedColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public bool IsLinkToPdfNull() {
+                return this.IsNull(this.tablereceipts.LinkToPdfColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public void SetLinkToPdfNull() {
+                this[this.tablereceipts.LinkToPdfColumn] = global::System.Convert.DBNull;
             }
         }
         
@@ -1009,10 +1052,11 @@ namespace GasReceiptsApp.gasreceiptsDataSetTableAdapters {
             tableMapping.ColumnMappings.Add("TaxYear", "TaxYear");
             tableMapping.ColumnMappings.Add("LicensePlate", "LicensePlate");
             tableMapping.ColumnMappings.Add("ReceiptAttached", "ReceiptAttached");
+            tableMapping.ColumnMappings.Add("LinkToPdf", "LinkToPdf");
             this._adapter.TableMappings.Add(tableMapping);
             this._adapter.DeleteCommand = new global::System.Data.SqlClient.SqlCommand();
             this._adapter.DeleteCommand.Connection = this.Connection;
-            this._adapter.DeleteCommand.CommandText = @"DELETE FROM [receipts] WHERE (([ID] = @Original_ID) AND ([PurchaseDate] = @Original_PurchaseDate) AND ((@IsNull_TotalCost = 1 AND [TotalCost] IS NULL) OR ([TotalCost] = @Original_TotalCost)) AND ((@IsNull_NumberGallons = 1 AND [NumberGallons] IS NULL) OR ([NumberGallons] = @Original_NumberGallons)) AND ((@IsNull_Vehicle = 1 AND [Vehicle] IS NULL) OR ([Vehicle] = @Original_Vehicle)) AND ((@IsNull_TaxYear = 1 AND [TaxYear] IS NULL) OR ([TaxYear] = @Original_TaxYear)) AND ((@IsNull_LicensePlate = 1 AND [LicensePlate] IS NULL) OR ([LicensePlate] = @Original_LicensePlate)))";
+            this._adapter.DeleteCommand.CommandText = @"DELETE FROM [receipts] WHERE (([ID] = @Original_ID) AND ([PurchaseDate] = @Original_PurchaseDate) AND ((@IsNull_TotalCost = 1 AND [TotalCost] IS NULL) OR ([TotalCost] = @Original_TotalCost)) AND ((@IsNull_NumberGallons = 1 AND [NumberGallons] IS NULL) OR ([NumberGallons] = @Original_NumberGallons)) AND ((@IsNull_Vehicle = 1 AND [Vehicle] IS NULL) OR ([Vehicle] = @Original_Vehicle)) AND ((@IsNull_TaxYear = 1 AND [TaxYear] IS NULL) OR ([TaxYear] = @Original_TaxYear)) AND ((@IsNull_LicensePlate = 1 AND [LicensePlate] IS NULL) OR ([LicensePlate] = @Original_LicensePlate)) AND ((@IsNull_LinkToPdf = 1 AND [LinkToPdf] IS NULL) OR ([LinkToPdf] = @Original_LinkToPdf)))";
             this._adapter.DeleteCommand.CommandType = global::System.Data.CommandType.Text;
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_ID", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "ID", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_PurchaseDate", global::System.Data.SqlDbType.Date, 0, global::System.Data.ParameterDirection.Input, 0, 0, "PurchaseDate", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
@@ -1026,10 +1070,12 @@ namespace GasReceiptsApp.gasreceiptsDataSetTableAdapters {
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_TaxYear", global::System.Data.SqlDbType.SmallInt, 0, global::System.Data.ParameterDirection.Input, 0, 0, "TaxYear", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@IsNull_LicensePlate", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LicensePlate", global::System.Data.DataRowVersion.Original, true, null, "", "", ""));
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_LicensePlate", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LicensePlate", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
+            this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@IsNull_LinkToPdf", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LinkToPdf", global::System.Data.DataRowVersion.Original, true, null, "", "", ""));
+            this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_LinkToPdf", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LinkToPdf", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.InsertCommand = new global::System.Data.SqlClient.SqlCommand();
             this._adapter.InsertCommand.Connection = this.Connection;
-            this._adapter.InsertCommand.CommandText = @"INSERT INTO [receipts] ([PurchaseDate], [TotalCost], [NumberGallons], [Vehicle], [TaxYear], [LicensePlate]) VALUES (@PurchaseDate, @TotalCost, @NumberGallons, @Vehicle, @TaxYear, @LicensePlate);
-SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL THEN 'True' ELSE 'False' END AS ReceiptAttached, Vehicle, TaxYear, LicensePlate FROM receipts WHERE (ID = SCOPE_IDENTITY()) ORDER BY PurchaseDate DESC";
+            this._adapter.InsertCommand.CommandText = @"INSERT INTO [receipts] ([PurchaseDate], [TotalCost], [NumberGallons], [Vehicle], [TaxYear], [LicensePlate], [LinkToPdf]) VALUES (@PurchaseDate, @TotalCost, @NumberGallons, @Vehicle, @TaxYear, @LicensePlate, @LinkToPdf);
+SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL THEN 'True' ELSE 'False' END AS ReceiptAttached, Vehicle, TaxYear, LicensePlate, LinkToPdf FROM receipts WHERE (ID = SCOPE_IDENTITY()) ORDER BY PurchaseDate DESC";
             this._adapter.InsertCommand.CommandType = global::System.Data.CommandType.Text;
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@PurchaseDate", global::System.Data.SqlDbType.Date, 0, global::System.Data.ParameterDirection.Input, 0, 0, "PurchaseDate", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@TotalCost", global::System.Data.SqlDbType.Money, 0, global::System.Data.ParameterDirection.Input, 0, 0, "TotalCost", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
@@ -1037,10 +1083,11 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Vehicle", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Vehicle", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@TaxYear", global::System.Data.SqlDbType.SmallInt, 0, global::System.Data.ParameterDirection.Input, 0, 0, "TaxYear", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@LicensePlate", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LicensePlate", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
+            this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@LinkToPdf", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LinkToPdf", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand = new global::System.Data.SqlClient.SqlCommand();
             this._adapter.UpdateCommand.Connection = this.Connection;
-            this._adapter.UpdateCommand.CommandText = @"UPDATE [receipts] SET [PurchaseDate] = @PurchaseDate, [TotalCost] = @TotalCost, [NumberGallons] = @NumberGallons, [Vehicle] = @Vehicle, [TaxYear] = @TaxYear, [LicensePlate] = @LicensePlate WHERE (([ID] = @Original_ID) AND ([PurchaseDate] = @Original_PurchaseDate) AND ((@IsNull_TotalCost = 1 AND [TotalCost] IS NULL) OR ([TotalCost] = @Original_TotalCost)) AND ((@IsNull_NumberGallons = 1 AND [NumberGallons] IS NULL) OR ([NumberGallons] = @Original_NumberGallons)) AND ((@IsNull_Vehicle = 1 AND [Vehicle] IS NULL) OR ([Vehicle] = @Original_Vehicle)) AND ((@IsNull_TaxYear = 1 AND [TaxYear] IS NULL) OR ([TaxYear] = @Original_TaxYear)) AND ((@IsNull_LicensePlate = 1 AND [LicensePlate] IS NULL) OR ([LicensePlate] = @Original_LicensePlate)));
-SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL THEN 'True' ELSE 'False' END AS ReceiptAttached, Vehicle, TaxYear, LicensePlate FROM receipts WHERE (ID = @ID) ORDER BY PurchaseDate DESC";
+            this._adapter.UpdateCommand.CommandText = @"UPDATE [receipts] SET [PurchaseDate] = @PurchaseDate, [TotalCost] = @TotalCost, [NumberGallons] = @NumberGallons, [Vehicle] = @Vehicle, [TaxYear] = @TaxYear, [LicensePlate] = @LicensePlate, [LinkToPdf] = @LinkToPdf WHERE (([ID] = @Original_ID) AND ([PurchaseDate] = @Original_PurchaseDate) AND ((@IsNull_TotalCost = 1 AND [TotalCost] IS NULL) OR ([TotalCost] = @Original_TotalCost)) AND ((@IsNull_NumberGallons = 1 AND [NumberGallons] IS NULL) OR ([NumberGallons] = @Original_NumberGallons)) AND ((@IsNull_Vehicle = 1 AND [Vehicle] IS NULL) OR ([Vehicle] = @Original_Vehicle)) AND ((@IsNull_TaxYear = 1 AND [TaxYear] IS NULL) OR ([TaxYear] = @Original_TaxYear)) AND ((@IsNull_LicensePlate = 1 AND [LicensePlate] IS NULL) OR ([LicensePlate] = @Original_LicensePlate)) AND ((@IsNull_LinkToPdf = 1 AND [LinkToPdf] IS NULL) OR ([LinkToPdf] = @Original_LinkToPdf)));
+SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL THEN 'True' ELSE 'False' END AS ReceiptAttached, Vehicle, TaxYear, LicensePlate, LinkToPdf FROM receipts WHERE (ID = @ID) ORDER BY PurchaseDate DESC";
             this._adapter.UpdateCommand.CommandType = global::System.Data.CommandType.Text;
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@PurchaseDate", global::System.Data.SqlDbType.Date, 0, global::System.Data.ParameterDirection.Input, 0, 0, "PurchaseDate", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@TotalCost", global::System.Data.SqlDbType.Money, 0, global::System.Data.ParameterDirection.Input, 0, 0, "TotalCost", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
@@ -1048,6 +1095,7 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Vehicle", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Vehicle", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@TaxYear", global::System.Data.SqlDbType.SmallInt, 0, global::System.Data.ParameterDirection.Input, 0, 0, "TaxYear", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@LicensePlate", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LicensePlate", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
+            this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@LinkToPdf", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LinkToPdf", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_ID", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "ID", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_PurchaseDate", global::System.Data.SqlDbType.Date, 0, global::System.Data.ParameterDirection.Input, 0, 0, "PurchaseDate", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@IsNull_TotalCost", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "TotalCost", global::System.Data.DataRowVersion.Original, true, null, "", "", ""));
@@ -1060,6 +1108,8 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_TaxYear", global::System.Data.SqlDbType.SmallInt, 0, global::System.Data.ParameterDirection.Input, 0, 0, "TaxYear", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@IsNull_LicensePlate", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LicensePlate", global::System.Data.DataRowVersion.Original, true, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_LicensePlate", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LicensePlate", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
+            this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@IsNull_LinkToPdf", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LinkToPdf", global::System.Data.DataRowVersion.Original, true, null, "", "", ""));
+            this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_LinkToPdf", global::System.Data.SqlDbType.NVarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "LinkToPdf", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@ID", global::System.Data.SqlDbType.Int, 4, global::System.Data.ParameterDirection.Input, 0, 0, "ID", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
         }
         
@@ -1078,7 +1128,7 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
             this._commandCollection[0].Connection = this.Connection;
             this._commandCollection[0].CommandText = "SELECT        ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NO" +
                 "T NULL THEN \'True\' ELSE \'False\' END AS ReceiptAttached, Vehicle, TaxYear, Licens" +
-                "ePlate\r\nFROM            receipts\r\nORDER BY PurchaseDate DESC";
+                "ePlate, LinkToPdf\r\nFROM            receipts\r\nORDER BY PurchaseDate DESC";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[1] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[1].Connection = new global::System.Data.SqlClient.SqlConnection(global::GasReceiptsApp.Properties.Settings.Default.gasreceiptsConnectionString);
@@ -1163,7 +1213,7 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Delete, true)]
-        public virtual int Delete(int Original_ID, System.DateTime Original_PurchaseDate, global::System.Nullable<decimal> Original_TotalCost, global::System.Nullable<double> Original_NumberGallons, string Original_Vehicle, global::System.Nullable<short> Original_TaxYear, string Original_LicensePlate) {
+        public virtual int Delete(int Original_ID, System.DateTime Original_PurchaseDate, global::System.Nullable<decimal> Original_TotalCost, global::System.Nullable<double> Original_NumberGallons, string Original_Vehicle, global::System.Nullable<short> Original_TaxYear, string Original_LicensePlate, string Original_LinkToPdf) {
             this.Adapter.DeleteCommand.Parameters[0].Value = ((int)(Original_ID));
             this.Adapter.DeleteCommand.Parameters[1].Value = ((System.DateTime)(Original_PurchaseDate));
             if ((Original_TotalCost.HasValue == true)) {
@@ -1206,6 +1256,14 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
                 this.Adapter.DeleteCommand.Parameters[10].Value = ((object)(0));
                 this.Adapter.DeleteCommand.Parameters[11].Value = ((string)(Original_LicensePlate));
             }
+            if ((Original_LinkToPdf == null)) {
+                this.Adapter.DeleteCommand.Parameters[12].Value = ((object)(1));
+                this.Adapter.DeleteCommand.Parameters[13].Value = global::System.DBNull.Value;
+            }
+            else {
+                this.Adapter.DeleteCommand.Parameters[12].Value = ((object)(0));
+                this.Adapter.DeleteCommand.Parameters[13].Value = ((string)(Original_LinkToPdf));
+            }
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.DeleteCommand.Connection.State;
             if (((this.Adapter.DeleteCommand.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {
@@ -1226,7 +1284,7 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Insert, true)]
-        public virtual int Insert(System.DateTime PurchaseDate, global::System.Nullable<decimal> TotalCost, global::System.Nullable<double> NumberGallons, string Vehicle, global::System.Nullable<short> TaxYear, string LicensePlate) {
+        public virtual int Insert(System.DateTime PurchaseDate, global::System.Nullable<decimal> TotalCost, global::System.Nullable<double> NumberGallons, string Vehicle, global::System.Nullable<short> TaxYear, string LicensePlate, string LinkToPdf) {
             this.Adapter.InsertCommand.Parameters[0].Value = ((System.DateTime)(PurchaseDate));
             if ((TotalCost.HasValue == true)) {
                 this.Adapter.InsertCommand.Parameters[1].Value = ((decimal)(TotalCost.Value));
@@ -1258,6 +1316,12 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
             else {
                 this.Adapter.InsertCommand.Parameters[5].Value = ((string)(LicensePlate));
             }
+            if ((LinkToPdf == null)) {
+                this.Adapter.InsertCommand.Parameters[6].Value = global::System.DBNull.Value;
+            }
+            else {
+                this.Adapter.InsertCommand.Parameters[6].Value = ((string)(LinkToPdf));
+            }
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.InsertCommand.Connection.State;
             if (((this.Adapter.InsertCommand.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {
@@ -1278,7 +1342,23 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
-        public virtual int Update(System.DateTime PurchaseDate, global::System.Nullable<decimal> TotalCost, global::System.Nullable<double> NumberGallons, string Vehicle, global::System.Nullable<short> TaxYear, string LicensePlate, int Original_ID, System.DateTime Original_PurchaseDate, global::System.Nullable<decimal> Original_TotalCost, global::System.Nullable<double> Original_NumberGallons, string Original_Vehicle, global::System.Nullable<short> Original_TaxYear, string Original_LicensePlate, int ID) {
+        public virtual int Update(
+                    System.DateTime PurchaseDate, 
+                    global::System.Nullable<decimal> TotalCost, 
+                    global::System.Nullable<double> NumberGallons, 
+                    string Vehicle, 
+                    global::System.Nullable<short> TaxYear, 
+                    string LicensePlate, 
+                    string LinkToPdf, 
+                    int Original_ID, 
+                    System.DateTime Original_PurchaseDate, 
+                    global::System.Nullable<decimal> Original_TotalCost, 
+                    global::System.Nullable<double> Original_NumberGallons, 
+                    string Original_Vehicle, 
+                    global::System.Nullable<short> Original_TaxYear, 
+                    string Original_LicensePlate, 
+                    string Original_LinkToPdf, 
+                    int ID) {
             this.Adapter.UpdateCommand.Parameters[0].Value = ((System.DateTime)(PurchaseDate));
             if ((TotalCost.HasValue == true)) {
                 this.Adapter.UpdateCommand.Parameters[1].Value = ((decimal)(TotalCost.Value));
@@ -1310,49 +1390,63 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
             else {
                 this.Adapter.UpdateCommand.Parameters[5].Value = ((string)(LicensePlate));
             }
-            this.Adapter.UpdateCommand.Parameters[6].Value = ((int)(Original_ID));
-            this.Adapter.UpdateCommand.Parameters[7].Value = ((System.DateTime)(Original_PurchaseDate));
-            if ((Original_TotalCost.HasValue == true)) {
-                this.Adapter.UpdateCommand.Parameters[8].Value = ((object)(0));
-                this.Adapter.UpdateCommand.Parameters[9].Value = ((decimal)(Original_TotalCost.Value));
+            if ((LinkToPdf == null)) {
+                this.Adapter.UpdateCommand.Parameters[6].Value = global::System.DBNull.Value;
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[8].Value = ((object)(1));
-                this.Adapter.UpdateCommand.Parameters[9].Value = global::System.DBNull.Value;
+                this.Adapter.UpdateCommand.Parameters[6].Value = ((string)(LinkToPdf));
+            }
+            this.Adapter.UpdateCommand.Parameters[7].Value = ((int)(Original_ID));
+            this.Adapter.UpdateCommand.Parameters[8].Value = ((System.DateTime)(Original_PurchaseDate));
+            if ((Original_TotalCost.HasValue == true)) {
+                this.Adapter.UpdateCommand.Parameters[9].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[10].Value = ((decimal)(Original_TotalCost.Value));
+            }
+            else {
+                this.Adapter.UpdateCommand.Parameters[9].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[10].Value = global::System.DBNull.Value;
             }
             if ((Original_NumberGallons.HasValue == true)) {
-                this.Adapter.UpdateCommand.Parameters[10].Value = ((object)(0));
-                this.Adapter.UpdateCommand.Parameters[11].Value = ((double)(Original_NumberGallons.Value));
+                this.Adapter.UpdateCommand.Parameters[11].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[12].Value = ((double)(Original_NumberGallons.Value));
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[10].Value = ((object)(1));
-                this.Adapter.UpdateCommand.Parameters[11].Value = global::System.DBNull.Value;
+                this.Adapter.UpdateCommand.Parameters[11].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[12].Value = global::System.DBNull.Value;
             }
             if ((Original_Vehicle == null)) {
-                this.Adapter.UpdateCommand.Parameters[12].Value = ((object)(1));
-                this.Adapter.UpdateCommand.Parameters[13].Value = global::System.DBNull.Value;
+                this.Adapter.UpdateCommand.Parameters[13].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[14].Value = global::System.DBNull.Value;
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[12].Value = ((object)(0));
-                this.Adapter.UpdateCommand.Parameters[13].Value = ((string)(Original_Vehicle));
+                this.Adapter.UpdateCommand.Parameters[13].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[14].Value = ((string)(Original_Vehicle));
             }
             if ((Original_TaxYear.HasValue == true)) {
-                this.Adapter.UpdateCommand.Parameters[14].Value = ((object)(0));
-                this.Adapter.UpdateCommand.Parameters[15].Value = ((short)(Original_TaxYear.Value));
+                this.Adapter.UpdateCommand.Parameters[15].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[16].Value = ((short)(Original_TaxYear.Value));
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[14].Value = ((object)(1));
-                this.Adapter.UpdateCommand.Parameters[15].Value = global::System.DBNull.Value;
+                this.Adapter.UpdateCommand.Parameters[15].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[16].Value = global::System.DBNull.Value;
             }
             if ((Original_LicensePlate == null)) {
-                this.Adapter.UpdateCommand.Parameters[16].Value = ((object)(1));
-                this.Adapter.UpdateCommand.Parameters[17].Value = global::System.DBNull.Value;
+                this.Adapter.UpdateCommand.Parameters[17].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[18].Value = global::System.DBNull.Value;
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[16].Value = ((object)(0));
-                this.Adapter.UpdateCommand.Parameters[17].Value = ((string)(Original_LicensePlate));
+                this.Adapter.UpdateCommand.Parameters[17].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[18].Value = ((string)(Original_LicensePlate));
             }
-            this.Adapter.UpdateCommand.Parameters[18].Value = ((int)(ID));
+            if ((Original_LinkToPdf == null)) {
+                this.Adapter.UpdateCommand.Parameters[19].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[20].Value = global::System.DBNull.Value;
+            }
+            else {
+                this.Adapter.UpdateCommand.Parameters[19].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[20].Value = ((string)(Original_LinkToPdf));
+            }
+            this.Adapter.UpdateCommand.Parameters[21].Value = ((int)(ID));
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.UpdateCommand.Connection.State;
             if (((this.Adapter.UpdateCommand.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {
@@ -1373,8 +1467,8 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
-        public virtual int Update(System.DateTime PurchaseDate, global::System.Nullable<decimal> TotalCost, global::System.Nullable<double> NumberGallons, string Vehicle, global::System.Nullable<short> TaxYear, string LicensePlate, int Original_ID, System.DateTime Original_PurchaseDate, global::System.Nullable<decimal> Original_TotalCost, global::System.Nullable<double> Original_NumberGallons, string Original_Vehicle, global::System.Nullable<short> Original_TaxYear, string Original_LicensePlate) {
-            return this.Update(PurchaseDate, TotalCost, NumberGallons, Vehicle, TaxYear, LicensePlate, Original_ID, Original_PurchaseDate, Original_TotalCost, Original_NumberGallons, Original_Vehicle, Original_TaxYear, Original_LicensePlate, Original_ID);
+        public virtual int Update(System.DateTime PurchaseDate, global::System.Nullable<decimal> TotalCost, global::System.Nullable<double> NumberGallons, string Vehicle, global::System.Nullable<short> TaxYear, string LicensePlate, string LinkToPdf, int Original_ID, System.DateTime Original_PurchaseDate, global::System.Nullable<decimal> Original_TotalCost, global::System.Nullable<double> Original_NumberGallons, string Original_Vehicle, global::System.Nullable<short> Original_TaxYear, string Original_LicensePlate, string Original_LinkToPdf) {
+            return this.Update(PurchaseDate, TotalCost, NumberGallons, Vehicle, TaxYear, LicensePlate, LinkToPdf, Original_ID, Original_PurchaseDate, Original_TotalCost, Original_NumberGallons, Original_Vehicle, Original_TaxYear, Original_LicensePlate, Original_LinkToPdf, Original_ID);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]

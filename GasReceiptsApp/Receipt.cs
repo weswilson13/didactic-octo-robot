@@ -14,6 +14,7 @@ namespace GasReceiptsApp
         public string Vehicle { get; set; }
         public string LicensePlate { get; set; }
         public int TaxYear { get; set; }
+        public string LinkToPdf { get; set; }
 
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["GasReceiptsApp.Properties.Settings.gasreceiptsCxn"].ConnectionString;
         
@@ -24,8 +25,9 @@ namespace GasReceiptsApp
             var sqlConnection = new SqlConnection(connectionString);
             sqlConnection.Open();
 
-            var cmdText = "SELECT ID,PurchaseDate,TotalCost,NumberGallons,Receipt,Vehicle,TaxYear,LicensePlate FROM receipts where ID = " + receiptId;
-            var sqlCmd = new SqlCommand(cmdText, sqlConnection);
+            var sqlCmd = new SqlCommand("GetReceipt", sqlConnection);
+            sqlCmd.CommandType = CommandType.StoredProcedure;
+            sqlCmd.Parameters.Add(new SqlParameter("@receiptId", receiptId));
 
             var sqlReader = sqlCmd.ExecuteReader();
 
@@ -39,6 +41,7 @@ namespace GasReceiptsApp
                     receipt.TaxYear = Convert.ToUInt16(sqlReader["TaxYear"]);
                     receipt.Vehicle = sqlReader["Vehicle"].ToString();
                     receipt.PurchaseDate = Convert.ToDateTime(sqlReader["PurchaseDate"]);
+                    receipt.LinkToPdf = sqlReader["LinkToPdf"].ToString();
 
                 }
 
@@ -68,6 +71,7 @@ namespace GasReceiptsApp
                 sqlCmd.Parameters.Add(new SqlParameter("@Vehicle", receipt.Vehicle));
                 sqlCmd.Parameters.Add(new SqlParameter("@PurchaseDate", receipt.PurchaseDate));
                 sqlCmd.Parameters.Add(new SqlParameter("@TaxYear", receipt.TaxYear));
+                sqlCmd.Parameters.Add(new SqlParameter("@LinkToPdf", receipt.LinkToPdf));
 
                 sqlConnection.Open();
                 sqlCmd.ExecuteNonQuery();

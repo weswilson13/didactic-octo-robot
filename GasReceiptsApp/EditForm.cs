@@ -37,6 +37,7 @@ namespace GasReceiptsApp
             txtTaxYear.Text = receipt.TaxYear.ToString();
             cmbVehicle.Text = receipt.Vehicle.ToString();
             dtPurcahaseDate.Value = receipt.PurchaseDate;
+            txtLinkToPdf.Text = receipt.LinkToPdf.ToString();
         }
 
         public void UpdateReceiptData()
@@ -50,6 +51,7 @@ namespace GasReceiptsApp
             receipt.Vehicle = cmbVehicle.Text;
             receipt.LicensePlate = txtLicensePlate.Text;
             receipt.TaxYear = Convert.ToInt16(txtTaxYear.Text);
+            receipt.LinkToPdf = txtLinkToPdf.Text.Trim('"');
 
             receipt.UpdateReceipt(receipt);
 
@@ -61,5 +63,9 @@ namespace GasReceiptsApp
             this.Close();
         }
 
+        private void folderBrowserDialog1_HelpRequest(object sender, EventArgs e)
+        {
+
+        }
     }
 }

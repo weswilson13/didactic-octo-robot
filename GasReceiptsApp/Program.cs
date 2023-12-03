@@ -17,6 +17,7 @@ namespace GasReceiptsApp
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new GasReceiptsForm());
+            //Application.Run(new TestForm());
         }
     }
 }

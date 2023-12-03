@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -28,36 +29,36 @@ namespace GasReceiptsApp
         {
             this.receiptsTableAdapter.Fill(this.gasreceiptsDataSet.receipts);
         }
-        private void loadDataToolStripButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                this.receiptsTableAdapter.LoadData();
-            }
-            catch (System.Exception ex)
-            {
-                //System.Windows.Forms.MessageBox.Show(ex.Message);
-                Console.WriteLine(ex.Message);
-            }
-
-        }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            
+            if (e.ColumnIndex >= 0 && e.RowIndex >= 0)
+            {
+                DataGridViewLinkCell linkCell = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex] as DataGridViewLinkCell;
+
+                if (linkCell != null)
+                {
+                    Process.Start(linkCell.Value.ToString());
+                }
+            }
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             int receiptId = (int)dataGridView1.CurrentRow.Cells[0].Value;
             var editForm = new EditForm(receiptId);
-            
+
             editForm.ShowDialog();
         }
 
         private void btnClose_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void dataGridView1_DoubleClick(object sender, EventArgs e)
+        {
+            btnUpdate_Click(sender, e);
         }
     }
 }

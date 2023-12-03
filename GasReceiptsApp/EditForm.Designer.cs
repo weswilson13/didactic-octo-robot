@@ -42,6 +42,8 @@
             this.cmbVehicle = new System.Windows.Forms.ComboBox();
             this.lblFormTitle = new System.Windows.Forms.Label();
             this.btnUpdateReceipt = new System.Windows.Forms.Button();
+            this.lblLinkToPdf = new System.Windows.Forms.Label();
+            this.txtLinkToPdf = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // lblDate
@@ -167,14 +169,14 @@
             this.lblFormTitle.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.lblFormTitle.Location = new System.Drawing.Point(0, 9);
             this.lblFormTitle.Name = "lblFormTitle";
-            this.lblFormTitle.Size = new System.Drawing.Size(434, 29);
+            this.lblFormTitle.Size = new System.Drawing.Size(422, 29);
             this.lblFormTitle.TabIndex = 6;
             this.lblFormTitle.Text = "Edit Receipt";
             // 
             // btnUpdateReceipt
             // 
             this.btnUpdateReceipt.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnUpdateReceipt.Location = new System.Drawing.Point(172, 418);
+            this.btnUpdateReceipt.Location = new System.Drawing.Point(172, 450);
             this.btnUpdateReceipt.Name = "btnUpdateReceipt";
             this.btnUpdateReceipt.Size = new System.Drawing.Size(86, 32);
             this.btnUpdateReceipt.TabIndex = 7;
@@ -182,17 +184,37 @@
             this.btnUpdateReceipt.UseVisualStyleBackColor = true;
             this.btnUpdateReceipt.Click += new System.EventHandler(this.btnUpdateReceipt_Click);
             // 
+            // lblLinkToPdf
+            // 
+            this.lblLinkToPdf.AutoSize = true;
+            this.lblLinkToPdf.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblLinkToPdf.Location = new System.Drawing.Point(35, 394);
+            this.lblLinkToPdf.Name = "lblLinkToPdf";
+            this.lblLinkToPdf.Size = new System.Drawing.Size(44, 20);
+            this.lblLinkToPdf.TabIndex = 2;
+            this.lblLinkToPdf.Text = "PDF";
+            // 
+            // txtLinkToPdf
+            // 
+            this.txtLinkToPdf.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtLinkToPdf.Location = new System.Drawing.Point(172, 401);
+            this.txtLinkToPdf.Name = "txtLinkToPdf";
+            this.txtLinkToPdf.Size = new System.Drawing.Size(200, 26);
+            this.txtLinkToPdf.TabIndex = 3;
+            // 
             // EditForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(434, 474);
+            this.ClientSize = new System.Drawing.Size(422, 517);
             this.Controls.Add(this.btnUpdateReceipt);
             this.Controls.Add(this.lblFormTitle);
             this.Controls.Add(this.cmbVehicle);
             this.Controls.Add(this.dtPurcahaseDate);
+            this.Controls.Add(this.txtLinkToPdf);
             this.Controls.Add(this.txtTaxYear);
             this.Controls.Add(this.txtLicensePlate);
+            this.Controls.Add(this.lblLinkToPdf);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.lblLicensePlate);
             this.Controls.Add(this.lblVehicle);
@@ -225,5 +247,7 @@
         private System.Windows.Forms.ComboBox cmbVehicle;
         private System.Windows.Forms.Label lblFormTitle;
         private System.Windows.Forms.Button btnUpdateReceipt;
+        private System.Windows.Forms.Label lblLinkToPdf;
+        private System.Windows.Forms.TextBox txtLinkToPdf;
     }
 }
