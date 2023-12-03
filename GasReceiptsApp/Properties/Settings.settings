@@ -1,0 +1,22 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="GasReceiptsApp.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="gasreceiptsConnectionString" Type="(Connection string)" Scope="Application">
+      <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;SerializableConnectionString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;ConnectionString&gt;Data Source=SQ02\MYSQLSERVER,9999;Initial Catalog=gasreceipts;Integrated Security=True;TrustServerCertificate=True&lt;/ConnectionString&gt;
+  &lt;ProviderName&gt;System.Data.SqlClient&lt;/ProviderName&gt;
+&lt;/SerializableConnectionString&gt;</DesignTimeValue>
+      <Value Profile="(Default)">Data Source=SQ02\MYSQLSERVER,9999;Initial Catalog=gasreceipts;Integrated Security=True;TrustServerCertificate=True</Value>
+    </Setting>
+    <Setting Name="gasreceiptsCxn" Type="(Connection string)" Scope="Application">
+      <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;SerializableConnectionString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;ConnectionString&gt;Data Source=SQ02\MYSQLSERVER,9999;Initial Catalog=gasreceipts;Persist Security Info=True;User ID=UpdateGasReceipts;Password=u7DsK!7KFURNT7BjzNzH;TrustServerCertificate=True&lt;/ConnectionString&gt;
+  &lt;ProviderName&gt;System.Data.SqlClient&lt;/ProviderName&gt;
+&lt;/SerializableConnectionString&gt;</DesignTimeValue>
+      <Value Profile="(Default)">Data Source=SQ02\MYSQLSERVER,9999;Initial Catalog=gasreceipts;Persist Security Info=True;User ID=UpdateGasReceipts;Password=u7DsK!7KFURNT7BjzNzH;TrustServerCertificate=True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
