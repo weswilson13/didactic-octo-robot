@@ -38,6 +38,8 @@
             this.btnEditReceipt = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.LinkToPdf = new System.Windows.Forms.DataGridViewLinkColumn();
+            this.btnClose = new System.Windows.Forms.Button();
             this.iDDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.purchaseDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.totalCostDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -46,11 +48,10 @@
             this.taxYearDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.licensePlateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.receiptAttachedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.LinkToPdf = new System.Windows.Forms.DataGridViewLinkColumn();
             this.receiptsBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.gasreceiptsDataSet = new GasReceiptsApp.gasreceiptsDataSet();
-            this.btnClose = new System.Windows.Forms.Button();
             this.receiptsTableAdapter = new GasReceiptsApp.gasreceiptsDataSetTableAdapters.receiptsTableAdapter();
+            this.btnFilter = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.receiptsBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gasreceiptsDataSet)).BeginInit();
@@ -59,7 +60,7 @@
             // btnEditReceipt
             // 
             this.btnEditReceipt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnEditReceipt.Location = new System.Drawing.Point(779, 501);
+            this.btnEditReceipt.Location = new System.Drawing.Point(1087, 501);
             this.btnEditReceipt.Name = "btnEditReceipt";
             this.btnEditReceipt.Size = new System.Drawing.Size(61, 28);
             this.btnEditReceipt.TabIndex = 0;
@@ -76,12 +77,13 @@
             this.label1.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
             this.label1.Location = new System.Drawing.Point(0, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(948, 29);
+            this.label1.Size = new System.Drawing.Size(1256, 29);
             this.label1.TabIndex = 2;
             this.label1.Text = "Gas Receipts";
             // 
             // dataGridView1
             // 
+            this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.AllowUserToDeleteRows = false;
             this.dataGridView1.AllowUserToOrderColumns = true;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.AntiqueWhite;
@@ -123,10 +125,31 @@
             this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridView1.Location = new System.Drawing.Point(0, 51);
             this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(948, 444);
+            this.dataGridView1.Size = new System.Drawing.Size(1256, 444);
             this.dataGridView1.TabIndex = 3;
             this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             this.dataGridView1.DoubleClick += new System.EventHandler(this.dataGridView1_DoubleClick);
+            // 
+            // LinkToPdf
+            // 
+            this.LinkToPdf.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.LinkToPdf.DataPropertyName = "LinkToPdf";
+            this.LinkToPdf.HeaderText = "LinkToPdf";
+            this.LinkToPdf.Name = "LinkToPdf";
+            this.LinkToPdf.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.LinkToPdf.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.LinkToPdf.Width = 81;
+            // 
+            // btnClose
+            // 
+            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClose.Location = new System.Drawing.Point(1169, 501);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(61, 28);
+            this.btnClose.TabIndex = 0;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // iDDataGridViewTextBoxColumn
             // 
@@ -184,14 +207,6 @@
             this.receiptAttachedDataGridViewTextBoxColumn.Name = "receiptAttachedDataGridViewTextBoxColumn";
             this.receiptAttachedDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // LinkToPdf
-            // 
-            this.LinkToPdf.DataPropertyName = "LinkToPdf";
-            this.LinkToPdf.HeaderText = "LinkToPdf";
-            this.LinkToPdf.Name = "LinkToPdf";
-            this.LinkToPdf.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.LinkToPdf.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
             // receiptsBindingSource
             // 
             this.receiptsBindingSource.DataMember = "receipts";
@@ -202,26 +217,26 @@
             this.gasreceiptsDataSet.DataSetName = "gasreceiptsDataSet";
             this.gasreceiptsDataSet.SchemaSerializationMode = System.Data.SchemaSerializationMode.IncludeSchema;
             // 
-            // btnClose
-            // 
-            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClose.Location = new System.Drawing.Point(861, 501);
-            this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(61, 28);
-            this.btnClose.TabIndex = 0;
-            this.btnClose.Text = "Close";
-            this.btnClose.UseVisualStyleBackColor = true;
-            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
-            // 
             // receiptsTableAdapter
             // 
             this.receiptsTableAdapter.ClearBeforeFill = true;
+            // 
+            // btnFilter
+            // 
+            this.btnFilter.Location = new System.Drawing.Point(998, 502);
+            this.btnFilter.Name = "btnFilter";
+            this.btnFilter.Size = new System.Drawing.Size(66, 27);
+            this.btnFilter.TabIndex = 4;
+            this.btnFilter.Text = "Filter";
+            this.btnFilter.UseVisualStyleBackColor = true;
+            this.btnFilter.Click += new System.EventHandler(this.button1_Click);
             // 
             // GasReceiptsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(948, 540);
+            this.ClientSize = new System.Drawing.Size(1256, 540);
+            this.Controls.Add(this.btnFilter);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnClose);
@@ -256,6 +271,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn licensePlateDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn receiptAttachedDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewLinkColumn LinkToPdf;
+        private System.Windows.Forms.Button btnFilter;
     }
 }
 

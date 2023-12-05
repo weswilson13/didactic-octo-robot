@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditForm));
             this.lblDate = new System.Windows.Forms.Label();
             this.txtCost = new System.Windows.Forms.TextBox();
             this.lblCost = new System.Windows.Forms.Label();
@@ -44,6 +45,9 @@
             this.btnUpdateReceipt = new System.Windows.Forms.Button();
             this.lblLinkToPdf = new System.Windows.Forms.Label();
             this.txtLinkToPdf = new System.Windows.Forms.TextBox();
+            this.axAcroPDF1 = new AxAcroPDFLib.AxAcroPDF();
+            this.btnCancel = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.axAcroPDF1)).BeginInit();
             this.SuspendLayout();
             // 
             // lblDate
@@ -169,14 +173,14 @@
             this.lblFormTitle.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.lblFormTitle.Location = new System.Drawing.Point(0, 9);
             this.lblFormTitle.Name = "lblFormTitle";
-            this.lblFormTitle.Size = new System.Drawing.Size(422, 29);
+            this.lblFormTitle.Size = new System.Drawing.Size(717, 29);
             this.lblFormTitle.TabIndex = 6;
             this.lblFormTitle.Text = "Edit Receipt";
             // 
             // btnUpdateReceipt
             // 
             this.btnUpdateReceipt.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnUpdateReceipt.Location = new System.Drawing.Point(172, 450);
+            this.btnUpdateReceipt.Location = new System.Drawing.Point(101, 450);
             this.btnUpdateReceipt.Name = "btnUpdateReceipt";
             this.btnUpdateReceipt.Size = new System.Drawing.Size(86, 32);
             this.btnUpdateReceipt.TabIndex = 7;
@@ -202,11 +206,36 @@
             this.txtLinkToPdf.Size = new System.Drawing.Size(200, 26);
             this.txtLinkToPdf.TabIndex = 3;
             // 
+            // axAcroPDF1
+            // 
+            this.axAcroPDF1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.axAcroPDF1.Enabled = true;
+            this.axAcroPDF1.Location = new System.Drawing.Point(427, 59);
+            this.axAcroPDF1.Name = "axAcroPDF1";
+            this.axAcroPDF1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axAcroPDF1.OcxState")));
+            this.axAcroPDF1.Size = new System.Drawing.Size(250, 460);
+            this.axAcroPDF1.TabIndex = 9;
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCancel.Location = new System.Drawing.Point(214, 450);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(86, 32);
+            this.btnCancel.TabIndex = 7;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
             // EditForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(422, 517);
+            this.ClientSize = new System.Drawing.Size(717, 554);
+            this.Controls.Add(this.axAcroPDF1);
+            this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnUpdateReceipt);
             this.Controls.Add(this.lblFormTitle);
             this.Controls.Add(this.cmbVehicle);
@@ -226,6 +255,7 @@
             this.Name = "EditForm";
             this.Text = "Edit Receipt";
             this.Load += new System.EventHandler(this.EditForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.axAcroPDF1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -249,5 +279,7 @@
         private System.Windows.Forms.Button btnUpdateReceipt;
         private System.Windows.Forms.Label lblLinkToPdf;
         private System.Windows.Forms.TextBox txtLinkToPdf;
+        private AxAcroPDFLib.AxAcroPDF axAcroPDF1;
+        private System.Windows.Forms.Button btnCancel;
     }
 }

@@ -167,7 +167,7 @@ SELECT ID, PurchaseDate, TotalCost, NumberGallons, CASE WHEN Receipt IS NOT NULL
                   </xs:restriction>
                 </xs:simpleType>
               </xs:element>
-              <xs:element name="LinkToPdf" msprop:Generator_ColumnPropNameInRow="LinkToPdf" msprop:Generator_ColumnPropNameInTable="LinkToPdfColumn" msprop:Generator_ColumnVarNameInTable="columnLinkToPdf" msprop:Generator_UserColumnName="LinkToPdf" minOccurs="0">
+              <xs:element name="LinkToPdf" msprop:Generator_UserColumnName="LinkToPdf" msprop:Generator_ColumnPropNameInTable="LinkToPdfColumn" msprop:Generator_ColumnPropNameInRow="LinkToPdf" msprop:Generator_ColumnVarNameInTable="columnLinkToPdf" minOccurs="0">
                 <xs:simpleType>
                   <xs:restriction base="xs:string">
                     <xs:maxLength value="100" />

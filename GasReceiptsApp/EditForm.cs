@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GasReceiptsApp
@@ -31,13 +24,14 @@ namespace GasReceiptsApp
             receipt = receipt.GetReceipt(selectedReceiptId);
 
             lblFormTitle.Text = $"Edit Receipt {selectedReceiptId}";
-            txtCost.Text = receipt.TotalCost.ToString();
+            txtCost.Text = String.Format("{0:c}",receipt.TotalCost);
             txtGallons.Text = receipt.NumberGallons.ToString();
             txtLicensePlate.Text = receipt.LicensePlate;
             txtTaxYear.Text = receipt.TaxYear.ToString();
             cmbVehicle.Text = receipt.Vehicle.ToString();
             dtPurcahaseDate.Value = receipt.PurchaseDate;
             txtLinkToPdf.Text = receipt.LinkToPdf.ToString();
+            axAcroPDF1.LoadFile(txtLinkToPdf.Text);
         }
 
         public void UpdateReceiptData()
@@ -45,7 +39,7 @@ namespace GasReceiptsApp
             var receipt = new Receipt();
 
             receipt.ID = selectedReceiptId;
-            receipt.TotalCost = Convert.ToSingle(txtCost.Text);
+            receipt.TotalCost = float.Parse(txtCost.Text, NumberStyles.Currency | NumberStyles.AllowDecimalPoint);
             receipt.NumberGallons = Convert.ToSingle(txtGallons.Text);
             receipt.PurchaseDate = dtPurcahaseDate.Value;
             receipt.Vehicle = cmbVehicle.Text;
@@ -63,9 +57,10 @@ namespace GasReceiptsApp
             this.Close();
         }
 
-        private void folderBrowserDialog1_HelpRequest(object sender, EventArgs e)
-        {
 
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }
