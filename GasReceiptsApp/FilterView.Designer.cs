@@ -36,21 +36,11 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FilterView));
             this.rbVehicle = new System.Windows.Forms.RadioButton();
             this.rbLicensePlate = new System.Windows.Forms.RadioButton();
-            this.lblTotalGallons = new System.Windows.Forms.Label();
-            this.lblSumGallons = new System.Windows.Forms.Label();
-            this.lblTotalCost = new System.Windows.Forms.Label();
-            this.lblSumCost = new System.Windows.Forms.Label();
+            this.lblAverage = new System.Windows.Forms.Label();
+            this.lblAverages = new System.Windows.Forms.Label();
+            this.lblTotal = new System.Windows.Forms.Label();
+            this.lblTotals = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.receiptsBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.gasreceiptsDataSet = new GasReceiptsApp.gasreceiptsDataSet();
-            this.fillByFilteredViewToolStrip = new System.Windows.Forms.ToolStrip();
-            this.taxYearToolStripLabel = new System.Windows.Forms.ToolStripLabel();
-            this.taxYearToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
-            this.vehicleToolStripLabel = new System.Windows.Forms.ToolStripLabel();
-            this.vehicleToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
-            this.licensePlateToolStripLabel = new System.Windows.Forms.ToolStripLabel();
-            this.licensePlateToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
-            this.receiptsTableAdapter = new GasReceiptsApp.gasreceiptsDataSetTableAdapters.receiptsTableAdapter();
             this.iDDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.purchaseDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.totalCostDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -60,8 +50,19 @@
             this.licensePlateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.receiptAttachedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.linkToPdfDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.receiptsBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.gasreceiptsDataSet = new GasReceiptsApp.gasreceiptsDataSet();
+            this.fillByFilteredViewToolStrip = new System.Windows.Forms.ToolStrip();
+            this.taxYearToolStripLabel = new System.Windows.Forms.ToolStripLabel();
+            this.taxYearToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
+            this.vehicleToolStripLabel = new System.Windows.Forms.ToolStripLabel();
+            this.vehicleToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
+            this.licensePlateToolStripLabel = new System.Windows.Forms.ToolStripLabel();
+            this.licensePlateToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.fillByFilteredViewToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.receiptsTableAdapter = new GasReceiptsApp.gasreceiptsDataSetTableAdapters.receiptsTableAdapter();
+            this.btnClose = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.receiptsBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gasreceiptsDataSet)).BeginInit();
@@ -91,47 +92,51 @@
             this.rbLicensePlate.UseVisualStyleBackColor = true;
             this.rbLicensePlate.CheckedChanged += new System.EventHandler(this.rbLicensePlate_CheckedChanged);
             // 
-            // lblTotalGallons
+            // lblAverage
             // 
-            this.lblTotalGallons.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTotalGallons.AutoSize = true;
-            this.lblTotalGallons.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTotalGallons.Location = new System.Drawing.Point(667, 28);
-            this.lblTotalGallons.Name = "lblTotalGallons";
-            this.lblTotalGallons.Size = new System.Drawing.Size(93, 16);
-            this.lblTotalGallons.TabIndex = 3;
-            this.lblTotalGallons.Text = "Total Gallons: ";
+            this.lblAverage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblAverage.AutoSize = true;
+            this.lblAverage.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblAverage.Location = new System.Drawing.Point(684, 28);
+            this.lblAverage.Name = "lblAverage";
+            this.lblAverage.Size = new System.Drawing.Size(78, 18);
+            this.lblAverage.TabIndex = 3;
+            this.lblAverage.Text = "Average: ";
             // 
-            // lblSumGallons
+            // lblAverages
             // 
-            this.lblSumGallons.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblSumGallons.AutoSize = true;
-            this.lblSumGallons.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSumGallons.Location = new System.Drawing.Point(673, 49);
-            this.lblSumGallons.Name = "lblSumGallons";
-            this.lblSumGallons.Size = new System.Drawing.Size(0, 20);
-            this.lblSumGallons.TabIndex = 3;
+            this.lblAverages.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblAverages.AutoSize = true;
+            this.lblAverages.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblAverages.ForeColor = System.Drawing.Color.Black;
+            this.lblAverages.Location = new System.Drawing.Point(700, 49);
+            this.lblAverages.Name = "lblAverages";
+            this.lblAverages.Size = new System.Drawing.Size(46, 18);
+            this.lblAverages.TabIndex = 3;
+            this.lblAverages.Text = "TEST";
             // 
-            // lblTotalCost
+            // lblTotal
             // 
-            this.lblTotalCost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTotalCost.AutoSize = true;
-            this.lblTotalCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTotalCost.Location = new System.Drawing.Point(834, 28);
-            this.lblTotalCost.Name = "lblTotalCost";
-            this.lblTotalCost.Size = new System.Drawing.Size(74, 16);
-            this.lblTotalCost.TabIndex = 3;
-            this.lblTotalCost.Text = "Total Cost: ";
+            this.lblTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTotal.AutoSize = true;
+            this.lblTotal.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTotal.Location = new System.Drawing.Point(830, 28);
+            this.lblTotal.Name = "lblTotal";
+            this.lblTotal.Size = new System.Drawing.Size(51, 18);
+            this.lblTotal.TabIndex = 3;
+            this.lblTotal.Text = "Total:";
             // 
-            // lblSumCost
+            // lblTotals
             // 
-            this.lblSumCost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblSumCost.AutoSize = true;
-            this.lblSumCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSumCost.Location = new System.Drawing.Point(838, 49);
-            this.lblSumCost.Name = "lblSumCost";
-            this.lblSumCost.Size = new System.Drawing.Size(0, 20);
-            this.lblSumCost.TabIndex = 3;
+            this.lblTotals.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTotals.AutoSize = true;
+            this.lblTotals.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTotals.ForeColor = System.Drawing.Color.Black;
+            this.lblTotals.Location = new System.Drawing.Point(832, 49);
+            this.lblTotals.Name = "lblTotals";
+            this.lblTotals.Size = new System.Drawing.Size(46, 18);
+            this.lblTotals.TabIndex = 3;
+            this.lblTotals.Text = "TEST";
             // 
             // dataGridView1
             // 
@@ -168,11 +173,90 @@
             this.receiptAttachedDataGridViewTextBoxColumn,
             this.linkToPdfDataGridViewTextBoxColumn});
             this.dataGridView1.DataSource = this.receiptsBindingSource;
-            this.dataGridView1.Location = new System.Drawing.Point(15, 87);
+            this.dataGridView1.Location = new System.Drawing.Point(10, 87);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
-            this.dataGridView1.Size = new System.Drawing.Size(931, 412);
+            this.dataGridView1.Size = new System.Drawing.Size(953, 403);
             this.dataGridView1.TabIndex = 4;
+            this.dataGridView1.DoubleClick += new System.EventHandler(this.dataGridView1_DoubleClick);
+            // 
+            // iDDataGridViewTextBoxColumn
+            // 
+            this.iDDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.iDDataGridViewTextBoxColumn.DataPropertyName = "ID";
+            this.iDDataGridViewTextBoxColumn.HeaderText = "ID";
+            this.iDDataGridViewTextBoxColumn.Name = "iDDataGridViewTextBoxColumn";
+            this.iDDataGridViewTextBoxColumn.ReadOnly = true;
+            this.iDDataGridViewTextBoxColumn.Width = 43;
+            // 
+            // purchaseDateDataGridViewTextBoxColumn
+            // 
+            this.purchaseDateDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.purchaseDateDataGridViewTextBoxColumn.DataPropertyName = "PurchaseDate";
+            this.purchaseDateDataGridViewTextBoxColumn.HeaderText = "PurchaseDate";
+            this.purchaseDateDataGridViewTextBoxColumn.Name = "purchaseDateDataGridViewTextBoxColumn";
+            this.purchaseDateDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // totalCostDataGridViewTextBoxColumn
+            // 
+            this.totalCostDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.totalCostDataGridViewTextBoxColumn.DataPropertyName = "TotalCost";
+            dataGridViewCellStyle3.Format = "C2";
+            dataGridViewCellStyle3.NullValue = null;
+            this.totalCostDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle3;
+            this.totalCostDataGridViewTextBoxColumn.HeaderText = "TotalCost";
+            this.totalCostDataGridViewTextBoxColumn.Name = "totalCostDataGridViewTextBoxColumn";
+            this.totalCostDataGridViewTextBoxColumn.ReadOnly = true;
+            this.totalCostDataGridViewTextBoxColumn.Width = 77;
+            // 
+            // numberGallonsDataGridViewTextBoxColumn
+            // 
+            this.numberGallonsDataGridViewTextBoxColumn.DataPropertyName = "NumberGallons";
+            dataGridViewCellStyle4.Format = "N3";
+            dataGridViewCellStyle4.NullValue = null;
+            this.numberGallonsDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle4;
+            this.numberGallonsDataGridViewTextBoxColumn.HeaderText = "NumberGallons";
+            this.numberGallonsDataGridViewTextBoxColumn.Name = "numberGallonsDataGridViewTextBoxColumn";
+            this.numberGallonsDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // vehicleDataGridViewTextBoxColumn
+            // 
+            this.vehicleDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.vehicleDataGridViewTextBoxColumn.DataPropertyName = "Vehicle";
+            this.vehicleDataGridViewTextBoxColumn.HeaderText = "Vehicle";
+            this.vehicleDataGridViewTextBoxColumn.Name = "vehicleDataGridViewTextBoxColumn";
+            this.vehicleDataGridViewTextBoxColumn.ReadOnly = true;
+            this.vehicleDataGridViewTextBoxColumn.Width = 67;
+            // 
+            // taxYearDataGridViewTextBoxColumn
+            // 
+            this.taxYearDataGridViewTextBoxColumn.DataPropertyName = "TaxYear";
+            this.taxYearDataGridViewTextBoxColumn.HeaderText = "TaxYear";
+            this.taxYearDataGridViewTextBoxColumn.Name = "taxYearDataGridViewTextBoxColumn";
+            this.taxYearDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // licensePlateDataGridViewTextBoxColumn
+            // 
+            this.licensePlateDataGridViewTextBoxColumn.DataPropertyName = "LicensePlate";
+            this.licensePlateDataGridViewTextBoxColumn.HeaderText = "LicensePlate";
+            this.licensePlateDataGridViewTextBoxColumn.Name = "licensePlateDataGridViewTextBoxColumn";
+            this.licensePlateDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // receiptAttachedDataGridViewTextBoxColumn
+            // 
+            this.receiptAttachedDataGridViewTextBoxColumn.DataPropertyName = "ReceiptAttached";
+            this.receiptAttachedDataGridViewTextBoxColumn.HeaderText = "ReceiptAttached";
+            this.receiptAttachedDataGridViewTextBoxColumn.Name = "receiptAttachedDataGridViewTextBoxColumn";
+            this.receiptAttachedDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // linkToPdfDataGridViewTextBoxColumn
+            // 
+            this.linkToPdfDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.linkToPdfDataGridViewTextBoxColumn.DataPropertyName = "LinkToPdf";
+            this.linkToPdfDataGridViewTextBoxColumn.HeaderText = "LinkToPdf";
+            this.linkToPdfDataGridViewTextBoxColumn.Name = "linkToPdfDataGridViewTextBoxColumn";
+            this.linkToPdfDataGridViewTextBoxColumn.ReadOnly = true;
+            this.linkToPdfDataGridViewTextBoxColumn.Width = 81;
             // 
             // receiptsBindingSource
             // 
@@ -198,7 +282,7 @@
             this.fillByFilteredViewToolStripButton});
             this.fillByFilteredViewToolStrip.Location = new System.Drawing.Point(0, 0);
             this.fillByFilteredViewToolStrip.Name = "fillByFilteredViewToolStrip";
-            this.fillByFilteredViewToolStrip.Size = new System.Drawing.Size(1006, 28);
+            this.fillByFilteredViewToolStrip.Size = new System.Drawing.Size(1023, 28);
             this.fillByFilteredViewToolStrip.TabIndex = 5;
             this.fillByFilteredViewToolStrip.Text = "fillByFilteredViewToolStrip";
             // 
@@ -237,79 +321,6 @@
             this.licensePlateToolStripComboBox.Name = "licensePlateToolStripComboBox";
             this.licensePlateToolStripComboBox.Size = new System.Drawing.Size(100, 28);
             // 
-            // receiptsTableAdapter
-            // 
-            this.receiptsTableAdapter.ClearBeforeFill = true;
-            // 
-            // iDDataGridViewTextBoxColumn
-            // 
-            this.iDDataGridViewTextBoxColumn.DataPropertyName = "ID";
-            this.iDDataGridViewTextBoxColumn.HeaderText = "ID";
-            this.iDDataGridViewTextBoxColumn.Name = "iDDataGridViewTextBoxColumn";
-            this.iDDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // purchaseDateDataGridViewTextBoxColumn
-            // 
-            this.purchaseDateDataGridViewTextBoxColumn.DataPropertyName = "PurchaseDate";
-            this.purchaseDateDataGridViewTextBoxColumn.HeaderText = "PurchaseDate";
-            this.purchaseDateDataGridViewTextBoxColumn.Name = "purchaseDateDataGridViewTextBoxColumn";
-            this.purchaseDateDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // totalCostDataGridViewTextBoxColumn
-            // 
-            this.totalCostDataGridViewTextBoxColumn.DataPropertyName = "TotalCost";
-            dataGridViewCellStyle3.Format = "C2";
-            dataGridViewCellStyle3.NullValue = null;
-            this.totalCostDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle3;
-            this.totalCostDataGridViewTextBoxColumn.HeaderText = "TotalCost";
-            this.totalCostDataGridViewTextBoxColumn.Name = "totalCostDataGridViewTextBoxColumn";
-            this.totalCostDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // numberGallonsDataGridViewTextBoxColumn
-            // 
-            this.numberGallonsDataGridViewTextBoxColumn.DataPropertyName = "NumberGallons";
-            dataGridViewCellStyle4.Format = "N3";
-            dataGridViewCellStyle4.NullValue = null;
-            this.numberGallonsDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle4;
-            this.numberGallonsDataGridViewTextBoxColumn.HeaderText = "NumberGallons";
-            this.numberGallonsDataGridViewTextBoxColumn.Name = "numberGallonsDataGridViewTextBoxColumn";
-            this.numberGallonsDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // vehicleDataGridViewTextBoxColumn
-            // 
-            this.vehicleDataGridViewTextBoxColumn.DataPropertyName = "Vehicle";
-            this.vehicleDataGridViewTextBoxColumn.HeaderText = "Vehicle";
-            this.vehicleDataGridViewTextBoxColumn.Name = "vehicleDataGridViewTextBoxColumn";
-            this.vehicleDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // taxYearDataGridViewTextBoxColumn
-            // 
-            this.taxYearDataGridViewTextBoxColumn.DataPropertyName = "TaxYear";
-            this.taxYearDataGridViewTextBoxColumn.HeaderText = "TaxYear";
-            this.taxYearDataGridViewTextBoxColumn.Name = "taxYearDataGridViewTextBoxColumn";
-            this.taxYearDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // licensePlateDataGridViewTextBoxColumn
-            // 
-            this.licensePlateDataGridViewTextBoxColumn.DataPropertyName = "LicensePlate";
-            this.licensePlateDataGridViewTextBoxColumn.HeaderText = "LicensePlate";
-            this.licensePlateDataGridViewTextBoxColumn.Name = "licensePlateDataGridViewTextBoxColumn";
-            this.licensePlateDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // receiptAttachedDataGridViewTextBoxColumn
-            // 
-            this.receiptAttachedDataGridViewTextBoxColumn.DataPropertyName = "ReceiptAttached";
-            this.receiptAttachedDataGridViewTextBoxColumn.HeaderText = "ReceiptAttached";
-            this.receiptAttachedDataGridViewTextBoxColumn.Name = "receiptAttachedDataGridViewTextBoxColumn";
-            this.receiptAttachedDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // linkToPdfDataGridViewTextBoxColumn
-            // 
-            this.linkToPdfDataGridViewTextBoxColumn.DataPropertyName = "LinkToPdf";
-            this.linkToPdfDataGridViewTextBoxColumn.HeaderText = "LinkToPdf";
-            this.linkToPdfDataGridViewTextBoxColumn.Name = "linkToPdfDataGridViewTextBoxColumn";
-            this.linkToPdfDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
@@ -318,28 +329,44 @@
             // fillByFilteredViewToolStripButton
             // 
             this.fillByFilteredViewToolStripButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.fillByFilteredViewToolStripButton.BackColor = System.Drawing.SystemColors.HotTrack;
-            this.fillByFilteredViewToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.fillByFilteredViewToolStripButton.BackColor = System.Drawing.Color.White;
             this.fillByFilteredViewToolStripButton.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.fillByFilteredViewToolStripButton.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.fillByFilteredViewToolStripButton.ForeColor = System.Drawing.Color.Green;
             this.fillByFilteredViewToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("fillByFilteredViewToolStripButton.Image")));
             this.fillByFilteredViewToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.fillByFilteredViewToolStripButton.Name = "fillByFilteredViewToolStripButton";
-            this.fillByFilteredViewToolStripButton.Size = new System.Drawing.Size(68, 25);
+            this.fillByFilteredViewToolStripButton.Size = new System.Drawing.Size(84, 25);
             this.fillByFilteredViewToolStripButton.Text = "Update";
             this.fillByFilteredViewToolStripButton.Click += new System.EventHandler(this.fillByFilteredViewToolStripButton_Click);
+            // 
+            // receiptsTableAdapter
+            // 
+            this.receiptsTableAdapter.ClearBeforeFill = true;
+            // 
+            // btnClose
+            // 
+            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClose.Location = new System.Drawing.Point(890, 505);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(73, 28);
+            this.btnClose.TabIndex = 6;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // FilterView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1006, 554);
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ClientSize = new System.Drawing.Size(1023, 545);
+            this.Controls.Add(this.btnClose);
             this.Controls.Add(this.fillByFilteredViewToolStrip);
             this.Controls.Add(this.dataGridView1);
-            this.Controls.Add(this.lblSumCost);
-            this.Controls.Add(this.lblSumGallons);
-            this.Controls.Add(this.lblTotalCost);
-            this.Controls.Add(this.lblTotalGallons);
+            this.Controls.Add(this.lblTotals);
+            this.Controls.Add(this.lblAverages);
+            this.Controls.Add(this.lblTotal);
+            this.Controls.Add(this.lblAverage);
             this.Controls.Add(this.rbLicensePlate);
             this.Controls.Add(this.rbVehicle);
             this.MinimumSize = new System.Drawing.Size(646, 571);
@@ -359,10 +386,10 @@
         #endregion
         private System.Windows.Forms.RadioButton rbVehicle;
         private System.Windows.Forms.RadioButton rbLicensePlate;
-        private System.Windows.Forms.Label lblTotalGallons;
-        private System.Windows.Forms.Label lblSumGallons;
-        private System.Windows.Forms.Label lblTotalCost;
-        private System.Windows.Forms.Label lblSumCost;
+        private System.Windows.Forms.Label lblAverage;
+        private System.Windows.Forms.Label lblAverages;
+        private System.Windows.Forms.Label lblTotal;
+        private System.Windows.Forms.Label lblTotals;
         private System.Windows.Forms.DataGridView dataGridView1;
         private gasreceiptsDataSet gasreceiptsDataSet;
         private System.Windows.Forms.BindingSource receiptsBindingSource;
@@ -374,6 +401,9 @@
         private System.Windows.Forms.ToolStripComboBox taxYearToolStripComboBox;
         private System.Windows.Forms.ToolStripComboBox vehicleToolStripComboBox;
         private System.Windows.Forms.ToolStripComboBox licensePlateToolStripComboBox;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton fillByFilteredViewToolStripButton;
+        private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.DataGridViewTextBoxColumn iDDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn purchaseDateDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn totalCostDataGridViewTextBoxColumn;
@@ -383,7 +413,5 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn licensePlateDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn receiptAttachedDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn linkToPdfDataGridViewTextBoxColumn;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton fillByFilteredViewToolStripButton;
     }
 }

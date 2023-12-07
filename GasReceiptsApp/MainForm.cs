@@ -59,5 +59,23 @@ namespace GasReceiptsApp
             var filterForm = new FilterView();
             filterForm.ShowDialog();
         }
+
+        private void btnUpdateDatabase_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Checking for new receipts...", "Import Receipts", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var processInfo = new ProcessStartInfo("powershell.exe", "-ExecutionPolicy Bypass -Command \"\\\\192.168.1.4\\NAS01\\Scripts\\ScheduledTasks\\Import-GasReceipts_v1.2.ps1\"");
+            processInfo.UseShellExecute = false;
+            processInfo.CreateNoWindow = true;
+
+            var process = Process.Start(processInfo);
+            process.WaitForExit();
+
+            var errorLevel = process.ExitCode;
+            process.Close();
+            process.Dispose();
+
+            MessageBox.Show($"Completed with Error Code {errorLevel}");
+            //return errorLevel;
+        }
     }
 }

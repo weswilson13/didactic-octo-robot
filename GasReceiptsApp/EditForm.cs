@@ -16,7 +16,7 @@ namespace GasReceiptsApp
 
         private void EditForm_Load(object sender, EventArgs e)
         {
-
+            //this.axAcroPDF1.src = (txtLinkToPdf.Text);
         }
         public void GetReceiptData()
         {
@@ -24,14 +24,15 @@ namespace GasReceiptsApp
             receipt = receipt.GetReceipt(selectedReceiptId);
 
             lblFormTitle.Text = $"Edit Receipt {selectedReceiptId}";
-            txtCost.Text = String.Format("{0:c}",receipt.TotalCost);
+            if (!String.IsNullOrEmpty(receipt.TotalCost.ToString()))
+                txtCost.Text = String.Format("{0:c}", receipt.TotalCost);
             txtGallons.Text = receipt.NumberGallons.ToString();
             txtLicensePlate.Text = receipt.LicensePlate;
             txtTaxYear.Text = receipt.TaxYear.ToString();
             cmbVehicle.Text = receipt.Vehicle.ToString();
             dtPurcahaseDate.Value = receipt.PurchaseDate;
             txtLinkToPdf.Text = receipt.LinkToPdf.ToString();
-            axAcroPDF1.LoadFile(txtLinkToPdf.Text);
+            axAcroPDF1.src = (txtLinkToPdf.Text);
         }
 
         public void UpdateReceiptData()
@@ -61,6 +62,11 @@ namespace GasReceiptsApp
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void axAcroPDF1_Enter(object sender, EventArgs e)
+        {
+
         }
     }
 }

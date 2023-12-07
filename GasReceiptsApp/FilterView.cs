@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace GasReceiptsApp
@@ -71,8 +72,10 @@ namespace GasReceiptsApp
                 var sums = sqlCmd.ExecuteReader();
                 while (sums.Read())
                 {
-                    this.lblSumCost.Text = String.Format("{0:c}",sums["SumCost"]);
-                    this.lblSumGallons.Text = String.Format("{0:0.000}", sums["SumGallons"]);
+                    this.lblTotals.Text = $"{String.Format("{0:0.000}", sums["SumGallons"])} Gal\r{String.Format("{0:c}", sums["SumCost"])}";
+                    this.lblTotals.Location = new Point(this.lblTotal.Location.X + this.lblTotal.Width /2 - this.lblTotals.Width / 2, this.lblTotals.Location.Y);
+                    this.lblAverages.Text = $"{String.Format("{0:0.000}", sums["AvgGallons"])} Gal\r{String.Format("{0:c}", sums["AvgCost"])}";
+                    this.lblAverages.Location = new Point(this.lblAverage.Location.X + this.lblAverage.Width /2 - this.lblAverages.Width / 2, this.lblAverages.Location.Y);
                 }
             }
         }
@@ -93,6 +96,19 @@ namespace GasReceiptsApp
                 licensePlateToolStripComboBox.Enabled = false;
                 licensePlateToolStripComboBox.Text = null;
             }
+        }
+
+        private void dataGridView1_DoubleClick(object sender, EventArgs e)
+        {
+            int receiptId = (int)dataGridView1.CurrentRow.Cells[0].Value;
+            var editForm = new EditForm(receiptId);
+
+            editForm.ShowDialog();
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

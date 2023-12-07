@@ -35,8 +35,10 @@ namespace GasReceiptsApp
             {
                 while (sqlReader.Read()) { 
                     receipt.ID = Convert.ToInt16(sqlReader["ID"]);
-                    receipt.TotalCost = float.Parse(sqlReader["TotalCost"].ToString());
-                    receipt.NumberGallons = float.Parse(sqlReader["NumberGallons"].ToString());
+                    if (!String.IsNullOrEmpty(sqlReader["TotalCost"].ToString()))
+                        receipt.TotalCost = Convert.ToSingle(sqlReader["TotalCost"].ToString());
+                    if (!String.IsNullOrEmpty(sqlReader["NumberGallons"].ToString()))
+                        receipt.NumberGallons = Convert.ToSingle(sqlReader["NumberGallons"].ToString());
                     receipt.LicensePlate = sqlReader["LicensePlate"].ToString();
                     receipt.TaxYear = Convert.ToUInt16(sqlReader["TaxYear"]);
                     receipt.Vehicle = sqlReader["Vehicle"].ToString();
