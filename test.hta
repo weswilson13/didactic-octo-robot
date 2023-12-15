@@ -7,11 +7,50 @@
          WINDOWSTATE="maximize"
 </head>
 <script language="VBScript">
+    Sub Window_OnLoad
+        LoadStatuses
+    End Sub
+    
+    Sub LoadStatuses
+        Dim sqlServer, database
+        Dim cn, sql, rs, pth, txt
+
+        sqlServer = "SQ02\MYSQLSERVER,9999"
+        database = "Computers"
+        sql = "Select ID, Status From tblStatuses"
+        
+        Set cn = CreateObject("ADODB.Connection")
+        cn.ConnectionString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=" & database & ";Data Source=" & sqlServer & ";" 
+        cn.Open
+
+        Set rs = cn.Execute(sql)
+
+        while (not rs.eof)
+            Set objOption = Document.CreateElement("OPTION")
+            objOption.Text = rs.Fields(1)
+            objOption.Value = rs.Fields(0)
+            Statuses.Add(objOption)
+            rs.movenext
+        wend
+
+        cn.Close
+        Set cn = nothing
+
+    End Sub
+
     Sub TestSub
-        Set objShell = CreateObject("WScript.Shell")
-        objShell.Run("pwsh.exe -ExecutionPolicy Bypass -NoExit -Command \\raspberrypi4-1\nas01\Scripts\didactic-octo-robot\Update-ExcelFromSql.ps1)
+        if Statuses.Value = 0 then 
+            msg = MsgBox("Computer status not set", 48, "Set Computer Status")
+            Exit Sub
+        End if
+
+        Alert(Statuses.Value) 
     End Sub
 </script>
 <body>
-    <input type="button" value="Run Script" name="run_button"  onClick="TestSub"><p> 
+    <input type="button" value="Run Script" name="run_button"  onClick="TestSub"><p>
+    <label for="Statuses">Set Computer Status:</label>
+    <select name="Statuses" id="Statuses">
+        <option value="0"></option>
+    </select>    
 </body>
