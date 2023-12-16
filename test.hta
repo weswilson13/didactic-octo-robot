@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html>
 <head>
     <title>HTA Test</title>
     <HTA:APPLICATION 
@@ -7,16 +9,20 @@
          WINDOWSTATE="maximize"
 </head>
 <script language="VBScript">
+    Option Explicit
+    Dim sqlServer, database
+
     Sub Window_OnLoad
+        sqlServer = "SQ02\MYSQLSERVER,9999"
+        database = "Computers"
+
         LoadStatuses
     End Sub
     
     Sub LoadStatuses
-        Dim sqlServer, database
         Dim cn, sql, rs, pth, txt
-
-        sqlServer = "SQ02\MYSQLSERVER,9999"
-        database = "Computers"
+        Dim objOption
+        
         sql = "Select ID, Status From tblStatuses"
         
         Set cn = CreateObject("ADODB.Connection")
@@ -27,8 +33,8 @@
 
         while (not rs.eof)
             Set objOption = Document.CreateElement("OPTION")
-            objOption.Text = rs.Fields(1)
-            objOption.Value = rs.Fields(0)
+            objOption.Text = rs.Fields("Status")
+            objOption.Value = rs.Fields("ID")
             Statuses.Add(objOption)
             rs.movenext
         wend
@@ -54,3 +60,4 @@
         <option value="0"></option>
     </select>    
 </body>
+</html>
