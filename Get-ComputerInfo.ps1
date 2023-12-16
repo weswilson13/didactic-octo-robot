@@ -1,6 +1,8 @@
-Import-Module -Name PsIni -
+Import-Module -Name .\Modules\PsIni -Scope Local
 
-$serverInstance = "SQ02,9999"
+New-PSDrive -Name T -Root \\raspberrypi4-1\NAS01 -PSProvider FileSystem -ErrorAction SilentlyContinue  | Out-Null
+
+$serverInstance = (Get-IniContent -FilePath T:\Scripts\scriptconfig.ini).Values["strSqlServer"]
 $database = "Computers"
 $table = "tblComputers"
 $schema = "dbo"
