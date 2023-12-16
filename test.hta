@@ -8,44 +8,22 @@
          SINGLEINSTANCE="yes"
          WINDOWSTATE="maximize"
 </head>
-<script language="VBScript" src=".\VBScript\DataInteractions.vbs"></script>
+<script language="VBScript" src=".\DataInteractions.vbs"></script>
 <script language="VBScript">
     Option Explicit
-    Dim sqlServer, database
+    Dim sqlServer, database, connString
 
     Sub Window_OnLoad
         sqlServer = "SQ02\MYSQLSERVER,9999"
         database = "Computers"
+        connString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=" & database & ";Data Source=" & sqlServer & ";"
 
         LoadStatuses
     End Sub
-    
-    // Sub LoadStatuses
-    //     Dim cn, sql, rs, pth, txt
-    //     Dim objOption
-
-    //     sql = "Select ID, Status From tblStatuses"
-        
-    //     Set cn = CreateObject("ADODB.Connection")
-    //     cn.ConnectionString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=" & database & ";Data Source=" & sqlServer & ";" 
-    //     cn.Open
-
-    //     Set rs = cn.Execute(sql)
-
-    //     while (not rs.eof)
-    //         Set objOption = Document.CreateElement("OPTION")
-    //         objOption.Text = rs.Fields("Status")
-    //         objOption.Value = rs.Fields("ID")
-    //         Statuses.Add(objOption)
-    //         rs.movenext
-    //     wend
-
-    //     cn.Close
-    //     Set cn = nothing
-
-    // End Sub
 
     Sub TestSub
+        Dim msg
+
         if Statuses.Value = 0 then 
             msg = MsgBox("Computer status not set", 48, "Set Computer Status")
             Exit Sub
