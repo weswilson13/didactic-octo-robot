@@ -31,15 +31,17 @@ Private Sub MapNetworkDrive(driveLetter, remoteShare)
 End Sub
 
 Sub ImportComputer()
-    dim objShell, fso, parentFolder, absolutePath
+    dim objShell, fso, parentFolder, absolutePath, input
     
+    input = InputBox("Enter the remote host: ")
+
     Set fso = CreateObject("Scripting.FileSystemObject")
     parentFolder = location.host + fso.GetParentFolderName(location.pathname)
     if (location.host <>"") then _
         parentFolder = "\\" + parentFolder
 
     Set objShell = CreateObject("Wscript.Shell")
-    objShell.Run "powershell.exe -executionpolicy bypass -file " & Join(Array(parentFolder,"Get-ComputerInfo.ps1 " & chr(34) & parentFolder & chr(34)),"\"),1,True
+    objShell.Run "powershell.exe -executionpolicy bypass -file " & Join(Array(parentFolder,"Get-ComputerInfo.ps1 " & chr(34) & parentFolder & chr(34) & " " & input),"\"),1,True
 
 
 End Sub ' Import

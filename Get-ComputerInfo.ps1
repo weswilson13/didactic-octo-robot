@@ -1,6 +1,9 @@
 param(
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false, Position=0)]
     [String]$WorkingDirectory = $PSScriptRoot
+    ,
+    [Parameter(Mandatory=$false, Position=1)]
+    [String]$ComputerName
 )
 
 Import-Module -Name $WorkingDirectory\Modules\PsIni,$WorkingDirectory\Modules\SqlServer -Scope Local -Force
@@ -12,20 +15,28 @@ $database = "Computers"
 $table = "tblComputers"
 $schema = "dbo"
 
-$computerInfo = Get-ComputerInfo
+if ($ComputerName) {
+    $computerInfo = Invoke-Command -ComputerName $ComputerName -ScriptBlock { Get-ComputerInfo }
+    $cpu = Get-WmiObject -Class Win32_Processor -ComputerName $computerName
+}
+Else {
+    $computerInfo = Get-ComputerInfo
+    $cpu = Get-WmiObject -Class Win32_Processor
+}
 
 $data = [PSCustomObject]@{
     SerialNumber = $computerInfo.BiosSeralNumber
-    OS = $computerInfo.WindowsProductName
+    OS = $computerInfo.OsName
     ClientOrServer = $computerInfo.WindowsInstallationType
     BIOSVersion = $computerInfo.BiosBIOSVersion | Out-String
     BIOSManufacturer = $computerInfo.BiosManufacturer
-    HostName = $env:COMPUTERNAME
+    HostName = $computerInfo.CsName
     Domain = $computerInfo.CsDomain
     Manufacturer = $computerInfo.CsManufacturer
     Model = $computerInfo.CsModel
     TotalMemory = [Math]::Round($computerInfo.OsTotalVisibleMemorySize/1Mb,2)
     OSArchitecture = $computerInfo.OsArchitecture
+    Processor = $cpu.Name | Out-String
 } 
 
 $data | Out-String | Write-Host
@@ -47,7 +58,8 @@ $sql = [String]::Format("MERGE tblComputers T
             ,'{7}' AS Manufacturer
             ,'{8}' AS Model
             ,{9} AS TotalMemory
-            ,'{10}' AS OSArchitecture) S
+            ,'{10}' AS OSArchitecture
+            ,'{11}' AS Processor ) S
         ON T.SerialNumber = S.SerialNumber
         WHEN MATCHED
             THEN UPDATE SET
@@ -61,10 +73,11 @@ $sql = [String]::Format("MERGE tblComputers T
                 ,T.Model = '{8}'
                 ,T.TotalMemory = {9}
                 ,T.OSArchitecture = '{10}'
+                ,T.Processor = '{11}'
         WHEN NOT MATCHED BY TARGET
             THEN INSERT
-                (SerialNumber, OS, ClientOrServer, BIOSVersion, BIOSManufacturer, HostName, Domain, Manufacturer, Model, TotalMemory, OSArchitecture)
-                VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}',{9},'{10}');",
+                (SerialNumber, OS, ClientOrServer, BIOSVersion, BIOSManufacturer, HostName, Domain, Manufacturer, Model, TotalMemory, OSArchitecture, Processor)
+                VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}',{9},'{10}','{11}');",
                 $data.SerialNumber,
                 $data.OS,
                 $data.ClientOrServer,
@@ -75,7 +88,8 @@ $sql = [String]::Format("MERGE tblComputers T
                 $data.Manufacturer,
                 $data.Model,
                 $data.TotalMemory,
-                $data.OSArchitecture)
+                $data.OSArchitecture,
+                $data.Processor)
     
     Invoke-Sqlcmd -ServerInstance $serverInstance -Database $database -Query $sql
     Pause
