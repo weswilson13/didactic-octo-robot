@@ -22,3 +22,24 @@ Sub LoadStatuses
     Set cn = nothing
 
 End Sub
+
+Private Sub MapNetworkDrive(driveLetter, remoteShare)
+    dim objNetwork
+
+    Set objNetwork = CreateObject("WScript.Network")
+    objNetwork.MapNetworkDrive driveLetter & ":", remoteShare, False
+End Sub
+
+Sub ImportComputer()
+    dim objShell, fso, parentFolder, absolutePath
+    
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    parentFolder = location.host + fso.GetParentFolderName(location.pathname)
+    if (location.host <>"") then _
+        parentFolder = "\\" + parentFolder
+
+    Set objShell = CreateObject("Wscript.Shell")
+    objShell.Run "powershell.exe -executionpolicy bypass -file " & Join(Array(parentFolder,"Get-ComputerInfo.ps1 " & chr(34) & parentFolder & chr(34)),"\"),1,True
+
+
+End Sub ' Import

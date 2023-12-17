@@ -1,4 +1,9 @@
-Import-Module -Name .\Modules\PsIni -Scope Local
+param(
+    [Parameter(Mandatory=$false)]
+    [String]$WorkingDirectory = $PSScriptRoot
+)
+
+Import-Module -Name $WorkingDirectory\Modules\PsIni,$WorkingDirectory\Modules\SqlServer -Scope Local -Force
 
 New-PSDrive -Name T -Root \\raspberrypi4-1\NAS01 -PSProvider FileSystem -ErrorAction SilentlyContinue  | Out-Null
 
@@ -9,19 +14,21 @@ $schema = "dbo"
 
 $computerInfo = Get-ComputerInfo
 
-$data= [PSCustomObject]@{
-    SerialNumber = $computerInfo.BiosSerialNumber.ToString()
-    OS = $computerInfo.WindowsProductName.ToString()
-    ClientOrServer = $computerInfo.WindowsInstallationType.ToString()
+$data = [PSCustomObject]@{
+    SerialNumber = $computerInfo.BiosSeralNumber
+    OS = $computerInfo.WindowsProductName
+    ClientOrServer = $computerInfo.WindowsInstallationType
     BIOSVersion = $computerInfo.BiosBIOSVersion | Out-String
-    BIOSManufacturer = $computerInfo.BiosManufacturer.ToString()
+    BIOSManufacturer = $computerInfo.BiosManufacturer
     HostName = $env:COMPUTERNAME
-    Domain = $computerInfo.CsDomain.ToString()
-    Manufacturer = $computerInfo.CsManufacturer.ToString()
-    Model = $computerInfo.CsModel.ToString()
+    Domain = $computerInfo.CsDomain
+    Manufacturer = $computerInfo.CsManufacturer
+    Model = $computerInfo.CsModel
     TotalMemory = [Math]::Round($computerInfo.OsTotalVisibleMemorySize/1Mb,2)
     OSArchitecture = $computerInfo.OsArchitecture
 } 
+
+$data | Out-String | Write-Host
 
 if ([String]::IsNullOrWhiteSpace((Invoke-Sqlcmd -ServerInstance $serverInstance -Database $database -Query "SELECT OBJECT_ID(N'$table', N'U') AS Value").Value)) {
     Write-SqlTableData -ServerInstance $serverInstance -DatabaseName $database -SchemaName $schema -TableName $table -InputData $data -Force
@@ -71,6 +78,7 @@ $sql = [String]::Format("MERGE tblComputers T
                 $data.OSArchitecture)
     
     Invoke-Sqlcmd -ServerInstance $serverInstance -Database $database -Query $sql
+    Pause
 
     
     

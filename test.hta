@@ -17,7 +17,7 @@
         sqlServer = "SQ02\MYSQLSERVER,9999"
         database = "Computers"
         connString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=" & database & ";Data Source=" & sqlServer & ";"
-
+        
         LoadStatuses
     End Sub
 
@@ -33,6 +33,7 @@
     End Sub
 </script>
 <body>
+    <input type="button" value="Import This Computer" name="import_button" onClick="ImportComputer()"><p>
     <input type="button" value="Run Script" name="run_button"  onClick="TestSub"><p>
     <label for="Statuses">Set Computer Status:</label>
     <select name="Statuses" id="Statuses">
