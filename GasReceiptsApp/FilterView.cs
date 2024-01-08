@@ -110,5 +110,10 @@ namespace GasReceiptsApp
         {
             this.Close();
         }
+
+        private void taxYearToolStripComboBox_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

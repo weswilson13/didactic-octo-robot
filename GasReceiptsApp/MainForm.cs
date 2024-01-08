@@ -63,7 +63,7 @@ namespace GasReceiptsApp
         private void btnUpdateDatabase_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Checking for new receipts...", "Import Receipts", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            var processInfo = new ProcessStartInfo("powershell.exe", "-ExecutionPolicy Bypass -Command \"\\\\192.168.1.4\\NAS01\\Scripts\\ScheduledTasks\\Import-GasReceipts_v1.2.ps1\"");
+            var processInfo = new ProcessStartInfo("powershell.exe", "-ExecutionPolicy Bypass -Command \"\\\\raspberrypi4-1\\NAS01\\Scripts\\ScheduledTasks\\Import-GasReceipts_v1.2.ps1\"");
             processInfo.UseShellExecute = false;
             processInfo.CreateNoWindow = true;
 
