@@ -13,20 +13,21 @@ try{
     $findingDetails = Get-V213950 @attr | Select-Object -ExpandProperty FindingDetails
     # $findingDetails = $findingDetails -split '\r?\n'
 
-    $owners = New-Object -TypeName psobject
+    $owners = @()
     (Select-String -InputObject $findingDetails -Pattern 'owner: (?<owner>.+)' -AllMatches).Matches | ForEach-Object {
-        Add-Member -InputObject $owners -NotePropertyMembers @{User=$_.Groups['owner'].Value;Role='Owner'}
+       $owners += [PSCustomObject]@{Owner=$_.Groups['owner'].Value}
     }
-    $owners = $owners | Select-Object -Unique
-    $owners
+    $owners = $owners | Select-Object * -Unique
+    $owners | Out-String | Write-Host
 
-    $modifiers = New-Object -TypeName psobject
+    $modifiers = @()
     (Select-String -InputObject $findingDetails -Pattern 'modifier: (?<modifier>.+)' -AllMatches).Matches | ForEach-Object {
+        #$_
         $user, $permission = $_.Groups['modifier'].Value.Split(' (')
-        Add-Member -InputObject $modifiers -NotePropertyMembers @{User=$user; Role='Modifier';Permission=$permission.Trim(')')} -Force
+        $modifiers +=[PSCustomObject]@{Modifier=$user;Permission=$permission.Trim(')')}
     }
-    $modifiers = $modifiers | Select-Object -Unique
-    $modifiers
+    $modifiers = $modifiers | Select-Object * -Unique
+    $modifiers | Out-String | Write-Host
 }
 Catch {
     $_.Exception
