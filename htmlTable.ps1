@@ -1,8 +1,8 @@
 $results = invoke-sqlcmd -ServerInstance "sq02,9999" -database Computers -query "Select * from tblComputers" | 
 Select-Object SerialNumber,	OS,	ClientOrServer,	BIOSVersion,	BIOSManufacturer,	HostName,	Domain,	Manufacturer,	Model,	TotalMemory,	OSArchitecture 
 
-$html = $results | ConvertTo-Html | Out-String
-$html = $html -replace '</head>', '</head>
+$html = $results | ConvertTo-Html -Fragment | Out-String
+$html = $html -replace '<table>', '
 <style>
 table, th, td {
   border: 1px solid black;
@@ -14,7 +14,8 @@ tr:hover {}
 tr:nth-child(even) {
   background-color: #D6EEEE;
 }
-</style>'
+</style>
+<table>'
 $html = $html.replace('<table>', '<table style=width:100%>')
 
 $creds = Import-Clixml -Path "\\raspberrypi4-1\nas01\scripts\Credentials\homelab@mydomain.local_cred.xml"
