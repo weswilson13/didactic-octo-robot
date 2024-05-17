@@ -2,7 +2,11 @@
     [Parameter(Mandatory=$true)]
     [string] $gMSAname,
     [Parameter(Mandatory=$true)]
-    [string] $Taskname
+    [string] $Taskname,
+    [Parameter(Mandatory=$false)]
+    [string] $Action,
+    [Parameter(Mandatory=$false)]
+    [string] $ActionArgument
 )
 
 Function Set-ScheduledTaskGmsaAccount () {
@@ -39,6 +43,10 @@ Set-ScheduledTaskGmsaAccount -gMSAname 'gmsa-server01' -Taskname 'My scheduled t
         [Parameter(Mandatory=$true)]
         [string] $Taskname,
         [Parameter(Mandatory=$false)]
+        [string] $Action,
+        [Parameter(Mandatory=$false)]
+        [string] $ActionArgument,
+        [Parameter(Mandatory=$false)]
         [ValidateSet('Highest','Limited')]
         [string] $RunLevel='Limited'
         
@@ -48,10 +56,8 @@ Set-ScheduledTaskGmsaAccount -gMSAname 'gmsa-server01' -Taskname 'My scheduled t
     Write-Host $gMSAname
     # Test gMSA account and get scheduled task
     Try {
-
-    Test-ADServiceAccount -Identity $gMSAname -ErrorAction Stop
-    $Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop
-
+        Test-ADServiceAccount -Identity $gMSAname -ErrorAction Stop
+        $Task = Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop
     }
 
     Catch {Write-Warning $($_.Exception.Message);Break}
@@ -60,12 +66,23 @@ Set-ScheduledTaskGmsaAccount -gMSAname 'gmsa-server01' -Taskname 'My scheduled t
     $domain = $env:USERDNSDOMAIN -replace '\..+$'
     $Principal = New-ScheduledTaskPrincipal -UserID "$domain\$gMSAname" -LogonType Password -RunLevel $RunLevel
     Write-Host $Principal
-    Try {Set-ScheduledTask -TaskName $Task.TaskName -TaskPath $Task.TaskPath -Principal $Principal -ErrorAction Stop}
+
+    if ($Action) {
+        $params = @{
+            Execute=$Action
+            Argument=$ActionArgument
+        }
+        [ciminstance]$Action = New-ScheduledTaskAction @params
+        $Action.gettype()
+    }
+
+    Try {Set-ScheduledTask -TaskName $Task.TaskName -TaskPath $Task.TaskPath -Principal $Principal -Action $Action -ErrorAction Stop}
     Catch {Write-Warning $($error[0] | Out-String);Break}
 }
 
 
-Set-ScheduledTaskGmsaAccount -gMSAname $gMSAname -Taskname $Taskname
+Set-ScheduledTaskGmsaAccount @PSBoundParameters
+
 # SIG # Begin signature block
 # MIIbvwYJKoZIhvcNAQcCoIIbsDCCG6wCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
