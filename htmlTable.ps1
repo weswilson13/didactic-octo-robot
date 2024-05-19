@@ -18,7 +18,7 @@ tr:nth-child(even) {
 <table>'
 $html = $html.replace('<table>', '<table style=width:100%>')
 
-$creds = Import-Clixml -Path "\\raspberrypi4-1\nas01\scripts\Credentials\homelab@mydomain.local_cred.xml"
+$creds = Import-Clixml -Path "\\Optimusprime\Z\scripts\Credentials\homelab@mydomain.local_cred.xml"
 $credentials = New-Object -TypeName pscredential($creds.username, $creds.Password)
 $messageAttr = @{
     SmtpServer = "awm17x.mydomain.local"

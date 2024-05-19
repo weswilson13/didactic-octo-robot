@@ -8,20 +8,18 @@ param(
 
 Import-Module -Name $WorkingDirectory\Modules\PsIni,$WorkingDirectory\Modules\SqlServer -Scope Local -Force
 
-New-PSDrive -Name T -Root \\raspberrypi4-1\NAS01 -PSProvider FileSystem -ErrorAction SilentlyContinue  | Out-Null
-
-$serverInstance = (Get-IniContent -FilePath T:\Scripts\scriptconfig.ini).Values["strSqlServer"]
+$serverInstance = (Get-IniContent -FilePath \\Optimusprime\Z\Scripts\scriptconfig.ini).Values["strSqlServer"]
 $database = "Computers"
 $table = "tblComputers"
 $schema = "dbo"
 
 if ($ComputerName) {
     $computerInfo = Invoke-Command -ComputerName $ComputerName -ScriptBlock { Get-ComputerInfo }
-    $cpu = Get-WmiObject -Class Win32_Processor -ComputerName $computerName
+    $cpu = Get-CimInstance -Class Win32_Processor -ComputerName $computerName
 }
 Else {
     $computerInfo = Get-ComputerInfo
-    $cpu = Get-WmiObject -Class Win32_Processor
+    $cpu = Get-CimInstance -Class Win32_Processor
 }
 
 $data = [PSCustomObject]@{
