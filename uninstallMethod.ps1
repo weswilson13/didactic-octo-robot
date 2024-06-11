@@ -17,34 +17,33 @@ function Get-InstalledSoftware {
 
     return $Apps
 }
+function Check-Module {
+    param (
+        [string]$ComputerName
+    )
+    if ($ComputerName) { Enter-PSSession $ComputerName }
+    $Z="\\OptimusPrime\Z\WindowsPowershell"
+    if (!(Get-Module -Name Invoke-CommandAs)) { Import-Module -Name $Z\Modules\Invoke-CommandAs }
+    if ($ComputerName) { Exit-PSSession $ComputerName }
+}
 
-$scriptblock = { 
-    param(
-        [string]$ComputerName,
-        [string]$Software
-    ) 
-    
-    Get-InstalledSoftware -ComputerName $ComputerName -Software $software | Foreach-Object {
+$scriptblock = {   
+    $this | out-string | Write-Host  
+    Get-InstalledSoftware -ComputerName $this.ComputerName -Software $this.BaseProduct | Foreach-Object {
         if ((Read-Host "Uninstall $($PSItem.DisplayName)? (y/n)") -eq 'y') {
             switch -Regex ($PSItem.UninstallString) {
                 'msiexec' { 
-                    # $guid = ($PSItem | Select-String -Pattern '{.*}').Matches.Value 
-                    # $arg = "/X `"$guid`" /qn /norestart /v*l `"c:\tools\log.log`""
-                    $arg = "$PSItem /qn /L*V `"c:\tools\log.log`""
-                    write-host $arg
-                    $proc = Start-Process -Filepath \\OptimusPrime\Z\Microsoft\SysInternals\PsExec.exe -ArgumentList "\\$ComputerName -s", $arg -PassThru -Wait
-                    $proc.WaitForExit()  
+                    $arg = "$($PSItem -replace 'msiexec.exe /(I|X) *{', '/X {') /qn /L*V `"c:\tools\log.log`""
+                    Write-Host $arg
+                    Invoke-CommandAs -AsSystem -ScriptBlock { Start-Process msiexec -ArgumentList $Args[0] -Wait } -ArgumentList $arg -ComputerName $this.ComputerName 
                     break
                 }
                 'C:\\' {
-                    # $exe = ($PSItem | Select-String -Pattern '".*"').Matches.Value.trim()
-                    # write-host $exe
-                    $arg = $PSItem.trim()
-                    write-host $arg
-                    # $arg += " --silent"
-                    $arg | Out-String | Write-Host
-                    $proc = Start-Process -Filepath \\OptimusPrime\Z\Microsoft\SysInternals\PsExec.exe -ArgumentList "\\$ComputerName -s", $arg -PassThru -Wait
-                    $proc.WaitForExit()
+                    $exe = ($PSItem | Select-String -Pattern '".*"').Matches.Value.trim()
+                    write-host $exe
+                    $arg = "$($PSItem.Replace($exe,'').trim()) --force-uninstall"
+                    Write-Host $arg 
+                    Invoke-CommandAs -AsSystem -ScriptBlock { Start-Process $Args[0] -ArgumentList $Args[1] -Wait } -ArgumentList $exe,$arg -ComputerName $this.ComputerName
                     break
                 }
                 {[string]::IsNullOrWhiteSpace($PSItem)} {Write-Host "No Uninstall String available."; break}
@@ -53,5 +52,7 @@ $scriptblock = {
     }
 }
 
-[psobject]$test=@{Name='Test'}
+[psobject]$test=@{
+    ComputerName='LindsPC'
+    BaseProduct='Microsoft Edge'}
 $test | add-member -MemberType ScriptMethod -Name Uninstall -Value $scriptblock -PassThru
