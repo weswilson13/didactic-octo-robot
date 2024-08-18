@@ -20,33 +20,52 @@ $BoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Re
 $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Bold)
 
 #region create the controls
+# Labels
 $ADUserLabel = New-Object System.Windows.Forms.Label
 $ADSearchTypeLabel = New-Object System.Windows.Forms.Label
 
+# Text boxes
 $ADPrincipalTextBox = New-Object System.Windows.Forms.TextBox
 
+# RichTextBoxes
 $DisplayInfoBox = New-Object System.Windows.Forms.RichTextBox
 
+# Buttons
 $ADLookupButton = New-Object System.Windows.Forms.Button
+$ADGetGroupMembershipButton = New-Object System.Windows.Forms.Button
+$AddGroupButton = New-Object System.Windows.Forms.Button
+$RemoveGroupButton = New-Object System.Windows.Forms.Button
 
 $VulnIDBox = New-Object System.Windows.Forms.ListView
 
-$SupportedSTIGSBox = New-Object System.Windows.Forms.ListBox
+# ListBoxes
+$ADGroupsBox = New-Object System.Windows.Forms.ListBox
+$ADGroupMembershipBox = New-Object System.Windows.Forms.ListBox
 
+# ComboBoxes
 $AFKeys = New-Object System.Windows.Forms.ComboBox
 
+# RadioButtons
 $ADSearchUsersRadioButton = New-Object System.Windows.Forms.RadioButton
 $ADSearchComputersRadioButton = New-Object System.Windows.Forms.RadioButton
+
+# Checkboxes
 #endregion
 
 #region event handlers
 $handler_ADLookupButton_Click = 
   {
-    Write-Host $objPrincipal
+    # reset the form
+    $ADGetGroupMembershipButton.Visible = $false
+    $ADGroupsBox.Visible = $false
+    $ADGroupMembershipBox.Visible = $false
+    $DisplayInfoBox.ResetText()
+    $DisplayInfoBox.Visible = $true
+
     try {
         $principal = $ADPrincipalTextBox.Text
         if ($principal) { 
-            $objPrincipal = switch ($true) {
+            $Script:objPrincipal = switch ($true) {
                 $ADSearchUsersRadioButton.Checked { Get-ADUser -Identity $principal -Properties *; break } 
                 $ADSearchComputersRadioButton.Checked { Get-ADComputer -Identity $principal -Properties *; break }
             }
@@ -57,6 +76,8 @@ $handler_ADLookupButton_Click =
                 [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
             }
             $DisplayInfoBox.Text = $objPrincipal | Out-String
+
+            $ADGetGroupMembershipButton.Visible=$true
         }
     }
     catch {
@@ -78,6 +99,22 @@ $handler_ADSearchUsersRadioButton_Click =
     Write-Host "Users Radio Button Pressed"
     $ADUserLabel.Text = "Enter a username"
     $ADLookupButton.Text = "Lookup Users"
+}
+
+$handler_ADGetGroupMembershipButton_Click =
+{
+    Write-Host "Get Group Memberships"
+    if ($objPrincipal.MemberOf) {
+        $DisplayInfoBox.Visible=$false
+        $ADGroupsBox.Visible = $true
+        $ADGroupMembershipBox.Visible = $true
+        Get-ADGroup -Filter 'GroupScope -ne "DomainLocal"' | ForEach-Object {
+            $ADGroupsBox.Items.Add($PSItem.Name)
+        }
+        $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
+        # [System.Windows.MessageBox]::Show( ($objPrincipal.MemberOf | Out-String) )
+    }
+    
 }
 
 $handler_formclose =
@@ -199,7 +236,7 @@ $ADSearchUsersRadioButton.add_Click($handler_ADSearchUsersRadioButton_Click)
 $form.Controls.Add($ADSearchUsersRadioButton)
 #endregion
 
-#region computer search checkbox
+#region computer search radiobutton
 $ADSearchComputersRadioButton.Name = "ADUserSearchComputersRadioButton"
 $ADSearchComputersRadioButton.Text = "Computers"
 $ADSearchComputersRadioButton.Font = $BoxFont
@@ -213,6 +250,49 @@ $ADSearchComputersRadioButton.add_Click($handler_ADSearchComputersRadioButton_Cl
 $form.Controls.Add($ADSearchComputersRadioButton)
 #endregion
 
+#region Enumerate group memberships Button
+$ADGetGroupMembershipButton.Name = "ADGetGroupMembershipButton"
+$System_Drawing_Size = New-Object System.Drawing.Size
+$ADGetGroupMembershipButton.AutoSize = $true
+$ADGetGroupMembershipButton.UseVisualStyleBackColor = $True
+$ADGetGroupMembershipButton.Text = "Enumerate Group Membership"
+$ADGetGroupMembershipButton.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADSearchUsersRadioButton.Right + 30
+$System_Drawing_Point.Y = $ADSearchUsersRadioButton.Top
+$ADGetGroupMembershipButton.Location = $System_Drawing_Point
+$ADGetGroupMembershipButton.add_Click($handler_ADGetGroupMembershipButton_Click)
+$form.Controls.Add($ADGetGroupMembershipButton)
+#endregion
+
+#region AD Groups List box
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADLookupButton.Location.X
+$System_Drawing_Point.Y = $ADLookupButton.Bottom + 20
+$ADGroupsBox.Location = $System_Drawing_Point
+$System_Drawing_Size = New-Object System.Drawing.Size
+$System_Drawing_Size.Width = 200
+$System_Drawing_Size.Height = $form.ClientSize.Height - $ADLookupButton.Bottom - 35
+$ADGroupsBox.Size = $System_Drawing_Size
+$ADGroupsBox.Name = "ADGroupsBox"
+$ADGroupsBox.Font = $BoxFont
+$form.Controls.Add($ADGroupsBox)
+#endregion
+
+#region AD Group Membership List box
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADGroupsBox.Right + 20
+$System_Drawing_Point.Y = $ADLookupButton.Bottom + 20
+$ADGroupMembershipBox.Location = $System_Drawing_Point
+$System_Drawing_Size = New-Object System.Drawing.Size
+$System_Drawing_Size.Width = 200
+$System_Drawing_Size.Height = $form.ClientSize.Height - $ADLookupButton.Bottom - 35
+$ADGroupMembershipBox.Size = $System_Drawing_Size
+$ADGroupMembershipBox.Name = "ADGroupMembershipBox"
+$ADGroupMembershipBox.Font = $BoxFont
+$form.Controls.Add($ADGroupMembershipBox)
+#endregion
+
 $form.ResumeLayout()
 
 # set control visibility on form load
@@ -220,6 +300,7 @@ $ADUserLabel.Visible = $true
 $ADPrincipalTextBox.Visible = $true
 $ADLookupButton.Visible = $true
 $DisplayInfoBox.Visible = $true
+$ADGetGroupMembershipButton.Visible=$false
 
 #Init the OnLoad event to correct the initial state of the form
 $InitialFormWindowState = $form.WindowState
