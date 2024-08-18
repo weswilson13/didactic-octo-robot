@@ -23,7 +23,7 @@ $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]
 $ADUserLabel = New-Object System.Windows.Forms.Label
 $ADSearchTypeLabel = New-Object System.Windows.Forms.Label
 
-$ADUserTextBox = New-Object System.Windows.Forms.TextBox
+$ADPrincipalTextBox = New-Object System.Windows.Forms.TextBox
 
 $DisplayInfoBox = New-Object System.Windows.Forms.RichTextBox
 
@@ -35,27 +35,51 @@ $SupportedSTIGSBox = New-Object System.Windows.Forms.ListBox
 
 $AFKeys = New-Object System.Windows.Forms.ComboBox
 
-$ADSearchUsersCheckBox = New-Object System.Windows.Forms.CheckBox
-$ADSearchComputersCheckBox = New-Object System.Windows.Forms.CheckBox
+$ADSearchUsersRadioButton = New-Object System.Windows.Forms.RadioButton
+$ADSearchComputersRadioButton = New-Object System.Windows.Forms.RadioButton
 #endregion
 
 #region event handlers
 $handler_ADLookupButton_Click = 
   {
+    Write-Host $objPrincipal
     try {
-        $user = $ADUserTextBox.Text
-        if ($user) { 
-            $objUser = Get-ADUser -Identity $user -Properties * #| 
-                    #Select-Object SamAccountName,DisplayName,DistinguishedName,UserPrincipalName,LastLogonDate
-            $DisplayInfoBox.Text = $objUser | Out-String
-            #[System.Windows.MessageBox]::Show($($objUser | Out-String))
+        $principal = $ADPrincipalTextBox.Text
+        if ($principal) { 
+            $objPrincipal = switch ($true) {
+                $ADSearchUsersRadioButton.Checked { Get-ADUser -Identity $principal -Properties *; break } 
+                $ADSearchComputersRadioButton.Checked { Get-ADComputer -Identity $principal -Properties *; break }
+            }
+
+            if ([string]::IsNullOrWhiteSpace($objPrincipal)) {
+                Write-Host "ERROR"
+                [System.Windows.MessageBox]::Show("Unable to find $principal", "Active Directory Search Failed",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            }
+            $DisplayInfoBox.Text = $objPrincipal | Out-String
         }
     }
     catch {
-        $error[0]
+        $error[0] | Out-String | Write-Error
+        [System.Windows.MessageBox]::Show("Unable to find $principal", "Active Directory Search Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     } 
   }
-  
+
+$handler_ADSearchComputersRadioButton_Click = 
+{   
+    Write-Host "Computers Radio Button Pressed"
+    $ADUserLabel.Text = "Enter a computer name"
+    $ADLookupButton.Text = "Lookup Computers"
+}
+
+$handler_ADSearchUsersRadioButton_Click = 
+{
+    Write-Host "Users Radio Button Pressed"
+    $ADUserLabel.Text = "Enter a username"
+    $ADLookupButton.Text = "Lookup Users"
+}
+
 $handler_formclose =
   {
     # if (($SaveButton.Enabled -eq $True) -and ($SaveButton.Visible -eq $True)){
@@ -105,16 +129,16 @@ $form.Controls.Add($ADUserLabel)
 #endregion
 
 #region Username input textbox
-$ADUserTextBox.Width = 150 # $form.Width * 0.3
-$ADuserTextBox.Height = 15
-$ADUserTextBox.Name = "ADUserInput"
-$ADUserTextBox.Multiline = $false
-$ADUserTextBox.Font = $BoxFont
+$ADPrincipalTextBox.Width = 150 # $form.Width * 0.3
+$ADPrincipalTextBox.Height = 15
+$ADPrincipalTextBox.Name = "ADUserInput"
+$ADPrincipalTextBox.Multiline = $false
+$ADPrincipalTextBox.Font = $BoxFont
 $System_Drawing_Point = New-Object System.Drawing.Point
 $System_Drawing_Point.X = $ADUserLabel.Location.X 
 $System_Drawing_Point.Y = $ADUserLabel.Bottom + 5
-$ADUserTextBox.Location = $System_Drawing_Point
-$form.Controls.Add($ADUserTextBox)
+$ADPrincipalTextBox.Location = $System_Drawing_Point
+$form.Controls.Add($ADPrincipalTextBox)
 #endregion
 
 #region Lookup User Button
@@ -125,8 +149,8 @@ $ADLookupButton.UseVisualStyleBackColor = $True
 $ADLookupButton.Text = "Lookup User"
 $ADLookupButton.Font = $BoxFont
 $System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADUserTextBox.Location.X
-$System_Drawing_Point.Y = $ADUserTextBox.Bottom + 10
+$System_Drawing_Point.X = $ADPrincipalTextBox.Location.X
+$System_Drawing_Point.Y = $ADPrincipalTextBox.Bottom + 10
 $ADLookupButton.Location = $System_Drawing_Point
 $ADLookupButton.add_Click($handler_ADLookupButton_Click)
 $form.Controls.Add($ADLookupButton)
@@ -155,43 +179,45 @@ $ADSearchTypeLabel.Text = "Search Type"
 $ADSearchTypeLabel.AutoSize = $true
 $ADSearchTypeLabel.Font = $BoxFont
 $System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADUserTextBox.Right + 30
+$System_Drawing_Point.X = $ADPrincipalTextBox.Right + 30
 $System_Drawing_Point.Y = $ADUserLabel.Top
 $ADSearchTypeLabel.Location = $System_Drawing_Point
 $form.Controls.Add($ADSearchTypeLabel)
 #endregion
 
-#region user search checkbox
-$ADSearchUsersCheckBox.Name = "ADUserSearchUsersCheckBox"
-$ADSearchUsersCheckBox.Text = "Users"
-$ADSearchUsersCheckBox.Font = $BoxFont
-$ADSearchUsersCheckBox.Checked = $true
+#region user search radiobutton
+$ADSearchUsersRadioButton.Name = "ADUserSearchUsersRadioButton"
+$ADSearchUsersRadioButton.Text = "Users"
+$ADSearchUsersRadioButton.Font = $BoxFont
+$ADSearchUsersRadioButton.Checked = $true
 $System_Drawing_Point = New-Object System.Drawing.Point
 $System_Drawing_Point.X = $ADSearchTypeLabel.Left + 10
-$System_Drawing_Point.Y = $ADUserTextBox.Top
-$ADSearchUsersCheckBox.Location = $System_Drawing_Point
-$ADSearchUsersCheckBox.UseVisualStyleBackColor = $True
-$form.Controls.Add($ADSearchUsersCheckBox)
+$System_Drawing_Point.Y = $ADPrincipalTextBox.Top
+$ADSearchUsersRadioButton.Location = $System_Drawing_Point
+$ADSearchUsersRadioButton.UseVisualStyleBackColor = $True
+$ADSearchUsersRadioButton.add_Click($handler_ADSearchUsersRadioButton_Click)
+$form.Controls.Add($ADSearchUsersRadioButton)
 #endregion
 
 #region computer search checkbox
-$ADSearchComputersCheckBox.Name = "ADUserSearchComputersCheckBox"
-$ADSearchComputersCheckBox.Text = "Computers"
-$ADSearchComputersCheckBox.Font = $BoxFont
-$ADSearchComputersCheckBox.Checked = $false
+$ADSearchComputersRadioButton.Name = "ADUserSearchComputersRadioButton"
+$ADSearchComputersRadioButton.Text = "Computers"
+$ADSearchComputersRadioButton.Font = $BoxFont
+$ADSearchComputersRadioButton.Checked = $false
 $System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADSearchUsersCheckBox.Left
-$System_Drawing_Point.Y = $ADSearchUsersCheckBox.Bottom
-$ADSearchComputersCheckBox.Location = $System_Drawing_Point
-$ADSearchComputersCheckBox.UseVisualStyleBackColor = $True
-$form.Controls.Add($ADSearchComputersCheckBox)
+$System_Drawing_Point.X = $ADSearchUsersRadioButton.Left
+$System_Drawing_Point.Y = $ADSearchUsersRadioButton.Bottom
+$ADSearchComputersRadioButton.Location = $System_Drawing_Point
+$ADSearchComputersRadioButton.UseVisualStyleBackColor = $True
+$ADSearchComputersRadioButton.add_Click($handler_ADSearchComputersRadioButton_Click)
+$form.Controls.Add($ADSearchComputersRadioButton)
 #endregion
 
 $form.ResumeLayout()
 
 # set control visibility on form load
 $ADUserLabel.Visible = $true
-$ADUserTextBox.Visible = $true
+$ADPrincipalTextBox.Visible = $true
 $ADLookupButton.Visible = $true
 $DisplayInfoBox.Visible = $true
 
