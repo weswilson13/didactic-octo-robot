@@ -1,3 +1,22 @@
+function Reset-Form {
+    param(
+        [switch]$ExceptPrincipal
+    )
+    if (!$ExceptPrincipal.IsPresent) { $ADPrincipalTextBox.ResetText() }
+    $ADGetGroupMembershipButton.Visible = $false
+    $UpdateGroupMembershipsButton.Visible = $false
+    $ADGroupsBox.Visible = $false
+    $ADGroupMembershipBox.Visible = $false
+    $DisplayInfoBox.ResetText()
+    $DisplayInfoBox.Visible = $true
+    $ADGroupsBox.Items.Clear()
+    $ADGroupMembershipBox.Items.Clear()
+    $ADAccountStatusLabel.Visible = $false
+    $ADAccountExpirationLabel.Visible = $false
+    $ADAccountEnableLabel.Visible = $false
+    $ADAccountUnlockLabel.Visible = $false
+}
+
 add-type -AssemblyName System.Windows.Forms
 add-type -AssemblyName System.Drawing
 # Add-Type -AssemblyName Microsoft.VisualBasic
@@ -23,6 +42,10 @@ $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]
 # Labels
 $ADUserLabel = New-Object System.Windows.Forms.Label
 $ADSearchTypeLabel = New-Object System.Windows.Forms.Label
+$ADAccountStatusLabel = New-Object System.Windows.Forms.Label
+$ADAccountExpirationLabel = New-Object System.Windows.Forms.Label
+$ADAccountEnableLabel = New-Object System.Windows.Forms.Label
+$ADAccountUnlockLabel = New-Object System.Windows.Forms.Label
 
 # Text boxes
 $ADPrincipalTextBox = New-Object System.Windows.Forms.TextBox
@@ -36,6 +59,8 @@ $ADGetGroupMembershipButton = New-Object System.Windows.Forms.Button
 $AddGroupButton = New-Object System.Windows.Forms.Button
 $RemoveGroupButton = New-Object System.Windows.Forms.Button
 $UpdateGroupMembershipsButton = New-Object System.Windows.Forms.Button
+$ADAccountEnableButton = New-Object System.Windows.Forms.Button
+$ADAccountUnlockButton = New-Object System.Windows.Forms.Button
 
 $VulnIDBox = New-Object System.Windows.Forms.ListView
 
@@ -51,20 +76,15 @@ $ADSearchUsersRadioButton = New-Object System.Windows.Forms.RadioButton
 $ADSearchComputersRadioButton = New-Object System.Windows.Forms.RadioButton
 
 # Checkboxes
+$ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
+
 #endregion
 
 #region event handlers
 $handler_ADLookupButton_Click = 
   {
     # reset the form
-    $ADGetGroupMembershipButton.Visible = $false
-    $UpdateGroupMembershipsButton.Visible = $false
-    $ADGroupsBox.Visible = $false
-    $ADGroupMembershipBox.Visible = $false
-    $DisplayInfoBox.ResetText()
-    $DisplayInfoBox.Visible = $true
-    $ADGroupsBox.Items.Clear()
-    $ADGroupMembershipBox.Items.Clear()
+    Reset-Form -ExceptPrincipal
 
     try {
         $principal = $ADPrincipalTextBox.Text
@@ -82,6 +102,13 @@ $handler_ADLookupButton_Click =
             $DisplayInfoBox.Text = $objPrincipal | Out-String
 
             $ADGetGroupMembershipButton.Visible=$true
+
+            if ($objPrincipal.ObjectClass -eq 'user') {
+                $ADAccountStatusLabel.Visible = $true
+                $ADAccountExpirationLabel.Visible = $true
+                $ADAccountEnableLabel.Visible = $true
+                $ADAccountUnlockLabel.Visible = $true
+            }
         }
     }
     catch {
@@ -94,6 +121,7 @@ $handler_ADLookupButton_Click =
 $handler_ADSearchComputersRadioButton_Click = 
 {   
     Write-Host "Computers Radio Button Pressed"
+    Reset-Form
     $ADUserLabel.Text = "Enter a computer name"
     $ADLookupButton.Text = "Lookup Computers"
 }
@@ -101,6 +129,7 @@ $handler_ADSearchComputersRadioButton_Click =
 $handler_ADSearchUsersRadioButton_Click = 
 {
     Write-Host "Users Radio Button Pressed"
+    Reset-Form
     $ADUserLabel.Text = "Enter a username"
     $ADLookupButton.Text = "Lookup Users"
 }
@@ -403,15 +432,71 @@ $UpdateGroupMembershipsButton.add_Click($handler_UpdateGroupMembershipButton_Cli
 $form.Controls.Add($UpdateGroupMembershipsButton)
 #endregion
 
+#region Account Status Label
+$ADAccountStatusLabel.Name = "ADAccountStatusLabel"
+$ADAccountStatusLabel.Text = "Account Status"
+$ADAccountStatusLabel.Font = $BoldBoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADGetGroupMembershipButton.Left + $ADGetGroupMembershipButton.PreferredSize.Width + 20
+$System_Drawing_Point.Y = $ADUserLabel.Top
+$ADAccountStatusLabel.Location = $System_Drawing_Point
+$ADAccountStatusLabel.AutoSize = $true
+$form.Controls.Add($ADAccountStatusLabel)
+#endregion
+
+#region Account Expiration Label
+$ADAccountExpirationLabel.Name = "ADAccountExpirationLabel"
+$ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate)"
+$ADAccountExpirationLabel.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountStatusLabel.Bottom
+$ADAccountExpirationLabel.Location = $System_Drawing_Point
+$ADAccountExpirationLabel.AutoSize = $true
+$form.Controls.Add($ADAccountExpirationLabel)
+#endregion
+
+#region Account Enabled Label
+$ADAccountEnableLabel.Name = "ADAccountEnabledLabel"
+$ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
+$ADAccountEnableLabel.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountExpirationLabel.Bottom
+$ADAccountEnableLabel.Location = $System_Drawing_Point
+$ADAccountEnableLabel.AutoSize = $true
+$form.Controls.Add($ADAccountEnableLabel)
+#endregion
+
+#region Account Locked Label
+$ADAccountUnlockLabel.Name = "ADAccountUnlockedLabel"
+$ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
+$ADAccountUnlockLabel.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountEnableLabel.Bottom
+$ADAccountUnlockLabel.Location = $System_Drawing_Point
+$ADAccountUnlockLabel.AutoSize = $true
+$form.Controls.Add($ADAccountUnlockLabel)
+#endregion
+
+#region Enable/Disable Account button
+#endregion
+
 $form.ResumeLayout()
 
 # set control visibility on form load
-$ADUserLabel.Visible = $true
-$ADPrincipalTextBox.Visible = $true
-$ADLookupButton.Visible = $true
-$DisplayInfoBox.Visible = $true
-$ADGetGroupMembershipButton.Visible = $false
-$UpdateGroupMembershipsButton.Visible = $false
+Reset-Form
+# $ADUserLabel.Visible = $true
+# $ADPrincipalTextBox.Visible = $true
+# $ADLookupButton.Visible = $true
+# $DisplayInfoBox.Visible = $true
+# $ADGetGroupMembershipButton.Visible = $false
+# $UpdateGroupMembershipsButton.Visible = $false
+# $ADAccountStatusLabel.Visible = $false
+# $ADAccountExpirationLabel.Visible = $false
+# $ADAccountEnableLabel.Visible = $false
+# $ADAccountUnlockLabel.Visible = $false
 
 #Init the OnLoad event to correct the initial state of the form
 $InitialFormWindowState = $form.WindowState
