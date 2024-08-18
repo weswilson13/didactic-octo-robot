@@ -1,0 +1,1 @@
+powershell -WindowStyle Hidden -File .\ADUpdater.ps1
