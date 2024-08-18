@@ -21,6 +21,7 @@ $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]
 
 #region create the controls
 $ADUserLabel = New-Object System.Windows.Forms.Label
+$ADSearchTypeLabel = New-Object System.Windows.Forms.Label
 
 $ADUserTextBox = New-Object System.Windows.Forms.TextBox
 
@@ -34,7 +35,8 @@ $SupportedSTIGSBox = New-Object System.Windows.Forms.ListBox
 
 $AFKeys = New-Object System.Windows.Forms.ComboBox
 
-$HTMLCheckBox = New-Object System.Windows.Forms.CheckBox
+$ADSearchUsersCheckBox = New-Object System.Windows.Forms.CheckBox
+$ADSearchComputersCheckBox = New-Object System.Windows.Forms.CheckBox
 #endregion
 
 #region event handlers
@@ -77,9 +79,9 @@ $form.Text = "Account Viewer and Updater"
 $form.Name = "form"
 $form.SuspendLayout()
 
-$form.AutoScaleDimensions =  New-Object System.Drawing.SizeF(96, 96)
-$form.AutoScaleMode  = [System.Windows.Forms.AutoScaleMode]::Dpi
-$form.AutoScale = $true
+# $form.AutoScaleDimensions =  New-Object System.Drawing.SizeF(96, 96)
+# $form.AutoScaleMode  = [System.Windows.Forms.AutoScaleMode]::Dpi
+# $form.AutoScale = $true
 
 $form.FormBorderStyle = "FixedDialog"
 $form.StartPosition = "CenterScreen"
@@ -92,9 +94,8 @@ $form.ClientSize = $System_Drawing_Size
 $form.StartPosition = "WindowsDefaultLocation"
 
 #region Username label
-$ADUserLabel.Width = $form.Width * 0.3
 $ADUserLabel.Text = "Enter a Username"
-$ADUserLabel.AutoSize = $false
+$ADUserLabel.AutoSize = $true
 $ADUserLabel.Font = $BoxFont
 $System_Drawing_Point = New-Object System.Drawing.Point
 $System_Drawing_Point.X = 15
@@ -111,7 +112,7 @@ $ADUserTextBox.Multiline = $false
 $ADUserTextBox.Font = $BoxFont
 $System_Drawing_Point = New-Object System.Drawing.Point
 $System_Drawing_Point.X = $ADUserLabel.Location.X 
-$System_Drawing_Point.Y = $ADUserLabel.Location.Y + $ADUserLabel.Height + 5
+$System_Drawing_Point.Y = $ADUserLabel.Bottom + 5
 $ADUserTextBox.Location = $System_Drawing_Point
 $form.Controls.Add($ADUserTextBox)
 #endregion
@@ -125,7 +126,7 @@ $ADLookupButton.Text = "Lookup User"
 $ADLookupButton.Font = $BoxFont
 $System_Drawing_Point = New-Object System.Drawing.Point
 $System_Drawing_Point.X = $ADUserTextBox.Location.X
-$System_Drawing_Point.Y = $ADUserTextBox.Location.Y + $ADUserTextBox.Height + 10
+$System_Drawing_Point.Y = $ADUserTextBox.Bottom + 10
 $ADLookupButton.Location = $System_Drawing_Point
 $ADLookupButton.add_Click($handler_ADLookupButton_Click)
 $form.Controls.Add($ADLookupButton)
@@ -134,11 +135,11 @@ $form.Controls.Add($ADLookupButton)
 #region Display text box
 $System_Drawing_Point = New-Object System.Drawing.Point
 $System_Drawing_Point.X = $ADLookupButton.Location.X
-$System_Drawing_Point.Y = $ADLookupButton.Location.Y + $ADLookupButton.Height + 20
+$System_Drawing_Point.Y = $ADLookupButton.Bottom + 20
 $DisplayInfoBox.Location = $System_Drawing_Point
 $System_Drawing_Size = New-Object System.Drawing.Size
-$System_Drawing_Size.Width = $form.Width-$DisplayInfoBox.Location.X * 3
-$System_Drawing_Size.Height = $form.Height - $DisplayInfoBox.Location.Y - 50
+$System_Drawing_Size.Width = $form.ClientSize.Width-$DisplayInfoBox.Location.X * 2
+$System_Drawing_Size.Height = $form.ClientSize.Height - $ADLookupButton.Bottom - 35
 $DisplayInfoBox.Size = $System_Drawing_Size
 $DisplayInfoBox.Name = "DisplayInfoBox"
 $DisplayInfoBox.Multiline = $true
@@ -147,6 +148,43 @@ $DisplayInfoBox.Readonly = $true
 $DisplayInfoBox.Font = $BoxFont
 $DisplayInfoBox.Font = [System.Drawing.Font]::new($BoxFont.FontFamily, $BoxFont.Size-2, $BoxFont.Style)
 $form.Controls.Add($DisplayInfoBox)
+#endregion
+
+#region search type label
+$ADSearchTypeLabel.Text = "Search Type"
+$ADSearchTypeLabel.AutoSize = $true
+$ADSearchTypeLabel.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADUserTextBox.Right + 30
+$System_Drawing_Point.Y = $ADUserLabel.Top
+$ADSearchTypeLabel.Location = $System_Drawing_Point
+$form.Controls.Add($ADSearchTypeLabel)
+#endregion
+
+#region user search checkbox
+$ADSearchUsersCheckBox.Name = "ADUserSearchUsersCheckBox"
+$ADSearchUsersCheckBox.Text = "Users"
+$ADSearchUsersCheckBox.Font = $BoxFont
+$ADSearchUsersCheckBox.Checked = $true
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADSearchTypeLabel.Left + 10
+$System_Drawing_Point.Y = $ADUserTextBox.Top
+$ADSearchUsersCheckBox.Location = $System_Drawing_Point
+$ADSearchUsersCheckBox.UseVisualStyleBackColor = $True
+$form.Controls.Add($ADSearchUsersCheckBox)
+#endregion
+
+#region computer search checkbox
+$ADSearchComputersCheckBox.Name = "ADUserSearchComputersCheckBox"
+$ADSearchComputersCheckBox.Text = "Computers"
+$ADSearchComputersCheckBox.Font = $BoxFont
+$ADSearchComputersCheckBox.Checked = $false
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADSearchUsersCheckBox.Left
+$System_Drawing_Point.Y = $ADSearchUsersCheckBox.Bottom
+$ADSearchComputersCheckBox.Location = $System_Drawing_Point
+$ADSearchComputersCheckBox.UseVisualStyleBackColor = $True
+$form.Controls.Add($ADSearchComputersCheckBox)
 #endregion
 
 $form.ResumeLayout()
@@ -163,4 +201,5 @@ $InitialFormWindowState = $form.WindowState
 $form.Add_FormClosed($handler_formclose)
 
 #Show the Form
-$null = [Windows.Forms.Application]::Run($form)
+$form.ShowDialog()
+# $null = [Windows.Forms.Application]::Run($form)
