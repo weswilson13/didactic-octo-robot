@@ -15,6 +15,8 @@ function Reset-Form {
     $ADAccountExpirationLabel.Visible = $false
     $ADAccountEnableLabel.Visible = $false
     $ADAccountUnlockLabel.Visible = $false
+    $ADAccountEnableButton.Visible = $false
+    $ADAccountRequiresSmartcardCheckBox.Visible = $false
 }
 
 add-type -AssemblyName System.Windows.Forms
@@ -60,7 +62,6 @@ $AddGroupButton = New-Object System.Windows.Forms.Button
 $RemoveGroupButton = New-Object System.Windows.Forms.Button
 $UpdateGroupMembershipsButton = New-Object System.Windows.Forms.Button
 $ADAccountEnableButton = New-Object System.Windows.Forms.Button
-$ADAccountUnlockButton = New-Object System.Windows.Forms.Button
 
 $VulnIDBox = New-Object System.Windows.Forms.ListView
 
@@ -108,6 +109,8 @@ $handler_ADLookupButton_Click =
                 $ADAccountExpirationLabel.Visible = $true
                 $ADAccountEnableLabel.Visible = $true
                 $ADAccountUnlockLabel.Visible = $true
+                $ADAccountEnableButton.Visible = $true
+                $ADAccountRequiresSmartcardCheckBox.Visible = $true
             }
         }
     }
@@ -123,7 +126,7 @@ $handler_ADSearchComputersRadioButton_Click =
     Write-Host "Computers Radio Button Pressed"
     Reset-Form
     $ADUserLabel.Text = "Enter a computer name"
-    $ADLookupButton.Text = "Lookup Computers"
+    $ADLookupButton.Text = "Lookup Computer"
 }
 
 $handler_ADSearchUsersRadioButton_Click = 
@@ -131,7 +134,7 @@ $handler_ADSearchUsersRadioButton_Click =
     Write-Host "Users Radio Button Pressed"
     Reset-Form
     $ADUserLabel.Text = "Enter a username"
-    $ADLookupButton.Text = "Lookup Users"
+    $ADLookupButton.Text = "Lookup User"
 }
 
 $handler_ADGetGroupMembershipButton_Click =
@@ -209,6 +212,61 @@ $handler_UpdateGroupMembershipButton_Click =
     }
     catch {
         [System.Windows.MessageBox]::Show($error[0].Exception.Message, "Group Membership Update Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+}
+
+$handler_ADAccountEnableButton_Click = 
+{
+    try {
+        # Set-ADUser $objPrincipal -Enabled (!$objPrincipal.Enabled) -Confirm:$false
+        $currentState = $objPrincipal.Enabled
+        switch ($currentState) {
+            $true { Disable-ADAccount $objPrincipal -Confirm:$false;break }
+            $false { Enable-ADAccount $objPrincipal -Confirm:$false;break }
+        }
+
+        $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
+        $ADAccountEnableButton.Text = switch($objPrincipal.Enabled) {
+            $true { "Disable Account";break }
+            $false { "Enable Account";break }
+        }
+        Write-Host $ADAccountEnableButton.Text
+        $ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
+
+        $state = switch($objPrincipal.Enabled) {
+            $true { "Enabled";break }
+            $false { "Disabled";break }
+        }
+
+        [System.Windows.MessageBox]::Show("Account was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Account Enable/Disable Success",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        [System.Windows.MessageBox]::Show("Unable to update account", "Account Enable/Disable Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+}
+
+$handler_ADAccountRequiresSmartCardCheckbox_Click = 
+{
+    try {
+        Set-ADUser $objPrincipal -SmartcardLogonRequired (!$objPrincipal.SmartcardLogonRequired)
+     
+        $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
+  
+        $state = switch($objPrincipal.SmartcardLogonRequired) {
+            $true { "Enabled";break }
+            $false { "Disabled";break }
+        }
+
+        [System.Windows.MessageBox]::Show("SmartcardLogonRequired was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Account Enable/Disable Success",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        [System.Windows.MessageBox]::Show("Unable to update account", "SmartcardLogonRequired Enable/Disable Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
@@ -481,6 +539,34 @@ $form.Controls.Add($ADAccountUnlockLabel)
 #endregion
 
 #region Enable/Disable Account button
+$ADAccountEnableButton.Name = "ADAccountEnableButton"
+$ADAccountEnableButton.Text = switch ($objPrincipal.Enabled) {
+    $true { "Disable Account";break }
+    $false { "Enable Account";break }
+}
+$ADAccountEnableButton.Font = $BoxFont
+$ADAccountEnableButton.AutoSize = $true
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountEnableLabel.Location.X + $ADAccountEnableLabel.PreferredWidth + 20
+$System_Drawing_Point.Y = $ADAccountEnableLabel.Top - 5
+$ADAccountEnableButton.Location = $System_Drawing_Point
+$ADAccountEnableButton.add_Click($handler_ADAccountEnableButton_Click)
+$form.Controls.Add($ADAccountEnableButton)
+#endregion
+
+#region Account requires smartcard checkbox
+$ADAccountRequiresSmartcardCheckBox.Name = "ADAccountRequiresSmartcard"
+$ADAccountRequiresSmartcardCheckBox.Text = "SmartcardLogonRequired"
+$ADAccountRequiresSmartcardCheckBox.AutoSize = $true
+$ADAccountRequiresSmartcardCheckBox.Font = $BoxFont
+$ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X + $ADAccountStatusLabel.PreferredWidth + 50
+$System_Drawing_Point.Y = $ADAccountStatusLabel.Top
+$ADAccountRequiresSmartcardCheckBox.Location = $System_Drawing_Point
+$ADAccountRequiresSmartcardCheckBox.UseVisualStyleBackColor = $True
+$ADAccountRequiresSmartcardCheckBox.add_Click($handler_ADAccountRequiresSmartCardCheckbox_Click)
+$form.Controls.Add($ADAccountRequiresSmartcardCheckBox)
 #endregion
 
 $form.ResumeLayout()
