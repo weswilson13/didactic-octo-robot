@@ -35,6 +35,7 @@ $ADLookupButton = New-Object System.Windows.Forms.Button
 $ADGetGroupMembershipButton = New-Object System.Windows.Forms.Button
 $AddGroupButton = New-Object System.Windows.Forms.Button
 $RemoveGroupButton = New-Object System.Windows.Forms.Button
+$UpdateGroupMembershipsButton = New-Object System.Windows.Forms.Button
 
 $VulnIDBox = New-Object System.Windows.Forms.ListView
 
@@ -57,10 +58,13 @@ $handler_ADLookupButton_Click =
   {
     # reset the form
     $ADGetGroupMembershipButton.Visible = $false
+    $UpdateGroupMembershipsButton.Visible = $false
     $ADGroupsBox.Visible = $false
     $ADGroupMembershipBox.Visible = $false
     $DisplayInfoBox.ResetText()
     $DisplayInfoBox.Visible = $true
+    $ADGroupsBox.Items.Clear()
+    $ADGroupMembershipBox.Items.Clear()
 
     try {
         $principal = $ADPrincipalTextBox.Text
@@ -104,17 +108,80 @@ $handler_ADSearchUsersRadioButton_Click =
 $handler_ADGetGroupMembershipButton_Click =
 {
     Write-Host "Get Group Memberships"
-    if ($objPrincipal.MemberOf) {
+    if ($objPrincipal) {
         $DisplayInfoBox.Visible=$false
         $ADGroupsBox.Visible = $true
         $ADGroupMembershipBox.Visible = $true
-        Get-ADGroup -Filter 'GroupScope -ne "DomainLocal"' | ForEach-Object {
+        Get-ADGroup -Filter 'GroupScope -ne "DomainLocal"' | 
+        Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
+        ForEach-Object {
             $ADGroupsBox.Items.Add($PSItem.Name)
         }
         $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
-        # [System.Windows.MessageBox]::Show( ($objPrincipal.MemberOf | Out-String) )
     }
     
+}
+
+$handler_AddGroupButton_Click = 
+{
+    $group = $ADGroupsBox.SelectedItems
+    if ($group) {
+        [System.Collections.ArrayList]$tmpADGroupsBox = @()
+        $tmpADGroupsBox.AddRange($ADGroupsBox.Items) 
+        $tmpADGroupsBox = $tmpADGroupsBox | Where-Object { $_ -notin $group }
+
+        $group | Foreach-Object {
+            $ADGroupMembershipBox.Items.Add($PSItem) 
+        }
+
+        $ADGroupsBox.Items.Clear()
+        $ADGroupsBox.Items.AddRange($tmpADGroupsBox)
+
+        $ADGetGroupMembershipButton.Visible = $false
+        $UpdateGroupMembershipsButton.Visible = $true 
+    }
+}
+
+$handler_RemoveGroupButton_Click = 
+{
+    $group = $ADGroupMembershipBox.SelectedItems
+    if ($group) {
+        [System.Collections.ArrayList]$tmpADGroupMembershipBox = @()
+        $tmpADGroupMembershipBox.AddRange($ADGroupMembershipBox.Items) 
+        $group.foreach({$tmpADGroupMembershipBox.Remove($PSItem)})
+    
+        $group | Foreach-Object {
+            $ADGroupsBox.Items.Add($PSItem) 
+        }
+
+        $ADGroupMembershipBox.Items.Clear()
+        $ADGroupMembershipBox.Items.AddRange($tmpADGroupMembershipBox)
+
+        $ADGetGroupMembershipButton.Visible = $false
+        $UpdateGroupMembershipsButton.Visible = $true 
+    }
+}
+
+$handler_UpdateGroupMembershipButton_Click =
+{
+    try {
+        # remove groups
+        $objPrincipal.MemberOf.Where({ $_ -notin $ADGroupMembershipBox.Items }) | ForEach-Object {
+            Get-ADGroup $PSItem | Remove-ADGroupMember -Members $objPrincipal -Confirm:$false
+        }
+        
+        # add groups
+        $ADGroupMembershipBox.Items.Where({ $_ -notin $objPrincipal.MemberOf }) | ForEach-Object {
+            Get-ADGroup $PSItem | Add-ADGroupMember -Members $objPrincipal -Confirm:$false
+        }
+        
+        [System.Windows.MessageBox]::Show("Finished updating group membership", "Group Membership Update Success",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+    }
+    catch {
+        [System.Windows.MessageBox]::Show($error[0].Exception.Message, "Group Membership Update Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
 }
 
 $handler_formclose =
@@ -274,23 +341,66 @@ $System_Drawing_Size = New-Object System.Drawing.Size
 $System_Drawing_Size.Width = 200
 $System_Drawing_Size.Height = $form.ClientSize.Height - $ADLookupButton.Bottom - 35
 $ADGroupsBox.Size = $System_Drawing_Size
+$ADGroupsBox.SelectionMode = "MultiExtended"
 $ADGroupsBox.Name = "ADGroupsBox"
 $ADGroupsBox.Font = $BoxFont
 $form.Controls.Add($ADGroupsBox)
 #endregion
 
+#region RemoveGroups button
+$RemoveGroupButton.Font = $BoxFont
+$RemoveGroupButton.Name = "RemoveGroupButton"
+$RemoveGroupButton.Text = "<-"
+$RemoveGroupButton.AutoSize = $true
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADGroupsBox.Right + 10
+$System_Drawing_Point.Y = $ADGroupsBox.Top + ($ADGroupsBox.Height - $RemoveGroupButton.Height)/2
+$RemoveGroupButton.Location = $System_Drawing_Point
+$RemoveGroupButton.add_Click($handler_RemoveGroupButton_Click)
+$form.Controls.Add($RemoveGroupButton)
+#endregion
+
+#region AddGroups button
+$AddGroupButton.Font = $BoxFont
+$AddGroupButton.Name = "AddGroupButton"
+$AddGroupButton.Text = "->"
+$AddGroupButton.AutoSize = $true
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $RemoveGroupButton.Right + 5
+$System_Drawing_Point.Y = $RemoveGroupButton.Top
+$AddGroupButton.Location = $System_Drawing_Point
+$AddGroupButton.add_Click($handler_AddGroupButton_Click)
+$form.Controls.Add($AddGroupButton)
+#endregion
+
 #region AD Group Membership List box
 $System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADGroupsBox.Right + 20
+$System_Drawing_Point.X = $AddGroupButton.Right + 10
 $System_Drawing_Point.Y = $ADLookupButton.Bottom + 20
 $ADGroupMembershipBox.Location = $System_Drawing_Point
 $System_Drawing_Size = New-Object System.Drawing.Size
 $System_Drawing_Size.Width = 200
 $System_Drawing_Size.Height = $form.ClientSize.Height - $ADLookupButton.Bottom - 35
 $ADGroupMembershipBox.Size = $System_Drawing_Size
+$ADGroupMembershipBox.SelectionMode = "MultiExtended"
 $ADGroupMembershipBox.Name = "ADGroupMembershipBox"
 $ADGroupMembershipBox.Font = $BoxFont
 $form.Controls.Add($ADGroupMembershipBox)
+#endregion
+
+#region Update group memberships Button
+$UpdateGroupMembershipsButton.Name = "UpdateGroupMembershipsButton"
+$System_Drawing_Size = New-Object System.Drawing.Size
+$UpdateGroupMembershipsButton.AutoSize = $true
+$UpdateGroupMembershipsButton.UseVisualStyleBackColor = $True
+$UpdateGroupMembershipsButton.Text = "Update Group Membership"
+$UpdateGroupMembershipsButton.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADSearchUsersRadioButton.Right + 30
+$System_Drawing_Point.Y = $ADSearchUsersRadioButton.Top
+$UpdateGroupMembershipsButton.Location = $System_Drawing_Point
+$UpdateGroupMembershipsButton.add_Click($handler_UpdateGroupMembershipButton_Click)
+$form.Controls.Add($UpdateGroupMembershipsButton)
 #endregion
 
 $form.ResumeLayout()
@@ -300,7 +410,8 @@ $ADUserLabel.Visible = $true
 $ADPrincipalTextBox.Visible = $true
 $ADLookupButton.Visible = $true
 $DisplayInfoBox.Visible = $true
-$ADGetGroupMembershipButton.Visible=$false
+$ADGetGroupMembershipButton.Visible = $false
+$UpdateGroupMembershipsButton.Visible = $false
 
 #Init the OnLoad event to correct the initial state of the form
 $InitialFormWindowState = $form.WindowState
