@@ -66,7 +66,7 @@ $AddGroupButton = New-Object System.Windows.Forms.Button
 $RemoveGroupButton = New-Object System.Windows.Forms.Button
 $UpdateGroupMembershipsButton = New-Object System.Windows.Forms.Button
 $ADAccountEnableButton = New-Object System.Windows.Forms.Button
-$ADAccountSetExpiryButton = New-Object System.Windows.Forms.Button
+# $ADAccountSetExpiryButton = New-Object System.Windows.Forms.Button
 
 # List views
 # $VulnIDBox = New-Object System.Windows.Forms.ListView
@@ -115,11 +115,12 @@ $handler_ADLookupButton_Click =
 
             # set control values that depend on the AD Object
             $ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
+            $ADAccountEnableButton.Text = switch ($objPrincipal.Enabled) {
+                $true { "Disable Account";break }
+                $false { "Enable Account";break }
+            }
+            $ADAccountExpiryDatePicker.Text = $objPrincipal.AccountExpirationDate
             $ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate)"
-            $ADAccountExpiryDatePicker.Value = switch($objPrincipal.AccountExpirationDate) {
-                $null { $ADAccountExpiryDatePicker.MaxDate;break }
-                default { $PSItem }
-            } 
             $ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
             $ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
 
@@ -299,6 +300,24 @@ $handler_ADAccountRequiresSmartCardCheckbox_Click =
     catch {
         $error[0] | Out-String | Write-Error
         [System.Windows.MessageBox]::Show("Unable to update account", "SmartcardLogonRequired Enable/Disable Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+}
+
+$handler_ADAccountExpiryDatePicker_Changed =
+{   try {
+        $expiry = $ADAccountExpiryDatePicker.Text
+        $ans = [System.Windows.MessageBox]::Show("Set Account Expiration to $($expiry)?", "Verify Action",`
+            [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($ans -eq "Yes") {
+            Set-ADAccountExpiration $objPrincipal -DateTime $expiry
+            [System.Windows.MessageBox]::Show("Updated Account Expiration Date. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
+                [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        }
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        [System.Windows.MessageBox]::Show("Unable to update account expiration", "Account update Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
@@ -536,6 +555,7 @@ $System_Drawing_Point = New-Object System.Drawing.Point
 $System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
 $System_Drawing_Point.Y = $ADAccountActionsLabel.Location.Y + $ADAccountActionsLabel.PreferredHeight
 $ADAccountExpiryDatePicker.Location = $System_Drawing_Point
+$ADAccountExpiryDatePicker.add_ValueChanged($handler_ADAccountExpiryDatePicker_Changed)
 $form.Controls.Add($ADAccountExpiryDatePicker)
 #endregion
 
