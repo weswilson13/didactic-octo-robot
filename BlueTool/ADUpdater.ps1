@@ -19,8 +19,8 @@ function Reset-Form {
     $ADAccountRequiresSmartcardCheckBox.Visible = $false
 }
 
-add-type -AssemblyName System.Windows.Forms
-add-type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName PresentationFramework
 Add-Type -TypeDefinition @'
 using System.Runtime.InteropServices;
@@ -75,6 +75,7 @@ $ADGroupMembershipBox = New-Object System.Windows.Forms.ListBox
 # RadioButtons
 $ADSearchUsersRadioButton = New-Object System.Windows.Forms.RadioButton
 $ADSearchComputersRadioButton = New-Object System.Windows.Forms.RadioButton
+$ADSearchServiceAccountsRadioButton = New-Object System.Windows.Forms.RadioButton
 
 # Checkboxes
 $ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
@@ -93,6 +94,7 @@ $handler_ADLookupButton_Click =
             $Script:objPrincipal = switch ($true) {
                 $ADSearchUsersRadioButton.Checked { Get-ADUser -Identity $principal -Properties *; break } 
                 $ADSearchComputersRadioButton.Checked { Get-ADComputer -Identity $principal -Properties *; break }
+                $ADSearchServiceAccountsRadioButton.Checked { Get-ADServiceAccount -Identity $principal -Properties *;break }
             }
 
             if ([string]::IsNullOrWhiteSpace($objPrincipal)) {
@@ -135,6 +137,14 @@ $handler_ADSearchUsersRadioButton_Click =
     Reset-Form
     $ADUserLabel.Text = "Enter a username"
     $ADLookupButton.Text = "Lookup User"
+}
+
+$handler_ADSearchServiceAccountsRadioButton_Click = 
+{
+    Write-Host "ServiceAccounts Radio Button Pressed"
+    Reset-Form
+    $ADUserLabel.Text = "Enter a sMSA/gMSA"
+    $ADLookupButton.Text = "Lookup Service Account"
 }
 
 $handler_ADGetGroupMembershipButton_Click =
@@ -337,6 +347,7 @@ $form.Controls.Add($ADPrincipalTextBox)
 $ADLookupButton.Name = "ADLookupButton"
 $System_Drawing_Size = New-Object System.Drawing.Size
 $ADLookupButton.AutoSize = $true
+$ADLookupButton.AutoSizeMode = "GrowAndShrink"
 $ADLookupButton.UseVisualStyleBackColor = $True
 $ADLookupButton.Text = "Lookup User"
 $ADLookupButton.Font = $BoxFont
@@ -405,15 +416,30 @@ $ADSearchComputersRadioButton.add_Click($handler_ADSearchComputersRadioButton_Cl
 $form.Controls.Add($ADSearchComputersRadioButton)
 #endregion
 
+#region service account search radiobutton
+$ADSearchServiceAccountsRadioButton.Name = "ADUserSearchServiceAccountsRadioButton"
+$ADSearchServiceAccountsRadioButton.Text = "Service Accounts"
+$ADSearchServiceAccountsRadioButton.Font = $BoxFont
+$ADSearchServiceAccountsRadioButton.AutoSize = $true
+$ADSearchServiceAccountsRadioButton.Checked = $false
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADSearchUsersRadioButton.Left
+$System_Drawing_Point.Y = $ADSearchComputersRadioButton.Bottom
+$ADSearchServiceAccountsRadioButton.Location = $System_Drawing_Point
+$ADSearchServiceAccountsRadioButton.UseVisualStyleBackColor = $True
+$ADSearchServiceAccountsRadioButton.add_Click($handler_ADSearchServiceAccountsRadioButton_Click)
+$form.Controls.Add($ADSearchServiceAccountsRadioButton)
+#endregion
+
 #region Enumerate group memberships Button
 $ADGetGroupMembershipButton.Name = "ADGetGroupMembershipButton"
 $System_Drawing_Size = New-Object System.Drawing.Size
 $ADGetGroupMembershipButton.AutoSize = $true
 $ADGetGroupMembershipButton.UseVisualStyleBackColor = $True
-$ADGetGroupMembershipButton.Text = "Enumerate Group Membership"
+$ADGetGroupMembershipButton.Text = "Get Group Membership"
 $ADGetGroupMembershipButton.Font = $BoxFont
 $System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADSearchUsersRadioButton.Right + 30
+$System_Drawing_Point.X = $ADSearchUsersRadioButton.Right + 15
 $System_Drawing_Point.Y = $ADSearchUsersRadioButton.Top
 $ADGetGroupMembershipButton.Location = $System_Drawing_Point
 $ADGetGroupMembershipButton.add_Click($handler_ADGetGroupMembershipButton_Click)
