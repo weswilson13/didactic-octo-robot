@@ -21,7 +21,6 @@ function Reset-Form {
 
 add-type -AssemblyName System.Windows.Forms
 add-type -AssemblyName System.Drawing
-# Add-Type -AssemblyName Microsoft.VisualBasic
 Add-Type -AssemblyName PresentationFramework
 Add-Type -TypeDefinition @'
 using System.Runtime.InteropServices;
@@ -33,12 +32,12 @@ public class ProcessDPI {
 
 $null = [ProcessDPI]::SetProcessDPIAware()
 
-$InitialFormWindowState = New-Object System.Windows.Forms.FormWindowState
-
+#region font objects
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
 $BodyFont = New-Object System.Drawing.Font("Calibri",18,[Drawing.FontStyle]::Bold)
 $BoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Regular)
 $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Bold)
+#endregion
 
 #region create the controls
 # Labels
@@ -63,14 +62,15 @@ $RemoveGroupButton = New-Object System.Windows.Forms.Button
 $UpdateGroupMembershipsButton = New-Object System.Windows.Forms.Button
 $ADAccountEnableButton = New-Object System.Windows.Forms.Button
 
-$VulnIDBox = New-Object System.Windows.Forms.ListView
+# List views
+# $VulnIDBox = New-Object System.Windows.Forms.ListView
 
 # ListBoxes
 $ADGroupsBox = New-Object System.Windows.Forms.ListBox
 $ADGroupMembershipBox = New-Object System.Windows.Forms.ListBox
 
 # ComboBoxes
-$AFKeys = New-Object System.Windows.Forms.ComboBox
+# $AFKeys = New-Object System.Windows.Forms.ComboBox
 
 # RadioButtons
 $ADSearchUsersRadioButton = New-Object System.Windows.Forms.RadioButton
@@ -308,6 +308,7 @@ $System_Drawing_Size.Height = $screen.Height * .75
 $form.ClientSize = $System_Drawing_Size
 $form.StartPosition = "WindowsDefaultLocation"
 
+#region configure the controls
 #region Username label
 $ADUserLabel.Text = "Enter a Username"
 $ADUserLabel.AutoSize = $true
@@ -568,6 +569,7 @@ $ADAccountRequiresSmartcardCheckBox.UseVisualStyleBackColor = $True
 $ADAccountRequiresSmartcardCheckBox.add_Click($handler_ADAccountRequiresSmartCardCheckbox_Click)
 $form.Controls.Add($ADAccountRequiresSmartcardCheckBox)
 #endregion
+#endregion
 
 $form.ResumeLayout()
 
@@ -583,9 +585,6 @@ Reset-Form
 # $ADAccountExpirationLabel.Visible = $false
 # $ADAccountEnableLabel.Visible = $false
 # $ADAccountUnlockLabel.Visible = $false
-
-#Init the OnLoad event to correct the initial state of the form
-$InitialFormWindowState = $form.WindowState
 
 $form.Add_FormClosed($handler_formclose)
 
