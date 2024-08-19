@@ -2,6 +2,8 @@ function Reset-Form {
     param(
         [switch]$ExceptPrincipal
     )
+    $Script:ADAccountExpiryDatePickerClicked = $false
+
     if (!$ExceptPrincipal.IsPresent) { $ADPrincipalTextBox.ResetText() }
     $ADGetGroupMembershipButton.Visible = $false
     $UpdateGroupMembershipsButton.Visible = $false
@@ -10,6 +12,8 @@ function Reset-Form {
     $DisplayInfoBox.ResetText()
     $DisplayInfoBox.Visible = $true
     $ADGroupsBox.Items.Clear()
+    $AddGroupButton.Visible = $false
+    $RemoveGroupButton.Visible = $false
     $ADGroupMembershipBox.Items.Clear()
     $ADAccountStatusLabel.Visible = $false
     $ADAccountExpirationLabel.Visible = $false
@@ -68,9 +72,6 @@ $UpdateGroupMembershipsButton = New-Object System.Windows.Forms.Button
 $ADAccountEnableButton = New-Object System.Windows.Forms.Button
 # $ADAccountSetExpiryButton = New-Object System.Windows.Forms.Button
 
-# List views
-# $VulnIDBox = New-Object System.Windows.Forms.ListView
-
 # ListBoxes
 $ADGroupsBox = New-Object System.Windows.Forms.ListBox
 $ADGroupMembershipBox = New-Object System.Windows.Forms.ListBox
@@ -88,6 +89,57 @@ $ADSearchServiceAccountsRadioButton = New-Object System.Windows.Forms.RadioButto
 
 # Checkboxes
 $ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
+
+# TableLayoutPanel
+$tableLayoutPanel1 = New-Object System.Windows.Forms.TableLayoutPanel
+$tableLayoutPanel2 = New-Object System.Windows.Forms.TableLayoutPanel
+$tableLayoutPanel1.RowCount = 2 #how many rows
+$tableLayoutPanel1.ColumnCount = 1 #how many columns
+$tableLayoutPanel2.RowCount = 5
+$tableLayoutPanel2.ColumnCount = 4
+    # column 1
+$tableLayoutPanel2.Controls.Add($ADUserLabel,0,0)
+$tableLayoutPanel2.Controls.Add($ADPrincipalTextBox,0,1)
+$tableLayoutPanel2.Controls.Add($ADLookupButton,0,3)
+    #column 2
+$tableLayoutPanel2.Controls.Add($ADSearchTypeLabel,1,0)
+$tableLayoutPanel2.Controls.Add($ADSearchUsersRadioButton,1,1)
+$tableLayoutPanel2.Controls.Add($ADSearchComputersRadioButton,1,2)
+$tableLayoutPanel2.Controls.Add($ADSearchServiceAccountsRadioButton,1,3)
+    #column 3
+$tableLayoutPanel2.Controls.Add($ADAccountStatusLabel,2,0)
+$tableLayoutPanel2.Controls.Add($ADAccountExpirationLabel,2,1)
+$tableLayoutPanel2.Controls.Add($ADAccountEnableLabel,2,2)
+$tableLayoutPanel2.Controls.Add($ADAccountUnlockLabel,2,3)
+$tableLayoutPanel2.Controls.Add($ADAccountRequiresSmartcardLabel,2,4)
+    #column 4
+$tableLayoutPanel2.Controls.Add($ADAccountActionsLabel,3,0)
+$tableLayoutPanel2.Controls.Add($ADAccountExpiryDatePicker,3,1)
+$tableLayoutPanel2.Controls.Add($ADAccountEnableButton,3,2)
+$tableLayoutPanel2.Controls.Add($ADAccountRequiresSmartcardCheckBox,3,3)
+$tableLayoutPanel2.Controls.Add($ADGetGroupMembershipButton,3,4)
+
+$tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::Fill
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,35)))
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,25)))
+
+# $tableLayoutPanel2.CellBorderStyle = "Inset"
+
+$tableLayoutPanel1.Controls.Add($tableLayoutPanel2,0,0)
+$tableLayoutPanel1.Controls.Add($DisplayInfoBox,1,0)
+$tableLayoutPanel1.Dock = [System.Windows.Forms.DockStyle]::Fill
+$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30)))
+$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 70)))
+
+# $tableLayoutPanel1.CellBorderStyle = "Inset"
 
 #endregion
 
@@ -119,23 +171,29 @@ $handler_ADLookupButton_Click =
                 $true { "Disable Account";break }
                 $false { "Enable Account";break }
             }
-            $ADAccountExpiryDatePicker.Text = $objPrincipal.AccountExpirationDate
             $ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate)"
+            $ADAccountRequiresSmartcardLabel.Text = "Smartcard Required: $($objPrincipal.SmartcardLogonRequired)"
             $ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
             $ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
 
             $ADGetGroupMembershipButton.Visible=$true
 
-            if ($objPrincipal.ObjectClass -eq 'user') {
+            if ($objPrincipal.ObjectClass -in @('user','msDS-GroupManagedServiceAccount')) {
+                $ADAccountExpiryDatePicker.Value = switch($objPrincipal.AccountExpirationDate) {
+                    $null { $ADAccountExpiryDatePicker.MaxDate }
+                    default { $PSItem }
+                }
                 $ADAccountStatusLabel.Visible = $true
                 $ADAccountExpirationLabel.Visible = $true
                 $ADAccountEnableLabel.Visible = $true
                 $ADAccountUnlockLabel.Visible = $true
-                $ADAccountRequiresSmartcardLabel.Visible = $true
                 $ADAccountActionsLabel.Visible = $true
                 $ADAccountEnableButton.Visible = $true
-                $ADAccountRequiresSmartcardCheckBox.Visible = $true
                 $ADAccountExpiryDatePicker.Visible = $true
+                if ($objPrincipal.ObjectClass -eq 'user') {
+                    $ADAccountRequiresSmartcardLabel.Visible = $true
+                    $ADAccountRequiresSmartcardCheckBox.Visible = $true
+                }
             }
         }
     }
@@ -304,15 +362,25 @@ $handler_ADAccountRequiresSmartCardCheckbox_Click =
     }
 }
 
+$handler_ADAccountExpiryDatePicker_DropDown =
+{ 
+    Write-Host "Datepicker Clicked."
+    $Script:ADAccountExpiryDatePickerClicked = $true
+}
+
 $handler_ADAccountExpiryDatePicker_Changed =
 {   try {
-        $expiry = $ADAccountExpiryDatePicker.Text
-        $ans = [System.Windows.MessageBox]::Show("Set Account Expiration to $($expiry)?", "Verify Action",`
-            [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
-        if ($ans -eq "Yes") {
-            Set-ADAccountExpiration $objPrincipal -DateTime $expiry
-            [System.Windows.MessageBox]::Show("Updated Account Expiration Date. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
-                [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        Write-Host "Datepicker Value Changed."
+        if ($Script:ADAccountExpiryDatePickerClicked) {
+            $expiry = $ADAccountExpiryDatePicker.Text
+            $ans = [System.Windows.MessageBox]::Show("Set Account Expiration to $($expiry)?", "Verify Action",`
+                [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+            if ($ans -eq "Yes") {
+                $Script:ADAccountExpiryDatePickerClicked = !$Script:ADAccountExpiryDatePickerClicked
+                Set-ADAccountExpiration $objPrincipal -DateTime $expiry
+                [System.Windows.MessageBox]::Show("Updated Account Expiration Date. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
+                    [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            }
         }
     }
     catch {
@@ -363,12 +431,7 @@ $form.StartPosition = "WindowsDefaultLocation"
 #region Username label
 $ADUserLabel.Text = "Enter a Username"
 $ADUserLabel.AutoSize = $true
-$ADUserLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = 15
-$System_Drawing_Point.Y = 15
-$ADUserLabel.Location = $System_Drawing_Point
-$form.Controls.Add($ADUserLabel)
+$ADUserLabel.Font = $BoldBoxFont
 #endregion
 
 #region Username input textbox
@@ -377,11 +440,6 @@ $ADPrincipalTextBox.Height = 15
 $ADPrincipalTextBox.Name = "ADUserInput"
 $ADPrincipalTextBox.Multiline = $false
 $ADPrincipalTextBox.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADUserLabel.Location.X 
-$System_Drawing_Point.Y = $ADUserLabel.Bottom + 5
-$ADPrincipalTextBox.Location = $System_Drawing_Point
-$form.Controls.Add($ADPrincipalTextBox)
 #endregion
 
 #region Lookup User Button
@@ -392,23 +450,13 @@ $ADLookupButton.AutoSizeMode = "GrowAndShrink"
 $ADLookupButton.UseVisualStyleBackColor = $True
 $ADLookupButton.Text = "Lookup User"
 $ADLookupButton.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADPrincipalTextBox.Location.X
-$System_Drawing_Point.Y = $ADPrincipalTextBox.Bottom + 10
-$ADLookupButton.Location = $System_Drawing_Point
 $ADLookupButton.add_Click($handler_ADLookupButton_Click)
-$form.Controls.Add($ADLookupButton)
 #endregion
 
 #region search type label
 $ADSearchTypeLabel.Text = "Search Type"
 $ADSearchTypeLabel.AutoSize = $true
-$ADSearchTypeLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADPrincipalTextBox.Right + 30
-$System_Drawing_Point.Y = $ADUserLabel.Top
-$ADSearchTypeLabel.Location = $System_Drawing_Point
-$form.Controls.Add($ADSearchTypeLabel)
+$ADSearchTypeLabel.Font = $BoldBoxFont
 #endregion
 
 #region user search radiobutton
@@ -416,13 +464,8 @@ $ADSearchUsersRadioButton.Name = "ADUserSearchUsersRadioButton"
 $ADSearchUsersRadioButton.Text = "Users"
 $ADSearchUsersRadioButton.Font = $BoxFont
 $ADSearchUsersRadioButton.Checked = $true
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADSearchTypeLabel.Left + 10
-$System_Drawing_Point.Y = $ADPrincipalTextBox.Top
-$ADSearchUsersRadioButton.Location = $System_Drawing_Point
 $ADSearchUsersRadioButton.UseVisualStyleBackColor = $True
 $ADSearchUsersRadioButton.add_Click($handler_ADSearchUsersRadioButton_Click)
-$form.Controls.Add($ADSearchUsersRadioButton)
 #endregion
 
 #region computer search radiobutton
@@ -430,13 +473,8 @@ $ADSearchComputersRadioButton.Name = "ADUserSearchComputersRadioButton"
 $ADSearchComputersRadioButton.Text = "Computers"
 $ADSearchComputersRadioButton.Font = $BoxFont
 $ADSearchComputersRadioButton.Checked = $false
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADSearchUsersRadioButton.Left
-$System_Drawing_Point.Y = $ADSearchUsersRadioButton.Bottom
-$ADSearchComputersRadioButton.Location = $System_Drawing_Point
 $ADSearchComputersRadioButton.UseVisualStyleBackColor = $True
 $ADSearchComputersRadioButton.add_Click($handler_ADSearchComputersRadioButton_Click)
-$form.Controls.Add($ADSearchComputersRadioButton)
 #endregion
 
 #region service account search radiobutton
@@ -445,118 +483,70 @@ $ADSearchServiceAccountsRadioButton.Text = "Service Accounts"
 $ADSearchServiceAccountsRadioButton.Font = $BoxFont
 $ADSearchServiceAccountsRadioButton.AutoSize = $true
 $ADSearchServiceAccountsRadioButton.Checked = $false
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADSearchUsersRadioButton.Left
-$System_Drawing_Point.Y = $ADSearchComputersRadioButton.Bottom
-$ADSearchServiceAccountsRadioButton.Location = $System_Drawing_Point
 $ADSearchServiceAccountsRadioButton.UseVisualStyleBackColor = $True
 $ADSearchServiceAccountsRadioButton.add_Click($handler_ADSearchServiceAccountsRadioButton_Click)
-$form.Controls.Add($ADSearchServiceAccountsRadioButton)
 #endregion
 
 #region Account Status Label
 $ADAccountStatusLabel.Name = "ADAccountStatusLabel"
 $ADAccountStatusLabel.Text = "Account Status"
 $ADAccountStatusLabel.Font = $BoldBoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADSearchServiceAccountsRadioButton.Location.X + $ADSearchServiceAccountsRadioButton.PreferredSize.Width + 50
-$System_Drawing_Point.Y = $ADUserLabel.Top
-$ADAccountStatusLabel.Location = $System_Drawing_Point
 $ADAccountStatusLabel.AutoSize = $true
-$form.Controls.Add($ADAccountStatusLabel)
 #endregion
 
 #region Account Expiration Label
 $ADAccountExpirationLabel.Name = "ADAccountExpirationLabel"
 $ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate)"
 $ADAccountExpirationLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountStatusLabel.Bottom
-$ADAccountExpirationLabel.Location = $System_Drawing_Point
 $ADAccountExpirationLabel.AutoSize = $true
-$form.Controls.Add($ADAccountExpirationLabel)
 #endregion
 
 #region Account Enabled Label
 $ADAccountEnableLabel.Name = "ADAccountEnabledLabel"
 $ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
 $ADAccountEnableLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountExpirationLabel.Bottom
-$ADAccountEnableLabel.Location = $System_Drawing_Point
 $ADAccountEnableLabel.AutoSize = $true
-$form.Controls.Add($ADAccountEnableLabel)
 #endregion
 
 #region Account Locked Label
 $ADAccountUnlockLabel.Name = "ADAccountUnlockedLabel"
 $ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
 $ADAccountUnlockLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountEnableLabel.Bottom
-$ADAccountUnlockLabel.Location = $System_Drawing_Point
 $ADAccountUnlockLabel.AutoSize = $true
-$form.Controls.Add($ADAccountUnlockLabel)
 #endregion
 
 #region smartcard logon required Label
 $ADAccountRequiresSmartcardLabel.Name = "ADAccountSmartcardRequiredLabel"
 $ADAccountRequiresSmartcardLabel.Text = "Smartcard Required: $($objPrincipal.SmartcardLogonRequired)"
 $ADAccountRequiresSmartcardLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountUnlockLabel.Bottom
-$ADAccountRequiresSmartcardLabel.Location = $System_Drawing_Point
 $ADAccountRequiresSmartcardLabel.AutoSize = $true
-$form.Controls.Add($ADAccountRequiresSmartcardLabel)
 #endregion
 
 #region Display text box
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADLookupButton.Location.X
-$System_Drawing_Point.Y = $ADAccountRequiresSmartcardLabel.Bottom + 20
-$DisplayInfoBox.Location = $System_Drawing_Point
-$System_Drawing_Size = New-Object System.Drawing.Size
-$System_Drawing_Size.Width = $form.ClientSize.Width-$DisplayInfoBox.Location.X * 2
-$System_Drawing_Size.Height = $form.ClientSize.Height - ($ADAccountRequiresSmartcardLabel.Location.Y + $ADAccountRequiresSmartcardLabel.PreferredSize.Height) - 35
-$DisplayInfoBox.Size = $System_Drawing_Size
 $DisplayInfoBox.Name = "DisplayInfoBox"
 $DisplayInfoBox.Multiline = $true
 $DisplayInfoBox.Scrollbars = "Both"
 $DisplayInfoBox.Readonly = $true
 $DisplayInfoBox.Font = $BoxFont
 $DisplayInfoBox.Font = [System.Drawing.Font]::new($BoxFont.FontFamily, $BoxFont.Size-2, $BoxFont.Style)
-$form.Controls.Add($DisplayInfoBox)
+$DisplayInfoBox.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+-bor [System.Windows.Forms.AnchorStyles]::Bottom `
+-bor [System.Windows.Forms.AnchorStyles]::Left `
+-bor [System.Windows.Forms.AnchorStyles]::Right
 #endregion
 
 #region account actions label
 $ADAccountActionsLabel.Name = "ADAccountActionsLabel"
 $ADAccountActionsLabel.Text = "Account Actions"
-$ADAccountActionsLabel.Font = $BoxFont
+$ADAccountActionsLabel.Font = $BoldBoxFont
 $ADAccountActionsLabel.AutoSize = $true
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountRequiresSmartcardLabel.Location.X + $ADAccountRequiresSmartcardLabel.PreferredWidth + 50
-$System_Drawing_Point.Y = $ADAccountStatusLabel.Top
-$ADAccountActionsLabel.Location = $System_Drawing_Point
-$form.Controls.Add($ADAccountActionsLabel)
 #endregion
 
 #region Account expiry datepicker
 $ADAccountExpiryDatePicker.Name = "ADAccountExpiryDatePicker"
-$ADAccountExpiryDatePicker.Value = switch ($objPrincipal.AccountExpirationDate) {
-    $null { $ADAccountExpiryDatePicker.MaxDate;break }
-    default { $PSItem }
-}
 $ADAccountExpiryDatePicker.AutoSize = $true
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountActionsLabel.Location.Y + $ADAccountActionsLabel.PreferredHeight
-$ADAccountExpiryDatePicker.Location = $System_Drawing_Point
+$ADAccountExpiryDatePicker.add_DropDown($handler_ADAccountExpiryDatePicker_DropDown)
 $ADAccountExpiryDatePicker.add_ValueChanged($handler_ADAccountExpiryDatePicker_Changed)
-$form.Controls.Add($ADAccountExpiryDatePicker)
 #endregion
 
 #region Enable/Disable Account button
@@ -567,12 +557,7 @@ $ADAccountEnableButton.Text = switch ($objPrincipal.Enabled) {
 }
 $ADAccountEnableButton.Font = $BoxFont
 $ADAccountEnableButton.AutoSize = $true
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountExpiryDatePicker.Location.Y + $ADAccountExpiryDatePicker.PreferredSize.Height + 2
-$ADAccountEnableButton.Location = $System_Drawing_Point
 $ADAccountEnableButton.add_Click($handler_ADAccountEnableButton_Click)
-$form.Controls.Add($ADAccountEnableButton)
 #endregion
 
 #region Account requires smartcard checkbox
@@ -581,28 +566,27 @@ $ADAccountRequiresSmartcardCheckBox.Text = "SmartcardLogonRequired"
 $ADAccountRequiresSmartcardCheckBox.AutoSize = $true
 $ADAccountRequiresSmartcardCheckBox.Font = $BoxFont
 $ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountEnableButton.Location.Y + $ADAccountEnableButton.PreferredSize.Height + 2
-$ADAccountRequiresSmartcardCheckBox.Location = $System_Drawing_Point
+# $System_Drawing_Point = New-Object System.Drawing.Point
+# $System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
+# $System_Drawing_Point.Y = $ADAccountEnableButton.Location.Y + $ADAccountEnableButton.PreferredSize.Height + 2
+# $ADAccountRequiresSmartcardCheckBox.Location = $System_Drawing_Point
 $ADAccountRequiresSmartcardCheckBox.UseVisualStyleBackColor = $True
 $ADAccountRequiresSmartcardCheckBox.add_Click($handler_ADAccountRequiresSmartCardCheckbox_Click)
-$form.Controls.Add($ADAccountRequiresSmartcardCheckBox)
+# $form.Controls.Add($ADAccountRequiresSmartcardCheckBox)
 #endregion
 
 #region Enumerate group memberships Button
 $ADGetGroupMembershipButton.Name = "ADGetGroupMembershipButton"
-$System_Drawing_Size = New-Object System.Drawing.Size
 $ADGetGroupMembershipButton.AutoSize = $true
 $ADGetGroupMembershipButton.UseVisualStyleBackColor = $True
 $ADGetGroupMembershipButton.Text = "Get Group Membership"
 $ADGetGroupMembershipButton.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountRequiresSmartcardCheckBox.Bottom
-$ADGetGroupMembershipButton.Location = $System_Drawing_Point
+# $System_Drawing_Point = New-Object System.Drawing.Point
+# $System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
+# $System_Drawing_Point.Y = $ADAccountRequiresSmartcardCheckBox.Bottom
+# $ADGetGroupMembershipButton.Location = $System_Drawing_Point
 $ADGetGroupMembershipButton.add_Click($handler_ADGetGroupMembershipButton_Click)
-$form.Controls.Add($ADGetGroupMembershipButton)
+# $form.Controls.Add($ADGetGroupMembershipButton)
 #endregion
 
 #region AD Groups List box
@@ -677,6 +661,7 @@ $form.Controls.Add($UpdateGroupMembershipsButton)
 #endregion
 #endregion
 
+$form.Controls.AddRange(@($tableLayoutPanel1))
 $form.ResumeLayout()
 
 # set control visibility on form load
