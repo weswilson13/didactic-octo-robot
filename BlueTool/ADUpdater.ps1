@@ -16,7 +16,10 @@ function Reset-Form {
     $ADAccountEnableLabel.Visible = $false
     $ADAccountUnlockLabel.Visible = $false
     $ADAccountEnableButton.Visible = $false
+    $ADAccountRequiresSmartcardLabel.Visible = $false
     $ADAccountRequiresSmartcardCheckBox.Visible = $false
+    $ADAccountActionsLabel.Visible = $false
+    $ADAccountExpiryDatePicker.Visible = $false
 }
 
 Add-Type -AssemblyName System.Windows.Forms
@@ -47,6 +50,8 @@ $ADAccountStatusLabel = New-Object System.Windows.Forms.Label
 $ADAccountExpirationLabel = New-Object System.Windows.Forms.Label
 $ADAccountEnableLabel = New-Object System.Windows.Forms.Label
 $ADAccountUnlockLabel = New-Object System.Windows.Forms.Label
+$ADAccountRequiresSmartcardLabel = New-Object System.Windows.Forms.Label
+$ADAccountActionsLabel = New-Object System.Windows.Forms.Label
 
 # Text boxes
 $ADPrincipalTextBox = New-Object System.Windows.Forms.TextBox
@@ -61,6 +66,7 @@ $AddGroupButton = New-Object System.Windows.Forms.Button
 $RemoveGroupButton = New-Object System.Windows.Forms.Button
 $UpdateGroupMembershipsButton = New-Object System.Windows.Forms.Button
 $ADAccountEnableButton = New-Object System.Windows.Forms.Button
+$ADAccountSetExpiryButton = New-Object System.Windows.Forms.Button
 
 # List views
 # $VulnIDBox = New-Object System.Windows.Forms.ListView
@@ -68,6 +74,9 @@ $ADAccountEnableButton = New-Object System.Windows.Forms.Button
 # ListBoxes
 $ADGroupsBox = New-Object System.Windows.Forms.ListBox
 $ADGroupMembershipBox = New-Object System.Windows.Forms.ListBox
+
+# Datepicker
+$ADAccountExpiryDatePicker = New-Object System.Windows.Forms.DateTimePicker
 
 # ComboBoxes
 # $AFKeys = New-Object System.Windows.Forms.ComboBox
@@ -104,6 +113,16 @@ $handler_ADLookupButton_Click =
             }
             $DisplayInfoBox.Text = $objPrincipal | Out-String
 
+            # set control values that depend on the AD Object
+            $ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
+            $ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate)"
+            $ADAccountExpiryDatePicker.Value = switch($objPrincipal.AccountExpirationDate) {
+                $null { $ADAccountExpiryDatePicker.MaxDate;break }
+                default { $PSItem }
+            } 
+            $ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
+            $ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
+
             $ADGetGroupMembershipButton.Visible=$true
 
             if ($objPrincipal.ObjectClass -eq 'user') {
@@ -111,8 +130,11 @@ $handler_ADLookupButton_Click =
                 $ADAccountExpirationLabel.Visible = $true
                 $ADAccountEnableLabel.Visible = $true
                 $ADAccountUnlockLabel.Visible = $true
+                $ADAccountRequiresSmartcardLabel.Visible = $true
+                $ADAccountActionsLabel.Visible = $true
                 $ADAccountEnableButton.Visible = $true
                 $ADAccountRequiresSmartcardCheckBox.Visible = $true
+                $ADAccountExpiryDatePicker.Visible = $true
             }
         }
     }
@@ -359,24 +381,6 @@ $ADLookupButton.add_Click($handler_ADLookupButton_Click)
 $form.Controls.Add($ADLookupButton)
 #endregion
 
-#region Display text box
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADLookupButton.Location.X
-$System_Drawing_Point.Y = $ADLookupButton.Bottom + 20
-$DisplayInfoBox.Location = $System_Drawing_Point
-$System_Drawing_Size = New-Object System.Drawing.Size
-$System_Drawing_Size.Width = $form.ClientSize.Width-$DisplayInfoBox.Location.X * 2
-$System_Drawing_Size.Height = $form.ClientSize.Height - $ADLookupButton.Bottom - 35
-$DisplayInfoBox.Size = $System_Drawing_Size
-$DisplayInfoBox.Name = "DisplayInfoBox"
-$DisplayInfoBox.Multiline = $true
-$DisplayInfoBox.Scrollbars = "Both"
-$DisplayInfoBox.Readonly = $true
-$DisplayInfoBox.Font = $BoxFont
-$DisplayInfoBox.Font = [System.Drawing.Font]::new($BoxFont.FontFamily, $BoxFont.Size-2, $BoxFont.Style)
-$form.Controls.Add($DisplayInfoBox)
-#endregion
-
 #region search type label
 $ADSearchTypeLabel.Text = "Search Type"
 $ADSearchTypeLabel.AutoSize = $true
@@ -431,6 +435,141 @@ $ADSearchServiceAccountsRadioButton.add_Click($handler_ADSearchServiceAccountsRa
 $form.Controls.Add($ADSearchServiceAccountsRadioButton)
 #endregion
 
+#region Account Status Label
+$ADAccountStatusLabel.Name = "ADAccountStatusLabel"
+$ADAccountStatusLabel.Text = "Account Status"
+$ADAccountStatusLabel.Font = $BoldBoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADSearchServiceAccountsRadioButton.Location.X + $ADSearchServiceAccountsRadioButton.PreferredSize.Width + 50
+$System_Drawing_Point.Y = $ADUserLabel.Top
+$ADAccountStatusLabel.Location = $System_Drawing_Point
+$ADAccountStatusLabel.AutoSize = $true
+$form.Controls.Add($ADAccountStatusLabel)
+#endregion
+
+#region Account Expiration Label
+$ADAccountExpirationLabel.Name = "ADAccountExpirationLabel"
+$ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate)"
+$ADAccountExpirationLabel.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountStatusLabel.Bottom
+$ADAccountExpirationLabel.Location = $System_Drawing_Point
+$ADAccountExpirationLabel.AutoSize = $true
+$form.Controls.Add($ADAccountExpirationLabel)
+#endregion
+
+#region Account Enabled Label
+$ADAccountEnableLabel.Name = "ADAccountEnabledLabel"
+$ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
+$ADAccountEnableLabel.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountExpirationLabel.Bottom
+$ADAccountEnableLabel.Location = $System_Drawing_Point
+$ADAccountEnableLabel.AutoSize = $true
+$form.Controls.Add($ADAccountEnableLabel)
+#endregion
+
+#region Account Locked Label
+$ADAccountUnlockLabel.Name = "ADAccountUnlockedLabel"
+$ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
+$ADAccountUnlockLabel.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountEnableLabel.Bottom
+$ADAccountUnlockLabel.Location = $System_Drawing_Point
+$ADAccountUnlockLabel.AutoSize = $true
+$form.Controls.Add($ADAccountUnlockLabel)
+#endregion
+
+#region smartcard logon required Label
+$ADAccountRequiresSmartcardLabel.Name = "ADAccountSmartcardRequiredLabel"
+$ADAccountRequiresSmartcardLabel.Text = "Smartcard Required: $($objPrincipal.SmartcardLogonRequired)"
+$ADAccountRequiresSmartcardLabel.Font = $BoxFont
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountUnlockLabel.Bottom
+$ADAccountRequiresSmartcardLabel.Location = $System_Drawing_Point
+$ADAccountRequiresSmartcardLabel.AutoSize = $true
+$form.Controls.Add($ADAccountRequiresSmartcardLabel)
+#endregion
+
+#region Display text box
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADLookupButton.Location.X
+$System_Drawing_Point.Y = $ADAccountRequiresSmartcardLabel.Bottom + 20
+$DisplayInfoBox.Location = $System_Drawing_Point
+$System_Drawing_Size = New-Object System.Drawing.Size
+$System_Drawing_Size.Width = $form.ClientSize.Width-$DisplayInfoBox.Location.X * 2
+$System_Drawing_Size.Height = $form.ClientSize.Height - ($ADAccountRequiresSmartcardLabel.Location.Y + $ADAccountRequiresSmartcardLabel.PreferredSize.Height) - 35
+$DisplayInfoBox.Size = $System_Drawing_Size
+$DisplayInfoBox.Name = "DisplayInfoBox"
+$DisplayInfoBox.Multiline = $true
+$DisplayInfoBox.Scrollbars = "Both"
+$DisplayInfoBox.Readonly = $true
+$DisplayInfoBox.Font = $BoxFont
+$DisplayInfoBox.Font = [System.Drawing.Font]::new($BoxFont.FontFamily, $BoxFont.Size-2, $BoxFont.Style)
+$form.Controls.Add($DisplayInfoBox)
+#endregion
+
+#region account actions label
+$ADAccountActionsLabel.Name = "ADAccountActionsLabel"
+$ADAccountActionsLabel.Text = "Account Actions"
+$ADAccountActionsLabel.Font = $BoxFont
+$ADAccountActionsLabel.AutoSize = $true
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountRequiresSmartcardLabel.Location.X + $ADAccountRequiresSmartcardLabel.PreferredWidth + 50
+$System_Drawing_Point.Y = $ADAccountStatusLabel.Top
+$ADAccountActionsLabel.Location = $System_Drawing_Point
+$form.Controls.Add($ADAccountActionsLabel)
+#endregion
+
+#region Account expiry datepicker
+$ADAccountExpiryDatePicker.Name = "ADAccountExpiryDatePicker"
+$ADAccountExpiryDatePicker.Value = switch ($objPrincipal.AccountExpirationDate) {
+    $null { $ADAccountExpiryDatePicker.MaxDate;break }
+    default { $PSItem }
+}
+$ADAccountExpiryDatePicker.AutoSize = $true
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountActionsLabel.Location.Y + $ADAccountActionsLabel.PreferredHeight
+$ADAccountExpiryDatePicker.Location = $System_Drawing_Point
+$form.Controls.Add($ADAccountExpiryDatePicker)
+#endregion
+
+#region Enable/Disable Account button
+$ADAccountEnableButton.Name = "ADAccountEnableButton"
+$ADAccountEnableButton.Text = switch ($objPrincipal.Enabled) {
+    $true { "Disable Account";break }
+    $false { "Enable Account";break }
+}
+$ADAccountEnableButton.Font = $BoxFont
+$ADAccountEnableButton.AutoSize = $true
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountExpiryDatePicker.Location.Y + $ADAccountExpiryDatePicker.PreferredSize.Height + 2
+$ADAccountEnableButton.Location = $System_Drawing_Point
+$ADAccountEnableButton.add_Click($handler_ADAccountEnableButton_Click)
+$form.Controls.Add($ADAccountEnableButton)
+#endregion
+
+#region Account requires smartcard checkbox
+$ADAccountRequiresSmartcardCheckBox.Name = "ADAccountRequiresSmartcard"
+$ADAccountRequiresSmartcardCheckBox.Text = "SmartcardLogonRequired"
+$ADAccountRequiresSmartcardCheckBox.AutoSize = $true
+$ADAccountRequiresSmartcardCheckBox.Font = $BoxFont
+$ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
+$System_Drawing_Point = New-Object System.Drawing.Point
+$System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountEnableButton.Location.Y + $ADAccountEnableButton.PreferredSize.Height + 2
+$ADAccountRequiresSmartcardCheckBox.Location = $System_Drawing_Point
+$ADAccountRequiresSmartcardCheckBox.UseVisualStyleBackColor = $True
+$ADAccountRequiresSmartcardCheckBox.add_Click($handler_ADAccountRequiresSmartCardCheckbox_Click)
+$form.Controls.Add($ADAccountRequiresSmartcardCheckBox)
+#endregion
+
 #region Enumerate group memberships Button
 $ADGetGroupMembershipButton.Name = "ADGetGroupMembershipButton"
 $System_Drawing_Size = New-Object System.Drawing.Size
@@ -439,8 +578,8 @@ $ADGetGroupMembershipButton.UseVisualStyleBackColor = $True
 $ADGetGroupMembershipButton.Text = "Get Group Membership"
 $ADGetGroupMembershipButton.Font = $BoxFont
 $System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADSearchUsersRadioButton.Right + 15
-$System_Drawing_Point.Y = $ADSearchUsersRadioButton.Top
+$System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
+$System_Drawing_Point.Y = $ADAccountRequiresSmartcardCheckBox.Bottom
 $ADGetGroupMembershipButton.Location = $System_Drawing_Point
 $ADGetGroupMembershipButton.add_Click($handler_ADGetGroupMembershipButton_Click)
 $form.Controls.Add($ADGetGroupMembershipButton)
@@ -515,85 +654,6 @@ $System_Drawing_Point.Y = $ADSearchUsersRadioButton.Top
 $UpdateGroupMembershipsButton.Location = $System_Drawing_Point
 $UpdateGroupMembershipsButton.add_Click($handler_UpdateGroupMembershipButton_Click)
 $form.Controls.Add($UpdateGroupMembershipsButton)
-#endregion
-
-#region Account Status Label
-$ADAccountStatusLabel.Name = "ADAccountStatusLabel"
-$ADAccountStatusLabel.Text = "Account Status"
-$ADAccountStatusLabel.Font = $BoldBoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADGetGroupMembershipButton.Left + $ADGetGroupMembershipButton.PreferredSize.Width + 20
-$System_Drawing_Point.Y = $ADUserLabel.Top
-$ADAccountStatusLabel.Location = $System_Drawing_Point
-$ADAccountStatusLabel.AutoSize = $true
-$form.Controls.Add($ADAccountStatusLabel)
-#endregion
-
-#region Account Expiration Label
-$ADAccountExpirationLabel.Name = "ADAccountExpirationLabel"
-$ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate)"
-$ADAccountExpirationLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountStatusLabel.Bottom
-$ADAccountExpirationLabel.Location = $System_Drawing_Point
-$ADAccountExpirationLabel.AutoSize = $true
-$form.Controls.Add($ADAccountExpirationLabel)
-#endregion
-
-#region Account Enabled Label
-$ADAccountEnableLabel.Name = "ADAccountEnabledLabel"
-$ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
-$ADAccountEnableLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountExpirationLabel.Bottom
-$ADAccountEnableLabel.Location = $System_Drawing_Point
-$ADAccountEnableLabel.AutoSize = $true
-$form.Controls.Add($ADAccountEnableLabel)
-#endregion
-
-#region Account Locked Label
-$ADAccountUnlockLabel.Name = "ADAccountUnlockedLabel"
-$ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
-$ADAccountUnlockLabel.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X
-$System_Drawing_Point.Y = $ADAccountEnableLabel.Bottom
-$ADAccountUnlockLabel.Location = $System_Drawing_Point
-$ADAccountUnlockLabel.AutoSize = $true
-$form.Controls.Add($ADAccountUnlockLabel)
-#endregion
-
-#region Enable/Disable Account button
-$ADAccountEnableButton.Name = "ADAccountEnableButton"
-$ADAccountEnableButton.Text = switch ($objPrincipal.Enabled) {
-    $true { "Disable Account";break }
-    $false { "Enable Account";break }
-}
-$ADAccountEnableButton.Font = $BoxFont
-$ADAccountEnableButton.AutoSize = $true
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountEnableLabel.Location.X + $ADAccountEnableLabel.PreferredWidth + 20
-$System_Drawing_Point.Y = $ADAccountEnableLabel.Top - 5
-$ADAccountEnableButton.Location = $System_Drawing_Point
-$ADAccountEnableButton.add_Click($handler_ADAccountEnableButton_Click)
-$form.Controls.Add($ADAccountEnableButton)
-#endregion
-
-#region Account requires smartcard checkbox
-$ADAccountRequiresSmartcardCheckBox.Name = "ADAccountRequiresSmartcard"
-$ADAccountRequiresSmartcardCheckBox.Text = "SmartcardLogonRequired"
-$ADAccountRequiresSmartcardCheckBox.AutoSize = $true
-$ADAccountRequiresSmartcardCheckBox.Font = $BoxFont
-$ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADAccountStatusLabel.Location.X + $ADAccountStatusLabel.PreferredWidth + 50
-$System_Drawing_Point.Y = $ADAccountStatusLabel.Top
-$ADAccountRequiresSmartcardCheckBox.Location = $System_Drawing_Point
-$ADAccountRequiresSmartcardCheckBox.UseVisualStyleBackColor = $True
-$ADAccountRequiresSmartcardCheckBox.add_Click($handler_ADAccountRequiresSmartCardCheckbox_Click)
-$form.Controls.Add($ADAccountRequiresSmartcardCheckBox)
 #endregion
 #endregion
 
