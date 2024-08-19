@@ -79,9 +79,6 @@ $ADGroupMembershipBox = New-Object System.Windows.Forms.ListBox
 # Datepicker
 $ADAccountExpiryDatePicker = New-Object System.Windows.Forms.DateTimePicker
 
-# ComboBoxes
-# $AFKeys = New-Object System.Windows.Forms.ComboBox
-
 # RadioButtons
 $ADSearchUsersRadioButton = New-Object System.Windows.Forms.RadioButton
 $ADSearchComputersRadioButton = New-Object System.Windows.Forms.RadioButton
@@ -92,11 +89,43 @@ $ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
 
 # TableLayoutPanel
 $tableLayoutPanel1 = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel2 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel1.RowCount = 2 #how many rows
-$tableLayoutPanel1.ColumnCount = 1 #how many columns
+$tableLayoutPanel1.ColumnCount = 5 #how many columns
+
+$tableLayoutPanel1.SetColumnSpan($DisplayInfoBox,5)
+
+$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30)))
+$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 70)))
+
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5)))
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5)))
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,50)))
+
+$tableLayoutPanel1.Controls.Add($DisplayInfoBox,0,1)
+$tableLayoutPanel1.Controls.Add($ADGroupsBox,0,1)
+$tableLayoutPanel1.Controls.Add($RemoveGroupButton,1,1)
+$tableLayoutPanel1.Controls.Add($AddGroupButton,2,1)
+$tableLayoutPanel1.Controls.Add($ADGroupMembershipBox,3,1)
+
+$tableLayoutPanel1.Dock = [System.Windows.Forms.DockStyle]::Fill
+
+$tableLayoutPanel2 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel2.RowCount = 5
 $tableLayoutPanel2.ColumnCount = 4
+
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,35)))
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,25)))
+
     # column 1
 $tableLayoutPanel2.Controls.Add($ADUserLabel,0,0)
 $tableLayoutPanel2.Controls.Add($ADPrincipalTextBox,0,1)
@@ -118,29 +147,12 @@ $tableLayoutPanel2.Controls.Add($ADAccountExpiryDatePicker,3,1)
 $tableLayoutPanel2.Controls.Add($ADAccountEnableButton,3,2)
 $tableLayoutPanel2.Controls.Add($ADAccountRequiresSmartcardCheckBox,3,3)
 $tableLayoutPanel2.Controls.Add($ADGetGroupMembershipButton,3,4)
+$tableLayoutPanel2.Controls.Add($UpdateGroupMembershipsButton,3,4)
 
 $tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::Fill
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,35)))
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,25)))
-
-# $tableLayoutPanel2.CellBorderStyle = "Inset"
 
 $tableLayoutPanel1.Controls.Add($tableLayoutPanel2,0,0)
-$tableLayoutPanel1.Controls.Add($DisplayInfoBox,1,0)
-$tableLayoutPanel1.Dock = [System.Windows.Forms.DockStyle]::Fill
-$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30)))
-$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 70)))
-
-# $tableLayoutPanel1.CellBorderStyle = "Inset"
-
+$tableLayoutPanel1.SetColumnSpan($tableLayoutPanel2,5)
 #endregion
 
 #region event handlers
@@ -234,6 +246,8 @@ $handler_ADGetGroupMembershipButton_Click =
     if ($objPrincipal) {
         $DisplayInfoBox.Visible=$false
         $ADGroupsBox.Visible = $true
+        $RemoveGroupButton.Visible = $true
+        $AddGroupButton.Visible = $true
         $ADGroupMembershipBox.Visible = $true
         Get-ADGroup -Filter 'GroupScope -ne "DomainLocal"' | 
         Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
@@ -566,13 +580,8 @@ $ADAccountRequiresSmartcardCheckBox.Text = "SmartcardLogonRequired"
 $ADAccountRequiresSmartcardCheckBox.AutoSize = $true
 $ADAccountRequiresSmartcardCheckBox.Font = $BoxFont
 $ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
-# $System_Drawing_Point = New-Object System.Drawing.Point
-# $System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
-# $System_Drawing_Point.Y = $ADAccountEnableButton.Location.Y + $ADAccountEnableButton.PreferredSize.Height + 2
-# $ADAccountRequiresSmartcardCheckBox.Location = $System_Drawing_Point
 $ADAccountRequiresSmartcardCheckBox.UseVisualStyleBackColor = $True
 $ADAccountRequiresSmartcardCheckBox.add_Click($handler_ADAccountRequiresSmartCardCheckbox_Click)
-# $form.Controls.Add($ADAccountRequiresSmartcardCheckBox)
 #endregion
 
 #region Enumerate group memberships Button
@@ -581,83 +590,53 @@ $ADGetGroupMembershipButton.AutoSize = $true
 $ADGetGroupMembershipButton.UseVisualStyleBackColor = $True
 $ADGetGroupMembershipButton.Text = "Get Group Membership"
 $ADGetGroupMembershipButton.Font = $BoxFont
-# $System_Drawing_Point = New-Object System.Drawing.Point
-# $System_Drawing_Point.X = $ADAccountActionsLabel.Location.X
-# $System_Drawing_Point.Y = $ADAccountRequiresSmartcardCheckBox.Bottom
-# $ADGetGroupMembershipButton.Location = $System_Drawing_Point
 $ADGetGroupMembershipButton.add_Click($handler_ADGetGroupMembershipButton_Click)
-# $form.Controls.Add($ADGetGroupMembershipButton)
 #endregion
 
 #region AD Groups List box
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADLookupButton.Location.X
-$System_Drawing_Point.Y = $ADLookupButton.Bottom + 20
-$ADGroupsBox.Location = $System_Drawing_Point
-$System_Drawing_Size = New-Object System.Drawing.Size
-$System_Drawing_Size.Width = 200
-$System_Drawing_Size.Height = $form.ClientSize.Height - $ADLookupButton.Bottom - 35
-$ADGroupsBox.Size = $System_Drawing_Size
 $ADGroupsBox.SelectionMode = "MultiExtended"
 $ADGroupsBox.Name = "ADGroupsBox"
 $ADGroupsBox.Font = $BoxFont
-$form.Controls.Add($ADGroupsBox)
+$ADGroupsBox.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+-bor [System.Windows.Forms.AnchorStyles]::Bottom `
+-bor [System.Windows.Forms.AnchorStyles]::Left `
+-bor [System.Windows.Forms.AnchorStyles]::Right
 #endregion
 
 #region RemoveGroups button
 $RemoveGroupButton.Font = $BoxFont
 $RemoveGroupButton.Name = "RemoveGroupButton"
 $RemoveGroupButton.Text = "<-"
-$RemoveGroupButton.AutoSize = $true
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADGroupsBox.Right + 10
-$System_Drawing_Point.Y = $ADGroupsBox.Top + ($ADGroupsBox.Height - $RemoveGroupButton.Height)/2
-$RemoveGroupButton.Location = $System_Drawing_Point
+$RemoveGroupButton.Anchor = [System.Windows.Forms.AnchorStyles]::Left `
+-bor [System.Windows.Forms.AnchorStyles]::Right
 $RemoveGroupButton.add_Click($handler_RemoveGroupButton_Click)
-$form.Controls.Add($RemoveGroupButton)
 #endregion
 
 #region AddGroups button
 $AddGroupButton.Font = $BoxFont
 $AddGroupButton.Name = "AddGroupButton"
 $AddGroupButton.Text = "->"
-$AddGroupButton.AutoSize = $true
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $RemoveGroupButton.Right + 5
-$System_Drawing_Point.Y = $RemoveGroupButton.Top
-$AddGroupButton.Location = $System_Drawing_Point
+$AddGroupButton.Anchor = [System.Windows.Forms.AnchorStyles]::Left `
+-bor [System.Windows.Forms.AnchorStyles]::Right
 $AddGroupButton.add_Click($handler_AddGroupButton_Click)
-$form.Controls.Add($AddGroupButton)
 #endregion
 
 #region AD Group Membership List box
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $AddGroupButton.Right + 10
-$System_Drawing_Point.Y = $ADLookupButton.Bottom + 20
-$ADGroupMembershipBox.Location = $System_Drawing_Point
-$System_Drawing_Size = New-Object System.Drawing.Size
-$System_Drawing_Size.Width = 200
-$System_Drawing_Size.Height = $form.ClientSize.Height - $ADLookupButton.Bottom - 35
-$ADGroupMembershipBox.Size = $System_Drawing_Size
 $ADGroupMembershipBox.SelectionMode = "MultiExtended"
 $ADGroupMembershipBox.Name = "ADGroupMembershipBox"
 $ADGroupMembershipBox.Font = $BoxFont
-$form.Controls.Add($ADGroupMembershipBox)
+$ADGroupMembershipBox.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+-bor [System.Windows.Forms.AnchorStyles]::Bottom `
+-bor [System.Windows.Forms.AnchorStyles]::Left `
+-bor [System.Windows.Forms.AnchorStyles]::Right
 #endregion
 
 #region Update group memberships Button
 $UpdateGroupMembershipsButton.Name = "UpdateGroupMembershipsButton"
-$System_Drawing_Size = New-Object System.Drawing.Size
-$UpdateGroupMembershipsButton.AutoSize = $true
 $UpdateGroupMembershipsButton.UseVisualStyleBackColor = $True
 $UpdateGroupMembershipsButton.Text = "Update Group Membership"
 $UpdateGroupMembershipsButton.Font = $BoxFont
-$System_Drawing_Point = New-Object System.Drawing.Point
-$System_Drawing_Point.X = $ADSearchUsersRadioButton.Right + 30
-$System_Drawing_Point.Y = $ADSearchUsersRadioButton.Top
-$UpdateGroupMembershipsButton.Location = $System_Drawing_Point
 $UpdateGroupMembershipsButton.add_Click($handler_UpdateGroupMembershipButton_Click)
-$form.Controls.Add($UpdateGroupMembershipsButton)
 #endregion
 #endregion
 
