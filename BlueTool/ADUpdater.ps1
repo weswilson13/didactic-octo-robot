@@ -90,24 +90,25 @@ $ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
 # TableLayoutPanel
 $tableLayoutPanel1 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel1.RowCount = 2 #how many rows
-$tableLayoutPanel1.ColumnCount = 5 #how many columns
+$tableLayoutPanel1.ColumnCount = 6 #how many columns
 
-$tableLayoutPanel1.SetColumnSpan($DisplayInfoBox,5)
+$tableLayoutPanel1.SetColumnSpan($DisplayInfoBox,6)
 
 $tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30)))
 $tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 70)))
 
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5)))
 $tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
 $tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5)))
 $tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5)))
 $tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,50)))
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,45)))
 
 $tableLayoutPanel1.Controls.Add($DisplayInfoBox,0,1)
-$tableLayoutPanel1.Controls.Add($ADGroupsBox,0,1)
-$tableLayoutPanel1.Controls.Add($RemoveGroupButton,1,1)
-$tableLayoutPanel1.Controls.Add($AddGroupButton,2,1)
-$tableLayoutPanel1.Controls.Add($ADGroupMembershipBox,3,1)
+$tableLayoutPanel1.Controls.Add($ADGroupsBox,1,1)
+$tableLayoutPanel1.Controls.Add($RemoveGroupButton,2,1)
+$tableLayoutPanel1.Controls.Add($AddGroupButton,3,1)
+$tableLayoutPanel1.Controls.Add($ADGroupMembershipBox,4,1)
 
 $tableLayoutPanel1.Dock = [System.Windows.Forms.DockStyle]::Fill
 
@@ -152,7 +153,7 @@ $tableLayoutPanel2.Controls.Add($UpdateGroupMembershipsButton,3,4)
 $tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::Fill
 
 $tableLayoutPanel1.Controls.Add($tableLayoutPanel2,0,0)
-$tableLayoutPanel1.SetColumnSpan($tableLayoutPanel2,5)
+$tableLayoutPanel1.SetColumnSpan($tableLayoutPanel2,6)
 #endregion
 
 #region event handlers
