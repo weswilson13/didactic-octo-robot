@@ -22,15 +22,6 @@ function Reset-Form {
     if (!$ExceptPrincipal.IsPresent) { $ADPrincipalTextBox.ResetText() }
     $ADGetGroupMembershipButton.Visible = $false
     $UpdateGroupMembershipsButton.Visible = $false
-    # $ADGroupsBox.Visible = $false
-    # $ADGroupMembershipBox.Visible = $false
-    # $DisplayInfoBox.ResetText()
-    # $DisplayInfoBox.Visible = $true
-    # $DisplayTitleLabel.ResetText()
-    # $ADGroupsBox.Items.Clear()
-    # $AddGroupButton.Visible = $false
-    # $RemoveGroupButton.Visible = $false
-    # $ADGroupMembershipBox.Items.Clear()
     $ADAccountStatusLabel.Visible = $false
     $ADAccountExpirationLabel.Visible = $false
     $ADAccountEnableLabel.Visible = $false
@@ -40,10 +31,7 @@ function Reset-Form {
     $ADAccountRequiresSmartcardCheckBox.Visible = $false
     $ADAccountActionsLabel.Visible = $false
     $ADAccountSetExpiryButton.Visible = $false
-    # $ADAccountExpiryDatePicker.Visible = $false
-    # $ADAccountExpiryCheckbox.Visible = $false
-    # $UpdateExpiryButton.Visible = $false
-    # $tableLayoutPanel3.Visible = $false
+
     Clear-Console
 }
 
@@ -62,7 +50,7 @@ $null = [ProcessDPI]::SetProcessDPIAware()
 
 #region font objects
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
-$BodyFont = New-Object System.Drawing.Font("Calibri",18,[Drawing.FontStyle]::Bold)
+# $BodyFont = New-Object System.Drawing.Font("Calibri",18,[Drawing.FontStyle]::Bold)
 $BoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Regular)
 $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Bold)
 #endregion
@@ -122,16 +110,16 @@ $tableLayoutPanel1.SetColumnSpan($DisplayInfoBox,6)
 $tableLayoutPanel1.SetColumnSpan($ADAccountExpiryCheckbox,3)
 $tableLayoutPanel1.SetRowSpan($DisplayInfoBox,2)
 
-$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30)))
-$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 8)))
-$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 62)))
+$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30))) | Out-Null
+$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 8))) | Out-Null
+$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 62))) | Out-Null
 
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5)))
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5)))
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5)))
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,45)))
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,45))) | Out-Null
 
 # column 1
 $tableLayoutPanel1.Controls.Add($DisplayTitleLabel,0,1)
@@ -152,16 +140,16 @@ $tableLayoutPanel2 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel2.RowCount = 5
 $tableLayoutPanel2.ColumnCount = 4
 
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
-$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20)))
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20)))
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,35)))
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,25)))
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,35))) | Out-Null
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,25))) | Out-Null
 
     # column 1
 $tableLayoutPanel2.Controls.Add($ADUserLabel,0,0)
@@ -193,9 +181,9 @@ $tableLayoutPanel3.RowCount = 3 #how many rows
 $tableLayoutPanel3.ColumnCount = 1 #how many columns
 # $tableLayoutPanel3.CellBorderStyle = "Inset" 
 
-$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20)))
-$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20)))
-$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20)))
+$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
+$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
+$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
 
 $tableLayoutPanel3.Controls.Add($ADAccountExpiryDatePicker,0,0)
 $tableLayoutPanel3.Controls.Add($UpdateExpiryButton,0,2)
@@ -310,7 +298,7 @@ $handler_ADGetGroupMembershipButton_Click =
         $RemoveGroupButton.Visible = $true
         $AddGroupButton.Visible = $true
         $ADGroupMembershipBox.Visible = $true
-        Get-ADGroup -Filter 'GroupScope -ne "DomainLocal"' | 
+        Get-ADGroup -Filter 'GroupScope -ne "DomainLocal" -and Name -ne "Domain Users"' | 
         Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
         ForEach-Object {
             $ADGroupsBox.Items.Add($PSItem.Name)
@@ -363,17 +351,38 @@ $handler_RemoveGroupButton_Click =
 $handler_UpdateGroupMembershipButton_Click =
 {
     try {
+        $memberGroups = $objPrincipal.MemberOf.ForEach({Get-ADGroup -Filter "DistinguishedName -eq '$PSItem'"})
+        $removedGroups = @()
+        $addedGroups = @()
+
         # remove groups
-        $objPrincipal.MemberOf.Where({ $_ -notin $ADGroupMembershipBox.Items }) | ForEach-Object {
-            Get-ADGroup $PSItem | Remove-ADGroupMember -Members $objPrincipal -Confirm:$false
+        $groupsToRemove = $memberGroups | Where-Object { $_.SamAccountName -notin $ADGroupMembershipBox.Items }
+        $groupsToRemove | ForEach-Object {
+            Write-Host "Removed $($objPrincipal.SamAccountName) from $($PSItem.SamAccountName)"
+            $removedGroups += "  {0}" -f $PSItem.SamAccountName
+            $PSItem | Remove-ADGroupMember -Members $objPrincipal -Confirm:$false -ErrorAction Stop
         }
         
         # add groups
-        $ADGroupMembershipBox.Items.Where({ $_ -notin $objPrincipal.MemberOf }) | ForEach-Object {
-            Get-ADGroup $PSItem | Add-ADGroupMember -Members $objPrincipal -Confirm:$false
+        $ADGroupMembershipBox.Items.Where({ $_ -notin $memberGroups.SamAccountName }) | ForEach-Object {
+            $group = Get-ADGroup $PSItem 
+            Write-Host "Added $($objPrincipal.SamAccountName) to $($group.SamAccountName)"
+            $addedGroups += "  {0}" -f $group.SamAccountName
+            $group | Add-ADGroupMember -Members $objPrincipal -Confirm:$false -ErrorAction Stop
         }
         
-        [System.Windows.MessageBox]::Show("Finished updating group membership", "Group Membership Update Success",`
+        $message = "Finished modifying group membership for $($objPrincipal.SamAccountName).`n"
+        if ($removedGroups) {
+            $message = $message + "`nRemoved $($objPrincipal.SamAccountName) from the following groups:`n$($removedGroups | Out-String)"
+        }
+        if ($addedGroups) {
+            $message = $message + "`nAdded $($objPrincipal.SamAccountName) to the following groups:`n$($addedGroups | Out-String)"
+        }
+
+        # update the AD object variable
+        $Script:objPrincipal = Get-ADUser $objPrincipal -Properties *
+
+        [System.Windows.MessageBox]::Show($message, "Group Membership Update Success",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
     }
     catch {
@@ -393,28 +402,28 @@ $handler_ADAccountEnableButton_Click =
             $false { "Enable" }
         }
 
-        $message = "Are you sure you want to $action $($objPrincipal.SamAccountName)?"
+        $message = "Are you sure you want to $($action.ToLower()) $($objPrincipal.SamAccountName)?"
         $ans = [System.Windows.MessageBox]::Show($message, "Verify Action",`
             [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Exclamation)
         if ($ans -eq "Yes") {
             Invoke-Expression "$action-ADAccount `$objPrincipal -Confirm:`$false"
-        }
 
-        $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
-        $ADAccountEnableButton.Text = switch($objPrincipal.Enabled) {
-            $true { "Disable Account";break }
-            $false { "Enable Account";break }
-        }
-        Write-Host $ADAccountEnableButton.Text
-        $ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
+            $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
+            $ADAccountEnableButton.Text = switch($objPrincipal.Enabled) {
+                $true { "Disable Account";break }
+                $false { "Enable Account";break }
+            }
+            Write-Host $ADAccountEnableButton.Text
+            $ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
 
-        $state = switch($objPrincipal.Enabled) {
-            $true { "Enabled";break }
-            $false { "Disabled";break }
-        }
+            $state = switch($objPrincipal.Enabled) {
+                $true { "Enabled";break }
+                $false { "Disabled";break }
+            }
 
-        [System.Windows.MessageBox]::Show("Account was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Account Enable/Disable Success",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            [System.Windows.MessageBox]::Show("Account was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Account Enable/Disable Success",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        }
     }
     catch {
         $error[0] | Out-String | Write-Error
