@@ -48,6 +48,8 @@ public class ProcessDPI {
 
 $null = [ProcessDPI]::SetProcessDPIAware()
 
+Import-Module -Name "$PSScriptRoot\Modules\ActiveDirectory"
+
 #region font objects
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
 # $BodyFont = New-Object System.Drawing.Font("Calibri",18,[Drawing.FontStyle]::Bold)
@@ -535,14 +537,6 @@ $handler_UpdateExpiryButton_Click =
 
 $handler_formclose =
   {
-    # if (($SaveButton.Enabled -eq $True) -and ($SaveButton.Visible -eq $True)){
-    #   $confirm = [System.Windows.MessageBox]::Show("$AFFilePath is not saved. Save and Exit?", "Confirmation", "YesNo", "Question")
-  
-    #   if ($confirm -eq "Yes") {
-    #     &$handler_SaveButton_Click
-    #   }
-    # }
-  
     1..3 | ForEach-Object {[GC]::Collect()}
   
     $form.Dispose()
