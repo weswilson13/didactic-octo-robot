@@ -55,6 +55,7 @@ function Reset-Form {
 }
 
 #dot sourced functions
+. "$PSScriptRoot\Functions\Write-Log.ps1"
 . "$PSScriptRoot\Functions\Get-DisabledComputers.ps1"
 . "$PSScriptRoot\Functions\Get-DomainControllers.ps1"
 . "$PSScriptRoot\Functions\Get-InactiveComputers.ps1"
@@ -82,7 +83,8 @@ public class ProcessDPI {
 
 $null = [ProcessDPI]::SetProcessDPIAware()
 
-Import-Module ActiveDirectory
+Import-Module ActiveDirectory,PSIni
+Import-Module SqlServer -MinimumVersion 22.0.0
 
 #region font objects
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
@@ -364,10 +366,12 @@ $handler_ADLookupButton_Click =
                     $ADAccountRequiresSmartcardCheckBox.Visible = $true
                 }
             }
+            Write-Log -Message "$env:USERNAME looked up account properties for $($objPrincipal.SamAccountName)" -Severity Information
         }
     }
     catch {
         $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
         [System.Windows.MessageBox]::Show("Unable to find $principal", "Active Directory Search Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     } 
@@ -399,23 +403,29 @@ $handler_ADSearchServiceAccountsRadioButton_Click =
 
 $handler_ADGetGroupMembershipButton_Click =
 {
-    Write-Host "Get Group Memberships"
-    Clear-Console
-    if ($objPrincipal) {
-        $DisplayInfoBox.Visible=$false
-        $DisplayTitleLabel.Text = "Group Membership"
-        $ADGroupsBox.Visible = $true
-        $RemoveGroupButton.Visible = $true
-        $AddGroupButton.Visible = $true
-        $ADGroupMembershipBox.Visible = $true
-        Get-ADGroup -Filter 'GroupScope -ne "DomainLocal" -and Name -ne "Domain Users"' | 
-        Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
-        ForEach-Object {
-            $ADGroupsBox.Items.Add($PSItem.Name)
+    try {
+        Write-Host "Get Group Memberships"
+        Clear-Console
+        if ($objPrincipal) {
+            $DisplayInfoBox.Visible=$false
+            $DisplayTitleLabel.Text = "Group Membership"
+            $ADGroupsBox.Visible = $true
+            $RemoveGroupButton.Visible = $true
+            $AddGroupButton.Visible = $true
+            $ADGroupMembershipBox.Visible = $true
+            Get-ADGroup -Filter 'GroupScope -ne "DomainLocal" -and Name -ne "Domain Users"' | 
+            Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
+            ForEach-Object {
+                $ADGroupsBox.Items.Add($PSItem.Name)
+            }
+            $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
+            Write-Log -Message "$env:USERNAME enumerated group membership for $($objPrincipal.SamAccountName)" -Severity Information
         }
-        $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
     }
-    
+    catch {
+        $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
+    }
 }
 
 $handler_AddGroupButton_Click = 
@@ -494,8 +504,12 @@ $handler_UpdateGroupMembershipButton_Click =
 
         [System.Windows.MessageBox]::Show($message, "Group Membership Update Success",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        
+        Write-Log -Message "$env:USERNAME $($message.Replace('Finished modifying', 'modified'))" -Severity Information
     }
     catch {
+        $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
         [System.Windows.MessageBox]::Show($error[0].Exception.Message, "Group Membership Update Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -533,10 +547,13 @@ $handler_ADAccountEnableButton_Click =
 
             [System.Windows.MessageBox]::Show("Account was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Account Enable/Disable Success",`
                 [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            
+                Write-Log -Message "$env:USERNAME $state account $($objPrincipal.SamAccountName)" -Severity Information
         }
     }
     catch {
         $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
         [System.Windows.MessageBox]::Show("Unable to update account", "Account Enable/Disable Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -563,6 +580,8 @@ $handler_ADAccountRequiresSmartCardCheckbox_Click =
 
             [System.Windows.MessageBox]::Show("SmartcardLogonRequired was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Toggle SmartcardLogonRequired Attribute",`
                 [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        
+                Write-Log -Message "$env:USERNAME $state SmartcardLogonRequired for account $($objPrincipal.SamAccountName)" -Severity Information
         }
         if ($ans -eq "No") {
             $ADAccountRequiresSmartcardCheckBox.Checked = $false
@@ -570,6 +589,7 @@ $handler_ADAccountRequiresSmartCardCheckbox_Click =
     }
     catch {
         $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
         [System.Windows.MessageBox]::Show("Unable to update account", "SmartcardLogonRequired Enable/Disable Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -597,7 +617,9 @@ $handler_ADAccountClearExpiryButton_Click =
             Clear-ADAccountExpiration $objPrincipal
             [System.Windows.MessageBox]::Show("Account Expiration cleared. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
                 [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-        
+            
+            Write-Log -Message "$env:USERNAME cleared Account Expiration for account $($objPrincipal.SamAccountName)" -Severity Information
+
             $DisplayInfoBox.Visible = $true
             $DisplayTitleLabel.Text = "Account Properties"
             $tableLayoutPanel3.Visible = $false
@@ -606,6 +628,7 @@ $handler_ADAccountClearExpiryButton_Click =
     }
     catch {
         $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
         [System.Windows.MessageBox]::Show("Unable to clear account expiration", "Expiry update Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -623,6 +646,8 @@ $handler_UpdateExpiryButton_Click =
                 [System.Windows.MessageBox]::Show("Updated Account Expiration Date. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
                     [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
 
+                Write-Log -Message "$env:USERNAME changed account expiration date for account $($objPrincipal.SamAccountName)" -Severity Information
+
                 $DisplayInfoBox.Visible = $true
                 $DisplayTitleLabel.Text = "Account Properties"
                 $ADAccountExpiryDatePicker.Visible = $false
@@ -634,6 +659,7 @@ $handler_UpdateExpiryButton_Click =
     }
     catch {
         $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
         [System.Windows.MessageBox]::Show("Unable to update account expiration", "Account update Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -734,10 +760,13 @@ $handler_ADAccountUnlockUserAccountButton_Click =
 
             [System.Windows.MessageBox]::Show("Account unlocked.", "Unlock Account",`
                 [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)  
+        
+            Write-Log -Message "$env:USERNAME unlocked account $($objPrincipal.SamAccountName)" -Severity Information
         }
     }
     catch {
         $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
         [System.Windows.MessageBox]::Show("Unable to unlock account", "Account Unlock Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -768,11 +797,14 @@ $handler_UpdatePasswordButton_Click =
             [System.Windows.MessageBox]::Show("Password Reset Successfully.", "Reset Password",`
                 [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
             
+            Write-Log -Message "$env:USERNAME reset password for account $($objPrincipal.SamAccountName)" -Severity Information
+            
             Clear-Console
         }
     }
     catch {
         $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
         [System.Windows.MessageBox]::Show("Unable to reset password", "Password Reset Failed",`
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -781,9 +813,40 @@ $handler_UpdatePasswordButton_Click =
 $handler_formclose =
   {
     1..3 | ForEach-Object {[GC]::Collect()}
-  
+    
+    Write-Log -Message "$env:USERNAME ended the session." -Severity Information 
+    
     $form.Dispose()
-  }
+
+    try {
+        Write-Host "Importing Session Log"
+        $ini = Get-IniContent .\config.ini
+        $serverInstance = $ini.DatabaseConfig.SqlServerInstance
+        $databaseName = $ini.DatabaseConfig.Database
+        $schemaName = $ini.DatabaseConfig.Schema
+        $tableName = $ini.DatabaseConfig.Table
+
+        $sessionLog = Import-Csv $env:Temp\LogFile.csv
+
+        Write-Log -Message "Importing Session Logs" -Severity Information
+
+        $sqlParameters = @{
+            InputData=$sessionLog
+            ServerInstance=$serverInstance
+            DatabaseName=$databaseName
+            SchemaName = $schemaName
+            TableName=$tableName
+            Force=$true
+        }
+        Write-SqlTableData @sqlParameters
+        Remove-Item $env:USERNAME\LogFile.csv -Force
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        [System.Windows.MessageBox]::Show("Failed to import session logs.", "Application Logging Failure",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+}
 #endregion
 
 $form = New-Object System.Windows.Forms.Form
@@ -1178,5 +1241,6 @@ Reset-Form
 $form.Add_FormClosed($handler_formclose)
 
 #Show the Form
+Write-Log -Message "$env:USERNAME started a new session." -Severity Information 
 $form.ShowDialog()
 # $null = [Windows.Forms.Application]::Run($form)
