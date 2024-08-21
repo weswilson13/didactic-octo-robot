@@ -1,0 +1,856 @@
+<!-- User Interface for creating new user accounts, Verified JKD, 2024-05-21
+2013-06-14, J. Dahl, modified to allow use across domains (NRCS admin logged in on NRCS computer to create NNPTC accounts
+2013-07-31, J. Dahl, modified the file paths to use UNC vice the DFS path because of issues seen in deleting accounts.  Also removed the check for Exchange 2003 tools since they are no longer necessary
+2013-09-04, J. Dahl, modified to create a batch file vice launching the create user script directly from the HTA.  This method seems to have more success.
+2013-09-19, J. Dahl, modified to re-add the NPTC-GEN category back to normal users since this was what the 5939 had and the email on 2013-07-06 was ambiguous (said none for SAC categories for general users which actually meant to not remove users
+2014-12-31, J. Dahl, updated to use NNPTC1FSC3
+2018-12-10, J. Dahl, updated to use NNPTC1FS4
+2020-07-23, J. Dahl, updated to use SQLNCLI11 vice deprecated SQLOLEDB provider
+2024-05-21, J. Dahl, updated to use NNPTC1SQC6
+ -->
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>NRCS Account Utility for NNPTC Users</title>
+<script language="vbscript">
+<!-- Insert code, subroutines, and functions here -->
+Dim strSchool, strOE, strTask, strScriptPath, objNetwork, strCurrentUser, PID
+
+' 2011-04-11, J. Dahl, insert code to look for admin in the user name and alert the user if it is not present
+Set objNetwork = CreateObject("WScript.Network")
+strCurrentUser = UCase(objNetwork.UserName)
+Set objNetwork = Nothing
+If InStr(1, LCase(strCurrentUser), "admin") = 0 Then
+	Alert("You are not logged on as your Administrative User.  Although the application will open and may function correctly, you should close the application and follow the instructions below to ensure proper auditing of your activities." & vbCrLf & vbCrLf & "Please open a command prompt and type the following to run this application as your administrative user:" & vbCrLf & vbCrLf & "runas \u:NNPTC1\adminusername ""mshta \\nrcs.nnpp.gov\dfs\shared\nnptc\w_drives\isd\scripts\newuserscripts\newuser.hta""")
+End If
+
+Sub GetGroups(strType)
+	Dim intSlash
+	Dim objConnection, objCommand, objRS, objShell
+	Dim aryOU(1)
+	Set objConnection = CreateObject("ADODB.Connection")
+	objConnection.Provider = "ADsDSOObject"
+	objConnection.Open
+	Set objCommand = CreateObject("ADODB.Command")
+	Set objCommand.ActiveConnection = objConnection
+	objCommand.Properties("Sort On") = "Name"
+	'Alert strType
+
+	aryOU(0) = "LDAP://nnptc1.nnpp.gov/OU=NNPTC1 Groups,DC=NNPTC1,DC=NNPP,DC=GOV"
+	aryOU(1) = "LDAP://nrcs.nnpp.gov/OU=NPTC,OU=NTK,OU=NRCS Groups,DC=NRCS,DC=NNPP,DC=GOV"
+
+	For Each strOU In aryOU
+
+		objCommand.CommandText = "<" & strOU & ">; (objectCategory=group);Name,ADsPath;SubTree"
+
+		Set objRS = objCommand.Execute
+
+		Do While Not objRS.EOF
+			'MsgBox(objRS("Name"))
+			If (strType = "" Or strType = "normal") And (Instr(1, LCase(objRS("Name")), "exam") = 0 And Instr(1, LCase(objRS("Name")), "comp") = 0 and Instr(1, LCase(objRS("Name")), "divisional") = 0 And Instr(1, LCase(objRS("Name")), "pre-school") = 0 And Instr(1, LCase(objRS("Name")), "power_prep") = 0 )  Then
+				Call AddAvailableGroup(objRS("Name"), objRS("ADsPath"))
+			ElseIf strType = "exam" And (Instr(1, LCase(objRS("Name")), "exam") > 0 or Instr(1, LCase(objRS("Name")), "divisional") > 0 Or Instr(1, LCase(objRS("Name")), "pre-school") > 0 And Instr(1, LCase(objRS("Name")), "power_prep") > 0) Then
+				Call AddAvailableGroup(objRS("Name"), objRS("ADsPath"))
+			ElseIf strType = "comp" And (Instr(1, LCase(objRS("Name")), "comp") > 0 Or Instr(1, LCase(objRS("AdsPath")), "cn=exam writers") > 0) Then
+				Call AddAvailableGroup(objRS("Name"), objRS("ADsPath"))
+			ElseIf strType = "helper" And Instr(1, LCase(objRS("Name")), "helper") > 0 Then
+				Call AddAvailableGroup(objRS("Name"), objRS("ADsPath"))
+			Else
+				' blank by design
+			End If
+			objRS.MoveNext
+		Loop
+		objRS.Close
+
+	Next
+
+	objConnection.Close
+	Set objConnection = Nothing
+
+	If strType = "" Or strType = "normal" Then
+
+		' add default groups for all users
+		AddGroup("NPTC-GEN")
+		AddGroup("NNPTC-Users")
+		'AddGroup("NNPTC1 NavFit Restricted Group")
+		AddGroup("DTS E-6 And Below")
+		AddGroup("LDAP://nrcs.nnpp.gov/CN=Users.NNPTC.All,OU=Site Users,OU=NRCS Groups,DC=nrcs,DC=nnpp,dc=gov")
+
+		txtPhone.Value = "(843) 794-"
+
+		rdoActType(0).Checked = True
+		rdoNTK(1).Checked = True
+		rdoSchool(0).Checked = True
+		strSchool = "dts"
+		rdoOfficerEnlisted(0).Checked = True
+		strOE = "enlisted"
+		strTask = "create"
+		'Call FindExchange2003Tools()
+		Call SetEmailGroups
+		strScriptPath = document.location.pathname
+		intSlash = InStrRev(strScriptPath, "\")
+		strScriptPath = Left(strScriptPath, intSlash)
+	End If
+
+End Sub
+
+Sub AddAvailableGroup(strGroup, strLDAP)
+	Set objOption = document.createElement("OPTION")
+	objOption.Text = strGroup
+	' 2016-01-26, J. Dahl, changed to try to fix issues on adding people to groups
+	objOption.Value = strLDAP
+	lstGroups.Add(objOption)
+End Sub
+
+Sub FindExchange2003Tools()
+	' 2013-07-31, J. Dahl, this check is no longer necessary
+	' 	Dim fso
+	' 	Set fso = CreateObject("Scripting.FileSystemObject")
+	' 	If Not fso.FileExists("c:\program files\exchsrvr\bin\Exchange System Manager.msc") Then
+	' 		Alert "Exchange 2003 Management Tools are not installed on this computer." & VbCrLf & "You will not be able to create a user until the tools are installed." & _
+	' 		vbCrLf & VbCrLf & "Install Exch Tools.exe from \\nnptc1hd01\d$\GhostAIPackages"
+	' 		chkMail.checked = False
+	' 	End If
+	'
+	' 	Set fso = Nothing
+End Sub
+
+Sub ShowGroups()
+	Dim arySplit, strGroupName, strSplit, intPos, strGroup
+	strTemp = ""
+	For i = 0 To lstGroups.Options.Length - 1
+		If lstGroups.Options(i).Selected Then
+			strTemp = strTemp & lstGroups.Options(i).Value & "<br>"
+			strGroup = lstGroups.Options(i).Value
+			Set objOption = document.createElement("OPTION")
+			' get just the group name from the LDAP string
+			arySplit = Split(strGroup, ",")
+			For Each strSplit In arySplit
+				intPos = InStr(1, strSplit, "=")
+				If intPos <> 0 Then
+					strGroupName = Mid(strSplit, intPos+1, Len(strSplit) - intPos)
+					Exit For
+				End If
+			Next
+			objOption.Text = strGroupName
+			objOption.Value = strGroup
+			lstGroupsForUser.Add(objOption)
+		End if
+	Next
+	GroupsSelected.InnerHTML = strTemp
+End Sub
+
+Sub RemoveGroups()
+	' create an array of the selected items
+	Dim aryGroups(), intCounter
+	intCounter = 0
+	For i = 0 To lstGroupsForUser.Options.Length - 1
+		If lstGroupsForUser.Options(i).Selected Then
+			ReDim Preserve aryGroups(i)
+			aryGroups(i) = lstGroupsForUser.Options(i).Value
+			intCounter = intCounter + 1
+		End If
+	Next
+	If intCounter <> 0 Then
+		For Each objOption In lstGroupsForUser
+			For i = 0 To UBound(aryGroups)
+				If objOption.Value = aryGroups(i) Then
+					objOption.RemoveNode
+				End If
+			Next
+
+		Next
+	End If
+End Sub
+
+Function Groups()
+	' output all groups this user will belong to in a comma separated list
+	Dim strTemp
+	strTemp = ""
+	For i = 0 To lstGroupsForUser.Options.Length - 1
+		' filter out any duplicate groups
+		If InStr(1, strTemp, lstGroupsForUser.Options(i).Value) = 0 Then
+			strTemp = lstGroupsForUser.Options(i).Value & ";" & strTemp
+		End If
+	Next
+	Groups = Left(strTemp, Len(strTemp) - 1) ' remove the last comma
+End Function
+
+Sub ExecuteTask()
+	'Alert "Executing the desired task " & strTask
+	Select Case strTask
+		Case "create"
+			Call CreateUser
+		Case "unlock"
+			Call PasswordUnlock
+		Case "reset"
+			Call PasswordUnlock
+		Case "delete"
+			Call PasswordUnlock
+		Case "enable"
+			Call PasswordUnlock
+		Case "find"
+			Call FindUser
+	End Select
+End Sub
+
+Sub PasswordUnlock()
+	If IsUserNameFound(False, False) Then
+		Dim strRun, strAnswer
+		If strTask = "delete" Then
+			strAnswer = InputBox("Are you sure you want to delete user: " & txtUserName.Value & "?" & vbCrLf & vbCrLf & "Enter y for yes or n for no.", "Delete User?", "n")
+		End If
+		If (strTask = "delete" And strAnswer = "y") Or strTask <> "delete" Then
+			strRun = "cscript //nologo \\nrcs.nnpp.gov\dfs\shared\nnptc\w_drives\isd\scripts\newuserscripts\UserMaintenanceNRCS.vbs """ & Trim(txtUserName.Value) & "|" & strTask & ""
+			Dim objShell
+			Set objShell = CreateObject("WScript.Shell")
+			objShell.Run strRun, 1, True
+			'Alert "strTask = " & strTask & vbCrLf & "strAnswer = " & strAnswer
+			Set objShell = Nothing
+			Alert "User " & txtUserName.Value & " has been updated."
+			If strTask = "reset" Then Alert "You must watch the user change their Global Password now."
+		End If
+	Else
+		Alert "The user name you typed: " & txtUserName.Value & " was not found in Active Directory.  Please verify the username and run the program again."
+		Exit Sub
+	End If
+End Sub
+
+Sub CreateUser()
+	' need to first look for this username in the global catalog.  If present, don't quit this
+	' application or send data to a separate script
+	' need to put in data validation (are all of the fields actually used)
+
+	If txtUserName.Value = "" Then
+		Alert "You must supply a UserName for this application to work properly."
+		Exit Sub
+	End If
+
+	If txtPRD.Value <> "" Then
+		If Not IsDate(txtPRD.Value) Then
+			Alert "You entered " & txtPRD.Value & " in the PRD field.  This is not a valid date."
+			Exit Sub
+		End if
+	End If
+
+	' data validation starts here
+	If txtPRD.Value <> "" Then
+		If Not IsDate(txtPRD.Value) Then
+			bOK = False
+		End If
+	End If
+
+	If Not IsUserNameFound(True, True) Then
+		' format the output to send data to the script to actually create the user
+		Dim strRun
+		If CheckNOTEPAD = False then
+			Alert "CAUTION, you can create this user using the output generated, but inform Jim Dahl and Mike O'Neill about the user creation since the user's NOTEPAD access will be restricted"
+		end if
+ 		strRun = "cls" & vbCrLf & vbCrLf & "cscript //nologo \\nrcs.nnpp.gov\dfs\shared\nnptc\w_drives\isd\scripts\newuserscripts\newusernrcs.vbs """ & Trim(txtUserName.Value) & "|" & Trim(txtFName.Value) & "|" & Trim(txtLName.Value) & "|" & Trim(txtRate.Value) & "|" & Trim(txtOffice.Value) & _
+ 		"|" & Trim(txtPhone.Value) & "|" & Trim(txtPRD.Value) & "|" & Trim(txtDescription.Value) & "|" & Groups & "|" & chkMail.Checked & "|" & chkInstructor.Checked & "|" & PID & Chr(34) & vbCrLf & vbCrLf & "REM Created by " & strCurrentUser & " on " & Now
+
+		Dim objShell
+		Set objShell = CreateObject("WScript.Shell")
+		Dim fso1, objOutput
+		Set fso1 = CreateObject("scripting.FileSystemObject")
+		Set objOutput = fso1.CreateTextFile("\\nrcs.nnpp.gov\dfs\shared\nnptc\w_drives\isd\scripts\newuserscripts\UsersCreated\" & Trim(txtUserName.Value) & ".txt")
+		objOutput.WriteLine strRun
+		Alert "Copy the contents of the file that pops up into an administrative command prompt.  Send any errors directly to Jim Dahl.  Verify the account using Active Directory Users and Computers when the script completes."
+		objShell.Run "notepad.exe \\nrcs.nnpp.gov\dfs\shared\nnptc\w_drives\isd\scripts\newuserscripts\UsersCreated\" & Trim(txtUserName.Value) & ".txt"
+		'objShell.Run strRun, 1, True
+		Set objShell = Nothing
+		'Alert "User " & txtUserName.Value & " has been created." & vbCrLf & vbCrLf & "Please re-run the UserDrivePermissions.bat file in this folder to ensure all settings take effect."
+	End If
+End Sub ' Create User
+
+Function CheckNOTEPAD()
+	' connect to SQL Server to find the user PID in NOTEPAD
+	Dim intNPUsers
+	' Create a connection to the SQL Server database
+	Set cn = CreateObject("ADODB.Connection")
+	cn.Provider = "MSOLEDBSQL.1"
+	cn.Open "Server=NNPTC1SQC6\NNPTC,9998;initial catalog=NP-NNPTC;Integrated Security=SSPI;Encrypt=Yes"
+	Set objCMD = CreateObject("ADODB.Command")
+	Set objCMD.ActiveConnection = cn
+	strSQL = "Select PID from NP.PRSNL_PEOPLE where First_Name = '" & Trim(txtFName.Value) & "' and Last_Name = '" & Trim(txtLName.Value) & "' and PRSGROUP = 'STAFF' and  Prefix like '" & Trim(txtRate.Value) & "%' and Departure_Date is Null"
+	Alert strSQL
+	objCMD.CommandText = strSQL
+	Set rs = objCMD.Execute
+
+	if rs.EOF then
+		Alert "This person was not found in NOTEPAD.  Please check the spelling of the first and last names and the rate assigned before attempting to continue."
+		CheckNOTEPAD = False
+	else
+		Do Until rs.EOF
+			intNPUsers = intNPUsers + 1
+			PID = rs("PID")
+			'Alert PID
+			rs.MoveNext
+		Loop
+		rs.close
+		if intNPUsers = 1 then
+			CheckNOTEPAD = True
+		else
+			Alert "More than 1 user was returned with this first name, last name, and rate.  Please inform Jim Dahl and Mike O'Neill about this user creation so that NOTEPAD can be updated."
+			CheckNOTEPAD = True
+		End if
+	end if
+	cn.Close
+
+End Function
+
+Function IsUserNameFound(bCheck, bCreate)
+	strEMail = "@nnpp.gov"
+	strUserName = txtUserName.Value
+	If (InStr(1, strUserName, "_EXAM") <> 0 Or InStr(1, strUserName, "_COMP") <> 0 Or InStr(1, strUserName, "_HELPER") <> 0) and bCreate = True Then strEMail = "@mil"
+	strUPN = Trim(strUserName) & strEMail
+
+	' check to see if this username is available in the NNPP forest
+
+	Set objCont = GetObject("GC:")
+	For Each objGC in objCont
+		strADSPath = objGC.ADsPath
+	Next
+
+	Set objConnection = CreateObject("ADODB.Connection")
+	objConnection.Provider = "ADsDSOObject"
+	objConnection.Open
+	Set objCommand = CreateObject("ADODB.Command")
+	Set objCommand.ActiveConnection = objConnection
+	objCommand.Properties("Sort On") = "Name"
+	'Alert(strUPN)
+
+	objCommand.CommandText = "<" & strADSPath & ">; (&(objectClass=user)(objectCategory=person)(userPrincipalName=" & strUPN & "));userPrincipalName,ADsPath"
+
+	Set objRS = objCommand.Execute
+
+
+	If objRS.BOF And objRS.EOF Then
+		bOK = True
+	Else
+		bOK = False
+	end If
+
+	If bOK Then
+		IsUserNameFound = False
+	Else
+		IsUserNameFound = True
+		' alert the user that the username was found in Active Directory
+		If bCheck Then
+			Alert objRS.Fields("userPrincipalName") & " found! " & objRS.Fields("ADsPath") & _
+			VbCrLf & vbCrLf & "Please run this program again and choose another username for this user."
+		End if
+	End If
+
+	objRS.Close
+	objConnection.Close
+
+
+End Function
+
+Sub FindUser()
+	' find a user based on some criteria (probably last name)
+	Dim strOutput
+	strUserName = txtUserName.Value
+
+	Set objConnection = CreateObject("ADODB.Connection")
+	objConnection.Provider = "ADsDSOObject"
+	objConnection.Open
+	Set objCommand = CreateObject("ADODB.Command")
+	Set objCommand.ActiveConnection = objConnection
+	objCommand.Properties("Sort On") = "displayName"
+
+	'objCommand.CommandText = "<" & strADSPath & ">; (&(objectClass=user)(objectCategory=person)(displayName=*" & strUserName & "*));userPrincipalName,displayName,ADsPath,samAccountName"
+	objCommand.CommandText = "<LDAP://NRCS.NNPP.GOV>; (&(objectClass=user)(objectCategory=person)(displayName=*" & strUserName & "*));userPrincipalName,displayName,ADsPath,samAccountName"
+
+	Set objRS = objCommand.Execute
+
+	If Not objRS.EOF Then
+		FoundUsers.style.display = "inline"
+		strOutput = "Click on a username to put it into the UserName field above.  This will allow you to operate on the user's account (unlock/reset password/delete).<br><br>Click on the ""Get User Groups"" button to retrieve a text file containing this user's group memberships."
+		strOutput = strOutput & "<table border=""1""><tr><th colspan=""4"">Found Users</th></tr><tr><th>UserName</th><th>Display </th><th>AD Path</th><th>Get User Groups</th></tr>"
+		Do Until objRS.EOF
+			'Alert "User found " & objRS("userPrincipalName")
+			'<a onclick=""GetComputerModel('" & objRS("Model") & "')"">" & objRS("Model") & "</a>
+			strOutput = strOutput & "<tr><td><a onclick=""UpdateUserName('" & objRS("samAccountName") & "')"">" & objRS("samAccountName") & "</a></td><td>" & objRS("displayName") & "</td><td>" & objRS("ADsPath") & "</td>"
+			strOutput = strOutput & "<td><input type=""button"" name=""btnGroups"" value=""Get User Groups"" onclick=""GetUserGroups('" & objRS("AdsPath") & "')"" language=""vbscript""></td></tr>"
+			txtUserName.Value = objRS("samAccountName")
+			objRS.MoveNext
+		Loop
+		strOutput = strOutput & "</table>"
+		objRS.Close
+		'Alert strOutput
+		FoundUsers.InnerHTML = strOutput
+	Else
+		Alert "No user found for given criteria."
+	End If
+	objConnection.Close
+
+End Sub
+
+Sub UpdateUserName(strUserName)
+	txtUserName.Value = strUserName
+End Sub
+
+Sub GetUserGroups(strAdsPath)
+	' find all groups that this person is a member of and pop up in a notepad window
+	Dim strOutput, objShell, strRun, fso, objOutput, strGroupName, intSlash
+	Const adVarChar = 200
+	Const MaxCharacters = 255
+	Set DataList = CreateObject("ADOR.Recordset")
+	DataList.Fields.Append "Group", adVarChar, MaxCharacters
+	DataList.Open
+	Set fso = CreateObject("Scripting.FileSystemObject")
+	Set objOutput = fso.CreateTextFile(strScriptPath & "UserGroups.txt", 2, True)
+	Set objUser = GetObject(strAdsPath)
+	aryMemberOf = objUser.GetEx("memberOf")
+	For Each strGroup In aryMemberOf
+		strGroupName = Replace(strGroup, "CN=", "")
+		intSlash = InStr(strGroupName, ",")
+		strGroupName = Left(strGroupName, intSlash-1)
+		DataList.AddNew
+		DataList("Group") = strGroupName
+		DataList.Update
+	Next
+	DataList.Sort = "Group"
+	DataList.MoveFirst
+	Do Until DataList.Eof
+		strOutput = strOutput & DataList("Group") & vbCrLf
+		DataList.MoveNext
+	Loop
+	DataList.Close
+	Set DataList = Nothing
+	Set objUser = Nothing
+	objOutput.Write(strOutput)
+	objOutput.Close
+	Set fso = Nothing
+	Set objShell = CreateObject("WScript.Shell")
+	strRun = "notepad.exe " & strScriptPath & "usergroups.txt"
+	objShell.Run strRun
+	Set objShell = Nothing
+End Sub
+
+Sub AccountType()
+	' remove all groups in preparation for setting up a new set of default groups
+	Call RemoveAllGroups
+	RegularAccountInfo.Style.Display = "none"
+	If rdoActType(0).Checked Then
+		Call GetGroups("normal")
+		Call SetGroupsNormalUser
+		Alert "Normal Account"
+		chkMail.style.display = "inline"
+		chkMail.Checked = True
+		txtUserName.Value = ""
+		RegularAccountInfo.Style.Display = "inline"
+	End If
+	If rdoActType(1).Checked Then
+		Call GetGroups("exam")
+		Call SetGroupsExamUser
+		Alert "Exam Account"
+		chkMail.Checked = False
+		chkMail.style.display = "none"
+		txtUserName.value = "_EXAM"
+		txtDescription.value = "Exam Account ()"
+	End If
+	If rdoActType(2).Checked Then
+		Call GetGroups("comp")
+		Call SetGroupsExamUser
+		Alert "Comp Account"
+		chkMail.Checked = False
+		chkMail.style.display = "none"
+		txtUserName.value = "_COMP"
+		txtDescription.value = "Comp Account ()"
+	End If
+	If rdoActType(3).Checked Then
+		Call GetGroups("helper")
+		Call SetGroupsHelperUser
+		Alert "Student Helper"
+		chkMail.Checked = False
+		chkMail.style.display = "none"
+		txtUserName.value = "_HELPER"
+		txtDescription.value = "Student Helper Account"
+	End If
+	Call NTKAssignment
+End Sub
+
+Sub RemoveAllGroups()
+	' remove all groups so that they can be populated with the proper values
+	''Alert "Remove All Groups called"
+	For Each objOption In lstGroupsForUser
+		objOption.RemoveNode
+	Next
+	For Each objOption In lstGroups
+		objOption.RemoveNode
+	Next
+End Sub
+
+Sub SetGroupsNormalUser()
+	' add default groups for all users
+	'Alert "SetGroupsNormalUser fired"
+	AddGroup("NPTC-GEN")
+	AddGroup("NNPTC-Users")
+	'AddGroup("NNPTC1 NavFit Restricted Group")
+	AddGroup("Users.NNPTC.All")
+
+	rdoNTK(1).Checked = True
+	Call  SetEmailGroups
+End Sub
+
+Sub SetGroupsExamUser()
+	' add default groups for EXAM/COMP Account users
+	AddGroup("Exam Writers")
+	'AddGroup("NNPTC1 NavFit Restricted Group")
+	rdoNTK(0).Checked = True
+End Sub
+
+Sub SetGroupsHelperUser()
+	' add default groups for EXAM/COMP Account users
+	AddGroup("Helpers")
+	'AddGroup("NNPTC1 NavFit Restricted Group")
+	rdoNTK(0).Checked = True
+End Sub
+
+Sub SetGroupsNonNuke()
+	AddGroup("NPTC-GEN")
+End Sub
+
+Sub SetGroupsNuke()
+	AddGroup("NPTC-GEN")
+	' 2013-07-16, J. Dahl, removed NPTC-OPS for NUCS
+	'AddGroup("NPTC-OPS")
+	AddGroup("NPTC-REC")
+	AddGroup("NPTC-REP")
+	AddGroup("NPTC-SEP")
+	AddGroup("NPTC-TRA")
+	AddGroup("NUCS")
+End Sub
+
+Sub SetGroupsISD()
+	AddGroup("NPTC-GEN")
+	' 2013-07-16, J. Dahl, removed NPTC-CPS and NPTC-PPS for ISD users
+	'AddGroup("NPTC-CPS")
+	'AddGroup("NPTC-PPS")
+	AddGroup("ISD")
+End Sub
+
+Sub SetGroupsPhysSecurity()
+	' 2013-07-16, J. Dahl, removed NPTC-PPS for physical security users
+	AddGroup("NPTC-GEN")
+	'AddGroup("NPTC-PPS")
+End Sub
+
+Sub SetGroupsSeniorStaff()
+	Call SetGroupsNuke
+	' Use the AddGroup Subroutine here!!!
+	' 2013-07-16, J. Dahl, removed NPTC-CPS and NPTC-PPS for Senior Staff users
+	'AddGroup("NPTC-CPS")
+	'AddGroup("NPTC-PPS")
+End Sub
+
+Sub RemoveNTKGroups()
+	Dim aryGroups(), intCounter
+	intCounter = 0
+	For i = 0 To lstGroupsForUser.Options.Length - 1
+		If Instr(1, LCase(lstGroupsForUser.Options(i).Value), "cn=nptc") > 1 Or lstGroupsForUser.Options(i).Text = "NUCS" Or _
+		Instr(1, Lcase(lstGroupsForUser.Options(i).Value), "cn=isd") > 1  Then
+			ReDim Preserve aryGroups(i)
+			aryGroups(i) = lstGroupsForUser.Options(i).Value
+			intCounter = intCounter + 1
+		End If
+	Next
+	If intCounter <> 0 Then
+		For Each objOption In lstGroupsForUser
+			For i = 0 To UBound(aryGroups)
+				If objOption.Value = aryGroups(i) Then
+					objOption.RemoveNode
+				End If
+			Next
+
+		Next
+	End If
+End Sub
+
+
+Sub NTKAssignment()
+	'Alert "NTKAssignment Launched"
+	Call RemoveNTKGroups
+	If rdoNTK(0).Checked Then
+	End If
+	If rdoNTK(1).Checked Then Call SetGroupsNonNuke
+	If rdoNTK(2).Checked Then Call SetGroupsNuke
+	If rdoNTK(3).Checked Then Call SetGroupsISD
+	If rdoNTK(4).Checked Then Call SetGroupsPhysSecurity
+	If rdoNTK(5).Checked Then Call SetGroupsSeniorStaff
+End Sub
+
+Sub ChooseSchool()
+	' setup email groups based on School
+	If rdoSchool(0).Checked Then strSchool = "dts"
+	If rdoSchool(1).checked Then strSchool = "nfas"
+	If rdoSchool(2).checked Then strSchool = "nps"
+	Call SetEmailGroups
+End Sub
+
+Sub OfficerEnlisted()
+	' Setup email groups based on Officer/Enlisted
+	If rdoOfficerEnlisted(0).checked Then strOE = "enlisted" Else strOE = "officer"
+	Call SetEmailGroups
+
+End Sub
+
+Sub SetEmailGroups()
+	Call RemoveEmailGroups
+	' setup checkboxes so that they cannot be selected
+	If strOE = "officer" Then
+		chkCPO.Checked = False
+		chkCPO.style.display = "none"
+		chkSea.style.display = "inline"
+		chkDIO.style.display = "inline"
+		chkWardroom.style.display = "inline"
+	Else
+		chkDIO.Checked = False
+		chkWardroom.Checked = False
+		chkSea.Checked = False
+		chkCPO.style.display = "inline"
+		chkSea.style.display = "none"
+		chkDIO.style.display = "none"
+		chkWardroom.style.display = "none"
+	End If
+	' setup logic to determine email groups
+	If chkSea.Checked = True and strOE = "officer" Then AddGroup("SEA RETURNEE OFFICERS")
+	If chkCPO.Checked = True Then
+		Select Case strSchool
+			Case "dts"
+				AddGroup("DTS Chief Petty Officers")
+			Case "nfas"
+				AddGroup("NFAS Chief Petty Officers")
+			Case "nps"
+				AddGroup("NPS Chief Petty Officers")
+		End Select
+		AddGroup("CPO Community")
+	End If
+	If strOE = "enlisted" And chkCPO.Checked = False Then
+		Select Case strSchool
+			Case "dts"
+				AddGroup("DTS E-6 And Below")
+			Case "nfas"
+				AddGroup("NFAS E-6 And Below")
+			Case "nps"
+				AddGroup("NPS E-6 And Below")
+		End Select
+	End If
+	If strOE = "officer" Then
+		Select Case strSchool
+			Case "dts"
+				AddGroup("DTS Officers")
+			Case "nfas"
+				AddGroup("NFAS Officers")
+			Case "nps"
+				AddGroup("NPS Officers")
+		End Select
+		' wardroom or DIO checked?
+		If chkDIO.Checked Then AddGroup("DIO")
+		If chkWardroom.Checked Then AddGroup("WARDROOM")
+	End If
+	Select Case strSchool
+		Case "dts"
+			txtDescription.value = "DTS"
+		Case "nfas"
+			txtDescription.value = "NFAS Instructor ()"
+		Case "nps"
+			txtDescription.value = "NPS Instructor ()"
+	End Select
+	If rdoGender(1).Checked Then
+		AddGroup("NNPTC-All Staff Females")
+	End If
+
+End Sub
+
+
+Sub AddGroup(strGroup)
+	Dim arySplit, strGroupName, strSplit, intPos
+	' add a single group to the groups this user will be added to
+	' 2016-01-27, J. Dahl, added a check to get the LDAP path of the group vice the short name
+	For i = 0 To lstGroups.Options.Length - 1
+		'Alert lstGroups.Options(i).Value
+		If Instr(1, Lcase(lstGroups.Options(i).Value), "cn=" & LCase(strGroup) & ",") <> 0  Then
+			strGroup = lstGroups.Options(i).Value
+			Exit For
+		End If
+	Next
+	Set objOption = document.createElement("OPTION")
+	' get just the group name from the LDAP string
+	arySplit = Split(strGroup, ",")
+	For Each strSplit In arySplit
+		'Alert strSplit
+		intPos = InStr(1, strSplit, "=")
+		If intPos <> 0 Then
+			strGroupName = Mid(strSplit, intPos+1, Len(strSplit) - intPos)
+			Exit For
+		End if
+	Next
+	objOption.Text = strGroupName
+	objOption.Value = strGroup
+	lstGroupsForUser.Add(objOption)
+End Sub
+
+Sub RemoveEmailGroups()
+	Dim aryGroups(), intCounter
+	intCounter = 0
+	For i = 0 To lstGroupsForUser.Options.Length - 1
+		If Instr(1, lstGroupsForUser.Options(i).Value, "NPS") > 1 Or Instr(1, lstGroupsForUser.Options(i).Value, "NFAS") > 1 or _
+		Instr(1, lstGroupsForUser.Options(i).Value, "DTS") > 1 Or Instr(1, lstGroupsForUser.Options(i).Value, "SEA") > 1 or _
+		Instr(1, lstGroupsForUser.Options(i).Value, "CPO") > 1 Or Instr(1, lstGroupsForUser.Options(i).Value, "DIO") > 1 or _
+		Instr(1, lstGroupsForUser.Options(i).Value, "WARDROOM") > 1 Or Instr(1, lstGroupsForUser.Options(i).Value, "NNPTC-All Staff Females") > 1 Then
+			ReDim Preserve aryGroups(i)
+			aryGroups(i) = Lcase(lstGroupsForUser.Options(i).Value)
+			intCounter = intCounter + 1
+		End If
+	Next
+	If intCounter <> 0 Then
+		For Each objOption In lstGroupsForUser
+			For i = 0 To UBound(aryGroups)
+				'Alert LCase(objOption.Value) & "," & aryGroups(i)
+				If Instr(1, aryGroups(i), LCase(objOption.Value)) <> 0 Then
+					objOption.RemoveNode
+				End If
+			Next
+
+		Next
+	End If
+End Sub
+
+Sub SetTask()
+	' determine what the user will be doing
+	AcctType.style.display = "none"
+	AccountInformation.style.display = "none"
+	FoundUsers.style.display = "none"
+	If rdoTask(0).Checked Then
+		AcctType.style.display = "inline"
+		AccountInformation.style.display = "inline"
+		btnExecute.Value = "Create User"
+		strTask = "create"
+	End If
+	If rdoTask(1).Checked Then
+		btnExecute.Value = "Unlock User"
+		strTask = "unlock"
+	End If
+	If rdoTask(2).Checked Then
+		btnExecute.Value = "Reset User Password"
+		strTask = "reset"
+	End If
+	If rdoTask(3).Checked Then
+		btnExecute.Value = "Delete User Account"
+		strTask = "delete"
+	End If
+	If rdoTask(4).Checked Then
+		btnExecute.Value = "Enable User Account"
+		strTask = "enable"
+	End If
+		If rdoTask(5).Checked Then
+		btnExecute.Value = "Find User Account"
+		strTask = "find"
+	End If
+
+End Sub
+
+</script>
+<hta:application
+	applicationname="NNPTC User Maintenance Utility FOR NRCS domain users"
+	border="dialog"
+	borderstyle="normal"
+	caption="NNPTC User Maintenance Utility FOR NRCS domain users"
+	contextmenu="yes"
+	icon="myicon.ico"
+	maximizebutton="yes"
+	minimizebutton="yes"
+	navigable="no"
+	scroll="yes"
+	selection="no"
+	showintaskbar="yes"
+	singleinstance="yes"
+	sysmenu="yes"
+	version="1.0"
+	windowstate="maximize"
+
+>
+</head>
+<body onload="GetGroups(normal)" language="vbscript" bgcolor="#00ddff">
+<!-- HTML goes here -->
+What do you want to do today?<br>
+<input type="radio" name="rdoTask" value="1" onclick="SetTask()" CHECKED language="vbscript">Create a User Account
+<input type="radio" name="rdoTask" value="1" onclick="SetTask()" language="vbscript">Unlock a User Account
+<input type="radio" name="rdoTask" value="1" onclick="SetTask()" language="vbscript">Reset Password/Unlock User Account
+<input type="radio" name="rdoTask" value="1" onclick="SetTask()" language="vbscript">Delete User Account
+<input type="radio" name="rdoTask" value="1" onclick="SetTask()" language="vbscript">Enable User Account
+<input type="radio" name="rdoTask" value="1" onclick="SetTask()" language="vbscript">Find User Account
+<br>
+<hr>
+<span id="AcctType">
+Account Type:
+<input type="radio" name="rdoActType" value="1" onclick="AccountType()" language="vbscript">Normal User Account
+<input type="radio" name="rdoActType" value="2" onclick="AccountType()" language="vbscript">Exam Account
+<input type="radio" name="rdoActType" value="3" onclick="AccountType()" language="vbscript">Comp Account
+<input type="radio" name="rdoActType" value="3" onclick="AccountType()" language="vbscript">Student Helper<br><br>
+</span>
+UserName <b>(first 6 characters of last name followed by initials)</b>: <input type="text" name="txtUserName" size="15"><br>
+<span id="AccountInformation">
+First Name: <input type="text" name="txtFName" size="40"> &nbsp Last Name: <input type="text" name="txtLName" size="40"><br>
+Rate: <input type="text" name="txtRate" size="10"><br>
+Office: <input type="text" name="txtOffice" size="20"> &nbsp Telephone Number: <input type="text" name="txtPhone" size="20"><br>
+PRD: <input type="text" name="txtPRD" size="20"><br>
+Description: <input type="text" name="txtDescription" size="30"><br><br>
+<INPUT TYPE="checkbox" NAME="chkMail" VALUE="value" CHECKED>Create Mailbox?<br>
+<INPUT TYPE="checkbox" NAME="chkInstructor" VALUE="value" CHECKED>Create Instructor Account?<br><br>
+<table border="0"><tr><td>
+All Groups:____________________Add Users to These Groups:<br>
+<select size="25" name="lstGroups" multiple></select>
+<select size="25" name="lstGroupsForUser" multiple></select><br>
+<input type="button" value="Add User to Group >" onclick="ShowGroups()" language="vbscript">______
+<input type="button" value="< Remove User From Group" onclick="RemoveGroups()" language="vbscript"><br>
+<span id="GroupsSelected"></span></td>
+<td>
+<span id="RegularAccountInfo" style="inline">
+<table width="70%"><tr>
+<td><input type="radio" name="rdoSchool" value="1" onclick="ChooseSchool()" language="vbscript">DTS</td>
+<td><input type="radio" name="rdoSchool" value="2" onclick="ChooseSchool()" language="vbscript">NFAS</td>
+<td><input type="radio" name="rdoSchool" value="3" onclick="ChooseSchool()" language="vbscript">NPS</td>
+</tr></table>
+<br><br>
+<table width="70%"><tr><td>
+<input type="radio" name="rdoOfficerEnlisted" value="1" onclick="OfficerEnlisted()" language="vbscript">Enlisted</td><td>
+<input type="radio" name="rdoOfficerEnlisted" value="2" onclick="OfficerEnlisted()" language="vbscript">Officer</td></tr>
+</table>
+<br><br>
+<table width="70%">
+<tr><td><INPUT TYPE="checkbox" NAME="chkCPO" VALUE="1" UNCHECKED onclick="SetEmailGroups()">CPO</td>
+<td><INPUT TYPE="checkbox" NAME="chkSea" VALUE="1" UNCHECKED onclick="SetEmailGroups()">Sea Returnee</td>
+<td><INPUT TYPE="checkbox" NAME="chkDIO" VALUE="1" UNCHECKED onclick="SetEmailGroups()">DIO</td>
+<td><INPUT TYPE="checkbox" NAME="chkWardroom" VALUE="1" UNCHECKED onclick="SetEmailGroups()">Wardroom</td>
+</tr></table><br>
+<table width="70%">
+<tr>
+<td><input type="radio" name="rdoGender" value="1" CHECKED onclick="SetEmailGroups()">Male</td>
+<td><input type="radio" name="rdoGender" value="2" UNCHECKED onclick="SetEmailGroups()">Female</td></td></tr>
+</table>
+</span>
+<br>
+<br><br>
+
+<table bgcolor="FFFF00"><tr><td>Need-To-Know Assignments<br>
+<input type="radio" name="rdoNTK" value="0" onclick="NTKAssignment()" language="vbscript">None (Exam/Comp Accounts)<br>
+<input type="radio" name="rdoNTK" value="1" onclick="NTKAssignment()" language="vbscript">Non Nuclear-Trained (DTS, DTP)<br>
+<input type="radio" name="rdoNTK" value="2" onclick="NTKAssignment()" language="vbscript">Nuclear Trained (NPS, NFAS)<br>
+<input type="radio" name="rdoNTK" value="3" onclick="NTKAssignment()" language="vbscript">Information Security (ISD)<br>
+<input type="radio" name="rdoNTK" value="4" onclick="NTKAssignment()" language="vbscript">Physical Security (ATO, DAD, CSM, MAA, Director DTS, Director DTP, ISD)<br>
+<input type="radio" name="rdoNTK" value="5" onclick="NTKAssignment()" language="vbscript">Senior Staff (CO, XO, Director NFAS, Director NPS, CMC)<br>
+</td></tr></table>
+</td></tr></table>
+<br>
+</span> <!-- Account Information -->
+<input type="button" name="btnFindPID" value="Validate NOTEPAD User" onclick="CheckNOTEPAD()" language="vbscript"><br><br>
+<input type="button" name="btnExecute" value="Create User" onclick="ExecuteTask()" language="vbscript"><br><br>
+<span id="FoundUsers"></span>
+</body>
+</html>
