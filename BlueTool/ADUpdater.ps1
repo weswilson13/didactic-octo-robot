@@ -12,6 +12,8 @@ function Clear-Console {
     $ADAccountExpiryDatePicker.Visible = $false
     $ADAccountClearExpiryButton.Visible = $false
     $UpdateExpiryButton.Visible = $false
+    $UpdatePasswordButton.Visible = $false
+    $NewPasswordTextBox.Visible = $false
     $tableLayoutPanel3.Visible = $false
 }
 function Clear-ReportPanel {
@@ -32,7 +34,6 @@ function Reset-Form {
     param(
         [switch]$ExceptPrincipal
     )
-    $Script:ADAccountExpiryDatePickerClicked = $false
 
     if (!$ExceptPrincipal.IsPresent) { $ADPrincipalTextBox.ResetText() }
     $ADGetGroupMembershipButton.Visible = $false
@@ -46,17 +47,8 @@ function Reset-Form {
     $ADAccountRequiresSmartcardCheckBox.Visible = $false
     $ADAccountActionsLabel.Visible = $false
     $ADAccountSetExpiryButton.Visible = $false
-    # $ADReportsLabel.Visible = $true
-    # $ADReportsDisabledComputersButton.Visible = $true
-    # $ADReportsDomainControllersButton.Visible = $true
-    # $ADReportsInactiveComputersButton.Visible = $true
-    # $ADReportsInactiveUsersButton.Visible = $true
-    # $ADReportsLockedOutUsersButton.Visible = $true
-    # $ADReportsUsersNeverLoggedOnButton.Visible = $true
-    # $ADReportsUsersRecentlyCreatedButton.Visible = $true
-    # $ADReportsUsersRecentlyDeletedButton.Visible = $true
-    # $ADReportsUsersRecentlyModifiedButton.Visible = $true
-    # $ADReportsUsersWithoutManagerButton.Visible = $true
+    $ADAccountResetAccountPasswordButton.Visible = $false
+    $ADAccountUnlockUserAccountButton.Visible = $false
     $tableLayoutPanel4.Visible = $true
 
     Clear-Console
@@ -73,6 +65,8 @@ function Reset-Form {
 . "$PSScriptRoot\Functions\Get-UsersRecentlyDeleted.ps1"
 . "$PSScriptRoot\Functions\Get-UsersRecentlyModified.ps1"
 . "$PSScriptRoot\Functions\Get-UsersWithoutManager.ps1"
+. "$PSScriptRoot\Functions\Set-AccountPassword.ps1"
+. "$PSScriptRoot\Functions\Unlock-UserAccount.ps1"
 #endregion
 
 Add-Type -AssemblyName System.Windows.Forms
@@ -99,7 +93,7 @@ $ConsoleFont = New-Object System.Drawing.Font("Lucida Console", 10, [Drawing.Fon
 #endregion
 
 #region create the controls
-# Labels
+#region Labels
 $ADUserLabel = New-Object System.Windows.Forms.Label
 $ADSearchTypeLabel = New-Object System.Windows.Forms.Label
 $ADAccountStatusLabel = New-Object System.Windows.Forms.Label
@@ -110,14 +104,18 @@ $ADAccountRequiresSmartcardLabel = New-Object System.Windows.Forms.Label
 $ADAccountActionsLabel = New-Object System.Windows.Forms.Label
 $DisplayTitleLabel = New-Object System.Windows.Forms.Label
 $ADReportsLabel = New-Object System.Windows.Forms.Label
+#endregion
 
-# Text boxes
+#region Text boxes
 $ADPrincipalTextBox = New-Object System.Windows.Forms.TextBox
+$NewPasswordTextBox = New-Object System.Windows.Forms.TextBox
+#endregion
 
-# RichTextBoxes
+#region RichTextBoxes
 $DisplayInfoBox = New-Object System.Windows.Forms.RichTextBox
+#endregion
 
-# Buttons
+#region Buttons
 $ADLookupButton = New-Object System.Windows.Forms.Button
 $ADGetGroupMembershipButton = New-Object System.Windows.Forms.Button
 $AddGroupButton = New-Object System.Windows.Forms.Button
@@ -137,24 +135,32 @@ $ADReportsUsersRecentlyDeletedButton = New-Object System.Windows.Forms.Button
 $ADReportsUsersRecentlyModifiedButton = New-Object System.Windows.Forms.Button
 $ADReportsUsersWithoutManagerButton = New-Object System.Windows.Forms.Button
 $ADAccountClearExpiryButton = New-Object System.Windows.Forms.Button
+$ADAccountUnlockUserAccountButton = New-Object System.Windows.Forms.Button
+$ADAccountResetAccountPasswordButton = New-Object System.Windows.Forms.Button
+$UpdatePasswordButton = New-Object System.Windows.Forms.Button
+#endregion
 
-# ListBoxes
+#region ListBoxes
 $ADGroupsBox = New-Object System.Windows.Forms.ListBox
 $ADGroupMembershipBox = New-Object System.Windows.Forms.ListBox
+#endregion
 
-# Datepicker
+#region Datepicker
 $ADAccountExpiryDatePicker = New-Object System.Windows.Forms.DateTimePicker
+#endregion
 
-# RadioButtons
+#region RadioButtons
 $ADSearchUsersRadioButton = New-Object System.Windows.Forms.RadioButton
 $ADSearchComputersRadioButton = New-Object System.Windows.Forms.RadioButton
 $ADSearchServiceAccountsRadioButton = New-Object System.Windows.Forms.RadioButton
+#endregion
 
-# Checkboxes
+#region Checkboxes
 $ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
 # $ADAccountExpiryCheckbox = New-Object System.Windows.Forms.CheckBox
+#endregion
 
-# TableLayoutPanel
+#region TableLayoutPanels
 $tableLayoutPanel1 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel1.RowCount = 3 #how many rows
 $tableLayoutPanel1.ColumnCount = 6 #how many columns
@@ -193,7 +199,7 @@ $tableLayoutPanel1.Dock = [System.Windows.Forms.DockStyle]::Fill
 
 $tableLayoutPanel2 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel2.RowCount = 5
-$tableLayoutPanel2.ColumnCount = 4
+$tableLayoutPanel2.ColumnCount = 5
 # $tableLayoutPanel2.CellBorderStyle = "Inset"
 
 $tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
@@ -203,9 +209,10 @@ $tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([Syst
 $tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 
 $tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
-$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,35))) | Out-Null
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,15))) | Out-Null
 $tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,25))) | Out-Null
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
 
     # column 1
 $tableLayoutPanel2.Controls.Add($ADUserLabel,0,0)
@@ -226,12 +233,18 @@ $tableLayoutPanel2.Controls.Add($ADAccountRequiresSmartcardLabel,2,4)
 $tableLayoutPanel2.Controls.Add($ADAccountActionsLabel,3,0)
 $tableLayoutPanel2.Controls.Add($ADAccountSetExpiryButton,3,1)
 $tableLayoutPanel2.Controls.Add($ADAccountEnableButton,3,2)
-$tableLayoutPanel2.Controls.Add($ADAccountRequiresSmartcardCheckBox,3,3)
-$tableLayoutPanel2.Controls.Add($ADGetGroupMembershipButton,3,4)
-$tableLayoutPanel2.Controls.Add($UpdateGroupMembershipsButton,3,4)
+$tableLayoutPanel2.Controls.Add($ADAccountUnlockUserAccountButton,3,3)
+$tableLayoutPanel2.Controls.Add($ADAccountRequiresSmartcardCheckBox,3,4)
+    #column 5
+$tableLayoutPanel2.Controls.Add($ADAccountResetAccountPasswordButton,4,1)
+$tableLayoutPanel2.Controls.Add($ADGetGroupMembershipButton,4,2)
+$tableLayoutPanel2.Controls.Add($UpdateGroupMembershipsButton,4,2)
+
+$tableLayoutPanel2.SetColumnSpan($ADAccountActionsLabel,2)
 
 $tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::Fill
 
+# Account Expiration Panel
 $tableLayoutPanel3 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel3.RowCount = 3 #how many rows
 $tableLayoutPanel3.ColumnCount = 1 #how many columns
@@ -242,10 +255,13 @@ $tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([Syst
 $tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
 
 $tableLayoutPanel3.Controls.Add($ADAccountExpiryDatePicker,0,0)
+$tableLayoutPanel3.Controls.Add($NewPasswordTextBox,0,0)
 $tableLayoutPanel3.Controls.Add($UpdateExpiryButton,0,2)
+$tableLayoutPanel3.Controls.Add($UpdatePasswordButton,0,2)
 
 $tableLayoutPanel3.Dock = [System.Windows.Forms.DockStyle]::Fill
 
+# Reports Panel
 $tableLayoutPanel4 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel4.RowCount = 5 #how many rows
 $tableLayoutPanel4.ColumnCount = 3 #how many columns
@@ -282,8 +298,9 @@ $tableLayoutPanel1.Controls.Add($tableLayoutPanel3,1,2)
 $tableLayoutPanel2.Controls.Add($tableLayoutPanel4,2,0)
 
 $tableLayoutPanel1.SetColumnSpan($tableLayoutPanel2,6)
-$tableLayoutPanel2.SetColumnSpan($tableLayoutPanel4,2)
+$tableLayoutPanel2.SetColumnSpan($tableLayoutPanel4,3)
 $tableLayoutPanel2.SetRowSpan($tableLayoutPanel4,5)
+#endregion
 #endregion
 
 #region event handlers
@@ -318,9 +335,9 @@ $handler_ADLookupButton_Click =
             }
             $strExpiry = switch ($objPrincipal.AccountExpirationDate) {
                 $null { "N/A";break }
-                default { $PSItem }
+                default { $PSItem.ToString("MM/dd/yyyy") }
             }
-            $ADAccountExpirationLabel.Text = "Account Expiration Date: $strExpiry"
+            $ADAccountExpirationLabel.Text = "Account Expiry: $strExpiry"
             $ADAccountRequiresSmartcardLabel.Text = "Smartcard Required: $($objPrincipal.SmartcardLogonRequired)"
             $ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
             $ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
@@ -339,7 +356,9 @@ $handler_ADLookupButton_Click =
                 $ADAccountUnlockLabel.Visible = $true
                 $ADAccountEnableButton.Visible = $true
                 $ADAccountSetExpiryButton.Visible = $true
-                # $ADAccountExpiryDatePicker.Visible = $true
+                $ADAccountUnlockUserAccountButton.Visible = $true
+                $ADAccountUnlockUserAccountButton.Enabled = $objPrincipal.LockedOut
+                $ADAccountResetAccountPasswordButton.Visible = $true
                 if ($objPrincipal.ObjectClass -eq 'user') {
                     $ADAccountRequiresSmartcardLabel.Visible = $true
                     $ADAccountRequiresSmartcardCheckBox.Visible = $true
@@ -556,35 +575,6 @@ $handler_ADAccountRequiresSmartCardCheckbox_Click =
     }
 }
 
-# $handler_ADAccountExpiryDatePicker_DropDown =
-# { 
-#     Write-Host "Datepicker Clicked."
-#     $Script:ADAccountExpiryDatePickerClicked = $true
-# }
-
-# $handler_ADAccountExpiryDatePicker_Changed =
-# {   
-#     try {
-#         Write-Host "Datepicker Value Changed."
-#         if ($Script:ADAccountExpiryDatePickerClicked) {
-#             $expiry = $ADAccountExpiryDatePicker.Text
-#             $ans = [System.Windows.MessageBox]::Show("Set Account Expiration to $($expiry)?", "Verify Action",`
-#                 [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
-#             if ($ans -eq "Yes") {
-#                 $Script:ADAccountExpiryDatePickerClicked = !$Script:ADAccountExpiryDatePickerClicked
-#                 Set-ADAccountExpiration $objPrincipal -DateTime $expiry
-#                 [System.Windows.MessageBox]::Show("Updated Account Expiration Date. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
-#                     [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-#             }
-#         }
-#     }
-#     catch {
-#         $error[0] | Out-String | Write-Error
-#         [System.Windows.MessageBox]::Show("Unable to update account expiration", "Account update Failed",`
-#             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-#     }
-# }
-
 $hander_ADAccountExpiryButton_Click =
 {
     Clear-Console
@@ -597,7 +587,8 @@ $hander_ADAccountExpiryButton_Click =
     $UpdateExpiryButton.Visible = $true
 }
 
-$handler_ADAccountClearExpiryButton_Click = {
+$handler_ADAccountClearExpiryButton_Click = 
+{
     try {
         Write-Host "Clear Expiry Button Clicked"
         $ans = [System.Windows.MessageBox]::Show("Clear Account Expiration?", "Verify Action",`
@@ -624,21 +615,10 @@ $handler_UpdateExpiryButton_Click =
 {
     try {
         Write-Host "Update Expiry Button Clicked"
-        # if (!$ADAccountClearExpiryButton.Enabled -and $null -ne $objPrincipal.AccountExpirationDate) {
-            # $ans = [System.Windows.MessageBox]::Show("Clear Account Expiration?", "Verify Action",`
-            # [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
-            # if ($ans -eq "Yes") {
-            #     Clear-ADAccountExpiration $objPrincipal
-            #     [System.Windows.MessageBox]::Show("Account Expiration cleared. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
-            #         [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-            # }
-        # }
-        # else {
             $expiry = $ADAccountExpiryDatePicker.Text
             $ans = [System.Windows.MessageBox]::Show("Set Account Expiration to $($expiry)?", "Verify Action",`
                 [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
             if ($ans -eq "Yes") {
-                $Script:ADAccountExpiryDatePickerClicked = !$Script:ADAccountExpiryDatePickerClicked
                 Set-ADAccountExpiration $objPrincipal -DateTime $expiry
                 [System.Windows.MessageBox]::Show("Updated Account Expiration Date. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
                     [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
@@ -658,7 +638,7 @@ $handler_UpdateExpiryButton_Click =
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
-
+ #region Reports Error Handlers
 $handler_ADReportsDisabledComputersButton_Click =
 {
         Write-Host "Get DisabledComputers Report"
@@ -728,7 +708,7 @@ $handler_ADReportsUsersRecentlyDeletedButton_Click =
 
 $handler_ADReportsUsersRecentlyModifiedButton_Click =
 {
-        Write-Host "Get UsersRecentlyModified Report"
+        Write-Host "Get Users Recently Modified Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Users Recently Modified"
         $DisplayInfoBox.Text = (Get-UsersRecentlyModified | Format-Table -AutoSize | Out-String)
@@ -736,10 +716,66 @@ $handler_ADReportsUsersRecentlyModifiedButton_Click =
 
 $handler_ADReportsUsersWithoutManagerButton_Click =
 {
-        Write-Host "Get UsersWithoutManager Report"
+        Write-Host "Get Users Without Manager Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Users Without Manager"
         $DisplayInfoBox.Text = (Get-UsersWithoutManager | Format-Table -AutoSize | Out-String)
+}
+#endregion
+
+$handler_ADAccountUnlockUserAccountButton_Click =
+{
+    try {
+        Write-Host "Unlock User Account Button Clicked"
+        $ans = [System.Windows.MessageBox]::Show("Unlock $($objPrincipal.SamAccountName)?", "Verify Action",`
+                [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($ans -eq "Yes") {
+            Unlock-UserAccount -Identity $objPrincipal
+
+            [System.Windows.MessageBox]::Show("Account unlocked.", "Unlock Account",`
+                [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)  
+        }
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        [System.Windows.MessageBox]::Show("Unable to unlock account", "Account Unlock Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+}
+
+$handler_ADAccountResetAccountPasswordButton_Click =
+{
+    Write-Host "Reset account password button clicked"
+    Clear-Console
+    Clear-Console
+    $DisplayInfoBox.Visible = $false
+    $DisplayTitleLabel.Text = "Reset Account Password"
+    $tableLayoutPanel3.Visible = $true
+    $NewPasswordTextBox.Visible = $true
+    $UpdatePasswordButton.Visible = $true
+}
+
+$handler_UpdatePasswordButton_Click =
+{
+    try {
+        Write-Host "Update Password Button Clicked"
+        $ans = [System.Windows.MessageBox]::Show("Reset Password for $($objPrincipal.SamAccountName)?", "Verify Action",`
+                [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($ans -eq "Yes") {
+            $newPassword = ConvertTo-SecureString $NewPasswordTextBox.Text -AsPlainText -Force
+            Set-AccountPassword -Identity $objPrincipal -NewPassword $newPassword
+
+            [System.Windows.MessageBox]::Show("Password Reset Successfully.", "Reset Password",`
+                [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            
+            Clear-Console
+        }
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        [System.Windows.MessageBox]::Show("Unable to reset password", "Password Reset Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
 }
 
 $handler_formclose =
@@ -933,7 +969,7 @@ $ADAccountStatusLabel.AutoSize = $true
 
 #region Account Expiration Label
 $ADAccountExpirationLabel.Name = "ADAccountExpirationLabel"
-$ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate)"
+$ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate.ToString("MM/dd/yyyy"))"
 $ADAccountExpirationLabel.Font = $BoxFont
 $ADAccountExpirationLabel.AutoSize = $true
 #endregion
@@ -986,6 +1022,10 @@ $ADAccountActionsLabel.Name = "ADAccountActionsLabel"
 $ADAccountActionsLabel.Text = "Account Actions"
 $ADAccountActionsLabel.Font = $BoldBoxFont
 $ADAccountActionsLabel.AutoSize = $true
+$ADAccountActionsLabel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+    -bor [System.Windows.Forms.AnchorStyles]::Left `
+    -bor [System.Windows.Forms.AnchorStyles]::Right
 #endregion
 
 #region account expiry button
@@ -1001,8 +1041,6 @@ $ADAccountExpiryDatePicker.Name = "ADAccountExpiryDatePicker"
 $ADAccountExpiryDatePicker.Font = $BoxFont
 $ADAccountExpiryDatePicker.Format = "Custom"
 $ADAccountExpiryDatePicker.CustomFormat = "ddd, dd MMM yyyy"
-# $ADAccountExpiryDatePicker.add_DropDown($handler_ADAccountExpiryDatePicker_DropDown)
-# $ADAccountExpiryDatePicker.add_ValueChanged($handler_ADAccountExpiryDatePicker_Changed)
 #endregion
 
 #region account clear expiry button
@@ -1021,6 +1059,23 @@ $UpdateExpiryButton.AutoSize = $true
 $UpdateExpiryButton.add_Click($handler_UpdateExpiryButton_Click)
 #endregion
 
+#region New Password Text Box
+$NewPasswordTextBox.Name = "NewPasswordTextBox"
+$NewPasswordTextBox.Font = $BoxFont
+$NewPasswordTextBox.PasswordChar = "*"
+$NewPasswordTextBox.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+    -bor [System.Windows.Forms.AnchorStyles]::Left `
+    -bor [System.Windows.Forms.AnchorStyles]::Right
+#endregion
+
+#region Update Password Button
+$UpdatePasswordButton.Name = "UpdatePasswordButton"
+$UpdatePasswordButton.Text = "Reset Password"
+$UpdatePasswordButton.AutoSize = $true
+$UpdatePasswordButton.add_Click($handler_UpdatePasswordButton_Click)
+#endregion
+
 #region Enable/Disable Account button
 $ADAccountEnableButton.Name = "ADAccountEnableButton"
 $ADAccountEnableButton.Text = switch ($objPrincipal.Enabled) {
@@ -1032,6 +1087,14 @@ $ADAccountEnableButton.AutoSize = $true
 $ADAccountEnableButton.add_Click($handler_ADAccountEnableButton_Click)
 #endregion
 
+#region AD Unlock User Account button
+$ADAccountUnlockUserAccountButton.Name = "ADReportsUnlockUserAccountButton"
+$ADAccountUnlockUserAccountButton.Text = "Unlock Account"
+$ADAccountUnlockUserAccountButton.Font = $BoxFont
+$ADAccountUnlockUserAccountButton.Autosize = $true
+$ADAccountUnlockUserAccountButton.add_Click($handler_ADAccountUnlockUserAccountButton_Click)
+#endregion
+
 #region Account requires smartcard checkbox
 $ADAccountRequiresSmartcardCheckBox.Name = "ADAccountRequiresSmartcard"
 $ADAccountRequiresSmartcardCheckBox.Text = "SmartcardLogonRequired"
@@ -1040,6 +1103,14 @@ $ADAccountRequiresSmartcardCheckBox.Font = $BoxFont
 $ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
 $ADAccountRequiresSmartcardCheckBox.UseVisualStyleBackColor = $True
 $ADAccountRequiresSmartcardCheckBox.add_Click($handler_ADAccountRequiresSmartCardCheckbox_Click)
+#endregion
+
+#region AD Reset Account Password button
+$ADAccountResetAccountPasswordButton.Name = "ADReportsAccountPasswordButton"
+$ADAccountResetAccountPasswordButton.Text = "Reset Account Password"
+$ADAccountResetAccountPasswordButton.Font = $BoxFont
+$ADAccountResetAccountPasswordButton.Autosize = $true
+$ADAccountResetAccountPasswordButton.add_Click($handler_ADAccountResetAccountPasswordButton_Click)
 #endregion
 
 #region Enumerate group memberships Button
@@ -1103,16 +1174,6 @@ $form.ResumeLayout()
 
 # set control visibility on form load
 Reset-Form
-# $ADUserLabel.Visible = $true
-# $ADPrincipalTextBox.Visible = $true
-# $ADLookupButton.Visible = $true
-# $DisplayInfoBox.Visible = $true
-# $ADGetGroupMembershipButton.Visible = $false
-# $UpdateGroupMembershipsButton.Visible = $false
-# $ADAccountStatusLabel.Visible = $false
-# $ADAccountExpirationLabel.Visible = $false
-# $ADAccountEnableLabel.Visible = $false
-# $ADAccountUnlockLabel.Visible = $false
 
 $form.Add_FormClosed($handler_formclose)
 
