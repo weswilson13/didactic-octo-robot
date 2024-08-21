@@ -48,7 +48,7 @@ public class ProcessDPI {
 
 $null = [ProcessDPI]::SetProcessDPIAware()
 
-Import-Module -Name "$PSScriptRoot\Modules\ActiveDirectory"
+Import-Module ActiveDirectory
 
 #region font objects
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
