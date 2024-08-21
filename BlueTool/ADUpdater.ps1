@@ -10,7 +10,7 @@ function Clear-Console {
     $RemoveGroupButton.Visible = $false
     $ADGroupMembershipBox.Items.Clear()
     $ADAccountExpiryDatePicker.Visible = $false
-    $ADAccountExpiryCheckbox.Visible = $false
+    $ADAccountClearExpiryButton.Visible = $false
     $UpdateExpiryButton.Visible = $false
     $tableLayoutPanel3.Visible = $false
 }
@@ -46,17 +46,17 @@ function Reset-Form {
     $ADAccountRequiresSmartcardCheckBox.Visible = $false
     $ADAccountActionsLabel.Visible = $false
     $ADAccountSetExpiryButton.Visible = $false
-    $ADReportsLabel.Visible = $true
-    $ADReportsDisabledComputersButton.Visible = $true
-    $ADReportsDomainControllersButton.Visible = $true
-    $ADReportsInactiveComputersButton.Visible = $true
-    $ADReportsInactiveUsersButton.Visible = $true
-    $ADReportsLockedOutUsersButton.Visible = $true
-    $ADReportsUsersNeverLoggedOnButton.Visible = $true
-    $ADReportsUsersRecentlyCreatedButton.Visible = $true
-    $ADReportsUsersRecentlyDeletedButton.Visible = $true
-    $ADReportsUsersRecentlyModifiedButton.Visible = $true
-    $ADReportsUsersWithoutManagerButton.Visible = $true
+    # $ADReportsLabel.Visible = $true
+    # $ADReportsDisabledComputersButton.Visible = $true
+    # $ADReportsDomainControllersButton.Visible = $true
+    # $ADReportsInactiveComputersButton.Visible = $true
+    # $ADReportsInactiveUsersButton.Visible = $true
+    # $ADReportsLockedOutUsersButton.Visible = $true
+    # $ADReportsUsersNeverLoggedOnButton.Visible = $true
+    # $ADReportsUsersRecentlyCreatedButton.Visible = $true
+    # $ADReportsUsersRecentlyDeletedButton.Visible = $true
+    # $ADReportsUsersRecentlyModifiedButton.Visible = $true
+    # $ADReportsUsersWithoutManagerButton.Visible = $true
     $tableLayoutPanel4.Visible = $true
 
     Clear-Console
@@ -136,6 +136,7 @@ $ADReportsUsersRecentlyCreatedButton = New-Object System.Windows.Forms.Button
 $ADReportsUsersRecentlyDeletedButton = New-Object System.Windows.Forms.Button
 $ADReportsUsersRecentlyModifiedButton = New-Object System.Windows.Forms.Button
 $ADReportsUsersWithoutManagerButton = New-Object System.Windows.Forms.Button
+$ADAccountClearExpiryButton = New-Object System.Windows.Forms.Button
 
 # ListBoxes
 $ADGroupsBox = New-Object System.Windows.Forms.ListBox
@@ -151,7 +152,7 @@ $ADSearchServiceAccountsRadioButton = New-Object System.Windows.Forms.RadioButto
 
 # Checkboxes
 $ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
-$ADAccountExpiryCheckbox = New-Object System.Windows.Forms.CheckBox
+# $ADAccountExpiryCheckbox = New-Object System.Windows.Forms.CheckBox
 
 # TableLayoutPanel
 $tableLayoutPanel1 = New-Object System.Windows.Forms.TableLayoutPanel
@@ -161,7 +162,7 @@ $tableLayoutPanel1.ColumnCount = 6 #how many columns
 
 $tableLayoutPanel1.SetColumnSpan($DisplayTitleLabel,6)
 $tableLayoutPanel1.SetColumnSpan($DisplayInfoBox,6)
-$tableLayoutPanel1.SetColumnSpan($ADAccountExpiryCheckbox,3)
+$tableLayoutPanel1.SetColumnSpan($ADAccountClearExpiryButton,3)
 $tableLayoutPanel1.SetRowSpan($DisplayInfoBox,2)
 
 $tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30))) | Out-Null
@@ -182,7 +183,7 @@ $tableLayoutPanel1.Controls.Add($DisplayInfoBox,0,2)
 $tableLayoutPanel1.Controls.Add($ADGroupsBox,1,2)
 # column 3
 $tableLayoutPanel1.Controls.Add($RemoveGroupButton,2,2)
-$tableLayoutPanel1.Controls.Add($ADAccountExpiryCheckbox,2,2)
+$tableLayoutPanel1.Controls.Add($ADAccountClearExpiryButton,2,2)
 # column 4
 $tableLayoutPanel1.Controls.Add($AddGroupButton,3,2)
 # column 5
@@ -580,25 +581,48 @@ $hander_ADAccountExpiryButton_Click =
     $DisplayTitleLabel.Text = "Modify Account Expiration Date"
     $tableLayoutPanel3.Visible = $true
     $ADAccountExpiryDatePicker.Visible = $true
-    $ADAccountExpiryCheckbox.Visible = $true
-    $ADAccountExpiryCheckbox.Checked = $objPrincipal.AccountExpirationDate -ne $null
+    $ADAccountClearExpiryButton.Visible = $true
+    $ADAccountClearExpiryButton.Enabled = $objPrincipal.AccountExpirationDate -ne $null
     $UpdateExpiryButton.Visible = $true
+}
+
+$handler_ADAccountClearExpiryButton_Click = {
+    try {
+        Write-Host "Clear Expiry Button Clicked"
+        $ans = [System.Windows.MessageBox]::Show("Clear Account Expiration?", "Verify Action",`
+                [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($ans -eq "Yes") {
+            Clear-ADAccountExpiration $objPrincipal
+            [System.Windows.MessageBox]::Show("Account Expiration cleared. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
+                [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        
+            $DisplayInfoBox.Visible = $true
+            $DisplayTitleLabel.Text = "Account Properties"
+            $tableLayoutPanel3.Visible = $false
+            $ADAccountClearExpiryButton.Visible = $false
+        }
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        [System.Windows.MessageBox]::Show("Unable to clear account expiration", "Expiry update Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
 }
 
 $handler_UpdateExpiryButton_Click = 
 {
     try {
-        Write-Host "Update Expiry Button Clicked."
-        if (!$ADAccountExpiryCheckbox.Checked -and $null -ne $objPrincipal.AccountExpirationDate) {
-            $ans = [System.Windows.MessageBox]::Show("Clear Account Expiration?", "Verify Action",`
-            [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
-            if ($ans -eq "Yes") {
-                Clear-ADAccountExpiration $objPrincipal
-                [System.Windows.MessageBox]::Show("Account Expiration cleared. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
-                    [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-            }
-        }
-        else {
+        Write-Host "Update Expiry Button Clicked"
+        # if (!$ADAccountClearExpiryButton.Enabled -and $null -ne $objPrincipal.AccountExpirationDate) {
+            # $ans = [System.Windows.MessageBox]::Show("Clear Account Expiration?", "Verify Action",`
+            # [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+            # if ($ans -eq "Yes") {
+            #     Clear-ADAccountExpiration $objPrincipal
+            #     [System.Windows.MessageBox]::Show("Account Expiration cleared. Please wait ~30 seconds for Active Directory to reflect the change.", "Success",`
+            #         [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            # }
+        # }
+        # else {
             $expiry = $ADAccountExpiryDatePicker.Text
             $ans = [System.Windows.MessageBox]::Show("Set Account Expiration to $($expiry)?", "Verify Action",`
                 [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
@@ -612,9 +636,10 @@ $handler_UpdateExpiryButton_Click =
                 $DisplayTitleLabel.Text = "Account Properties"
                 $ADAccountExpiryDatePicker.Visible = $false
                 $UpdateExpiryButton.Visible = $false
+                $ADAccountClearExpiryButton.Visible = $false
                 $tableLayoutPanel3.Visible = $false
             }
-        }
+        # }
     }
     catch {
         $error[0] | Out-String | Write-Error
@@ -969,11 +994,12 @@ $ADAccountExpiryDatePicker.CustomFormat = "ddd, dd MMM yyyy"
 # $ADAccountExpiryDatePicker.add_ValueChanged($handler_ADAccountExpiryDatePicker_Changed)
 #endregion
 
-#region account expiry checkbox
-$ADAccountExpiryCheckbox.Name = "ADAccountExpiryCheckbox"
-$ADAccountExpiryCheckbox.Text = "Account Expires"
-$ADAccountExpiryCheckbox.Font = $BoxFont
-$ADAccountExpiryCheckbox.AutoSize = $true
+#region account clear expiry button
+$ADAccountClearExpiryButton.Name = "ADAccountClearExpiryButton"
+$ADAccountClearExpiryButton.Text = "Clear Account Expiry"
+$ADAccountClearExpiryButton.Font = $BoxFont
+$ADAccountClearExpiryButton.AutoSize = $true
+$ADAccountClearExpiryButton.add_Click($handler_ADAccountClearExpiryButton_Click)
 #endregion
 
 #region update expiry button
