@@ -13,6 +13,7 @@ function Write-Log {
  
     [pscustomobject]@{
         Time = (Get-Date -f g)
+        User = $env:USERNAME
         Message = $Message
         Severity = $Severity
     } | Export-Csv -Path "$env:Temp\LogFile.csv" -Append -NoTypeInformation
