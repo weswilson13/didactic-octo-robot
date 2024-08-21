@@ -821,10 +821,10 @@ $handler_formclose =
     try {
         Write-Host "Importing Session Log"
         $ini = Get-IniContent .\config.ini
-        $serverInstance = $ini.DatabaseConfig.SqlServerInstance
-        $databaseName = $ini.DatabaseConfig.Database
-        $schemaName = $ini.DatabaseConfig.Schema
-        $tableName = $ini.DatabaseConfig.Table
+        $serverInstance = $ini.LoggerConfig.SqlServerInstance
+        $databaseName = $ini.LoggerConfig.Database
+        $schemaName = $ini.LoggerConfig.Schema
+        $tableName = $ini.LoggerConfig.Table
 
         $sessionLog = Import-Csv $env:Temp\LogFile.csv
 
