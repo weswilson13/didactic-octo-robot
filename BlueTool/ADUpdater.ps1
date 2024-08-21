@@ -526,17 +526,28 @@ $handler_ADAccountEnableButton_Click =
 $handler_ADAccountRequiresSmartCardCheckbox_Click = 
 {
     try {
-        Set-ADUser $objPrincipal -SmartcardLogonRequired (!$objPrincipal.SmartcardLogonRequired)
-     
-        $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
-  
-        $state = switch($objPrincipal.SmartcardLogonRequired) {
-            $true { "Enabled";break }
-            $false { "Disabled";break }
+        $currentState = switch($objPrincipal.SmartcardLogonRequired) {
+            $true { "Disable";break }
+            $false { "Enable";break }
         }
+        $ans = [System.Windows.MessageBox]::Show("$currentState SmartcardLogonRequired for $($objPrincipal.SamAccountName)?", "Toggle SmartcardLogonRequired Attribute",`
+                [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($ans -eq "Yes") {
+            Set-ADUser $objPrincipal -SmartcardLogonRequired (!$objPrincipal.SmartcardLogonRequired)
+     
+            $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
+  
+            $state = switch($objPrincipal.SmartcardLogonRequired) {
+                $true { "Enabled";break }
+                $false { "Disabled";break }
+            }
 
-        [System.Windows.MessageBox]::Show("SmartcardLogonRequired was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Account Enable/Disable Success",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            [System.Windows.MessageBox]::Show("SmartcardLogonRequired was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Toggle SmartcardLogonRequired Attribute",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        }
+        if ($ans -eq "No") {
+            $ADAccountRequiresSmartcardCheckBox.Checked = $false
+        }
     }
     catch {
         $error[0] | Out-String | Write-Error
