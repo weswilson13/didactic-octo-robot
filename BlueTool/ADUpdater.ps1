@@ -839,7 +839,7 @@ $handler_formclose =
             Force=$true
         }
         Write-SqlTableData @sqlParameters
-        Remove-Item $env:USERNAME\LogFile.csv -Force
+        Remove-Item $env:TEMP\LogFile.csv -Force
     }
     catch {
         $error[0] | Out-String | Write-Error
