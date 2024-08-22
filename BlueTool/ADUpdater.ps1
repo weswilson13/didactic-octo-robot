@@ -14,21 +14,13 @@ function Clear-Console {
     $UpdateExpiryButton.Visible = $false
     $UpdatePasswordButton.Visible = $false
     $NewPasswordTextBox.Visible = $false
-    $tableLayoutPanel3.Visible = $false
+    $ExpiryTableLayoutPanel.Visible = $false
 }
 function Clear-ReportPanel {
-    # $ADReportsLabel.Visible = $false
-    # $ADReportsDisabledComputersButton.Visible = $false
-    # $ADReportsDomainControllersButton.Visible = $false
-    # $ADReportsInactiveComputersButton.Visible = $false
-    # $ADReportsInactiveUsersButton.Visible = $false
-    # $ADReportsLockedOutUsersButton.Visible = $false
-    # $ADReportsUsersNeverLoggedOnButton.Visible = $false
-    # $ADReportsUsersRecentlyCreatedButton.Visible = $false
-    # $ADReportsUsersRecentlyDeletedButton.Visible = $false
-    # $ADReportsUsersRecentlyModifiedButton.Visible = $false
-    # $ADReportsUsersWithoutManagerButton.Visible = $false
-    $tableLayoutPanel4.Visible = $false    
+    $ADReportsTableLayoutPanel.Visible = $false    
+}
+function Clear-OptionsPanel {
+    $OptionButtonsTableLayoutPanel.Visible = $false
 }
 function Reset-Form {
     param(
@@ -49,7 +41,9 @@ function Reset-Form {
     $ADAccountSetExpiryButton.Visible = $false
     $ADAccountResetAccountPasswordButton.Visible = $false
     $ADAccountUnlockUserAccountButton.Visible = $false
-    $tableLayoutPanel4.Visible = $true
+    $ADReportsTableLayoutPanel.Visible = $false
+    $ValidateNPUserButton.Visible = $false
+    $OptionButtonsTableLayoutPanel.Visible= $true
 
     Clear-Console
 }
@@ -106,6 +100,7 @@ $ADAccountRequiresSmartcardLabel = New-Object System.Windows.Forms.Label
 $ADAccountActionsLabel = New-Object System.Windows.Forms.Label
 $DisplayTitleLabel = New-Object System.Windows.Forms.Label
 $ADReportsLabel = New-Object System.Windows.Forms.Label
+$OptionButtonsLabel = New-Object System.Windows.Forms.Label
 #endregion
 
 #region Text boxes
@@ -140,6 +135,8 @@ $ADAccountClearExpiryButton = New-Object System.Windows.Forms.Button
 $ADAccountUnlockUserAccountButton = New-Object System.Windows.Forms.Button
 $ADAccountResetAccountPasswordButton = New-Object System.Windows.Forms.Button
 $UpdatePasswordButton = New-Object System.Windows.Forms.Button
+$DisplayReportsPanelButton = New-Object System.Windows.Forms.Button
+$ValidateNPUserButton = New-Object System.Windows.Forms.Button
 #endregion
 
 #region ListBoxes
@@ -163,41 +160,43 @@ $ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
 #endregion
 
 #region TableLayoutPanels
-$tableLayoutPanel1 = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel1.RowCount = 3 #how many rows
-$tableLayoutPanel1.ColumnCount = 6 #how many columns
-# $tableLayoutPanel1.CellBorderStyle = "Inset"
+#region main table layout panel
+$MainTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
+$MainTableLayoutPanel.RowCount = 3 #how many rows
+$MainTableLayoutPanel.ColumnCount = 6 #how many columns
+# $MainTableLayoutPanel.CellBorderStyle = "Inset"
 
-$tableLayoutPanel1.SetColumnSpan($DisplayTitleLabel,6)
-$tableLayoutPanel1.SetColumnSpan($DisplayInfoBox,6)
-$tableLayoutPanel1.SetColumnSpan($ADAccountClearExpiryButton,3)
-$tableLayoutPanel1.SetRowSpan($DisplayInfoBox,2)
+$MainTableLayoutPanel.SetColumnSpan($DisplayTitleLabel,6)
+$MainTableLayoutPanel.SetColumnSpan($DisplayInfoBox,6)
+$MainTableLayoutPanel.SetColumnSpan($ADAccountClearExpiryButton,3)
+$MainTableLayoutPanel.SetRowSpan($DisplayInfoBox,2)
 
-$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30))) | Out-Null
-$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 8))) | Out-Null
-$tableLayoutPanel1.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 62))) | Out-Null
+$MainTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 30))) | Out-Null
+$MainTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 8))) | Out-Null
+$MainTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 62))) | Out-Null
 
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
-$tableLayoutPanel1.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,45))) | Out-Null
+$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
+$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
+$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
+$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,45))) | Out-Null
 
 # column 1
-$tableLayoutPanel1.Controls.Add($DisplayTitleLabel,0,1)
-$tableLayoutPanel1.Controls.Add($DisplayInfoBox,0,2)
+$MainTableLayoutPanel.Controls.Add($DisplayTitleLabel,0,1)
+$MainTableLayoutPanel.Controls.Add($DisplayInfoBox,0,2)
 # column 2
-$tableLayoutPanel1.Controls.Add($ADGroupsBox,1,2)
+$MainTableLayoutPanel.Controls.Add($ADGroupsBox,1,2)
 # column 3
-$tableLayoutPanel1.Controls.Add($RemoveGroupButton,2,2)
-$tableLayoutPanel1.Controls.Add($ADAccountClearExpiryButton,2,2)
+$MainTableLayoutPanel.Controls.Add($RemoveGroupButton,2,2)
+$MainTableLayoutPanel.Controls.Add($ADAccountClearExpiryButton,2,2)
 # column 4
-$tableLayoutPanel1.Controls.Add($AddGroupButton,3,2)
+$MainTableLayoutPanel.Controls.Add($AddGroupButton,3,2)
 # column 5
-$tableLayoutPanel1.Controls.Add($ADGroupMembershipBox,4,2)
+$MainTableLayoutPanel.Controls.Add($ADGroupMembershipBox,4,2)
 
-$tableLayoutPanel1.Dock = [System.Windows.Forms.DockStyle]::Fill
+$MainTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+#endregion
 
 $tableLayoutPanel2 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel2.RowCount = 5
@@ -241,67 +240,84 @@ $tableLayoutPanel2.Controls.Add($ADAccountRequiresSmartcardCheckBox,3,4)
 $tableLayoutPanel2.Controls.Add($ADAccountResetAccountPasswordButton,4,1)
 $tableLayoutPanel2.Controls.Add($ADGetGroupMembershipButton,4,2)
 $tableLayoutPanel2.Controls.Add($UpdateGroupMembershipsButton,4,2)
+$tableLayoutPanel2.Controls.Add($ValidateNPUserButton,4,3)
 
 $tableLayoutPanel2.SetColumnSpan($ADAccountActionsLabel,2)
 
 $tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::Fill
 
-# Account Expiration Panel
-$tableLayoutPanel3 = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel3.RowCount = 3 #how many rows
-$tableLayoutPanel3.ColumnCount = 1 #how many columns
-# $tableLayoutPanel3.CellBorderStyle = "Inset" 
+#region Account Expiration Panel
+$ExpiryTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
+$ExpiryTableLayoutPanel.RowCount = 3 #how many rows
+$ExpiryTableLayoutPanel.ColumnCount = 1 #how many columns
+# $ExpiryTableLayoutPanel.CellBorderStyle = "Inset" 
 
-$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
-$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
-$tableLayoutPanel3.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
+$ExpiryTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
+$ExpiryTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
+$ExpiryTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
 
-$tableLayoutPanel3.Controls.Add($ADAccountExpiryDatePicker,0,0)
-$tableLayoutPanel3.Controls.Add($NewPasswordTextBox,0,0)
-$tableLayoutPanel3.Controls.Add($UpdateExpiryButton,0,2)
-$tableLayoutPanel3.Controls.Add($UpdatePasswordButton,0,2)
+$ExpiryTableLayoutPanel.Controls.Add($ADAccountExpiryDatePicker,0,0)
+$ExpiryTableLayoutPanel.Controls.Add($NewPasswordTextBox,0,0)
+$ExpiryTableLayoutPanel.Controls.Add($UpdateExpiryButton,0,2)
+$ExpiryTableLayoutPanel.Controls.Add($UpdatePasswordButton,0,2)
 
-$tableLayoutPanel3.Dock = [System.Windows.Forms.DockStyle]::Fill
+$ExpiryTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+#endregion
 
-# Reports Panel
-$tableLayoutPanel4 = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel4.RowCount = 5 #how many rows
-$tableLayoutPanel4.ColumnCount = 3 #how many columns
-$tableLayoutPanel4.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+#region Reports Panel
+$ADReportsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
+$ADReportsTableLayoutPanel.RowCount = 5 #how many rows
+$ADReportsTableLayoutPanel.ColumnCount = 3 #how many columns
+$ADReportsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
 -bor [System.Windows.Forms.AnchorStyles]::Bottom `
 -bor [System.Windows.Forms.AnchorStyles]::Left `
 -bor [System.Windows.Forms.AnchorStyles]::Right
-# $tableLayoutPanel4.CellBorderStyle = "Inset" 
+# $ADReportsTableLayoutPanel.CellBorderStyle = "Inset" 
 
-$tableLayoutPanel4.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
-$tableLayoutPanel4.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
-$tableLayoutPanel4.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
-$tableLayoutPanel4.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
-$tableLayoutPanel4.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 
-$tableLayoutPanel4.SetColumnSpan($ADReportsLabel,3)
+$ADReportsTableLayoutPanel.SetColumnSpan($ADReportsLabel,3)
 
-$tableLayoutPanel4.Controls.Add($ADReportsLabel,0,0)
-$tableLayoutPanel4.Controls.Add($ADReportsDomainControllersButton,0,1)
-$tableLayoutPanel4.Controls.Add($ADReportsDisabledComputersButton,0,2)
-$tableLayoutPanel4.Controls.Add($ADReportsInactiveComputersButton,0,3)
-$tableLayoutPanel4.Controls.Add($ADReportsInactiveUsersButton,0,4)
-$tableLayoutPanel4.Controls.Add($ADReportsLockedOutUsersButton,1,1)
-$tableLayoutPanel4.Controls.Add($ADReportsUsersNeverLoggedOnButton,1,2)
-$tableLayoutPanel4.Controls.Add($ADReportsUsersRecentlyCreatedButton,1,3)
-$tableLayoutPanel4.Controls.Add($ADReportsUsersRecentlyDeletedButton,1,4)
-$tableLayoutPanel4.Controls.Add($ADReportsUsersRecentlyModifiedButton,2,1)
-$tableLayoutPanel4.Controls.Add($ADReportsUsersWithoutManagerButton,2,2)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsLabel,0,0)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsDomainControllersButton,0,1)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsDisabledComputersButton,0,2)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsInactiveComputersButton,0,3)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsInactiveUsersButton,0,4)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsLockedOutUsersButton,1,1)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersNeverLoggedOnButton,1,2)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyCreatedButton,1,3)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyDeletedButton,1,4)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyModifiedButton,2,1)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersWithoutManagerButton,2,2)
 
-$tableLayoutPanel4.Dock = [System.Windows.Forms.DockStyle]::Fill
+$ADReportsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+#endregion
 
-$tableLayoutPanel1.Controls.Add($tableLayoutPanel2,0,0)
-$tableLayoutPanel1.Controls.Add($tableLayoutPanel3,1,2)
-$tableLayoutPanel2.Controls.Add($tableLayoutPanel4,2,0)
+#region Options Buttons Panel
+$OptionButtonsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
+$OptionButtonsTableLayoutPanel.RowCount = 5
+$OptionButtonsTableLayoutPanel.ColumnCount = 1
+# $OptionButtonsTableLayoutPanel.CellBorderStyle = "Inset"
 
-$tableLayoutPanel1.SetColumnSpan($tableLayoutPanel2,6)
-$tableLayoutPanel2.SetColumnSpan($tableLayoutPanel4,3)
-$tableLayoutPanel2.SetRowSpan($tableLayoutPanel4,5)
+$OptionButtonsTableLayoutPanel.Controls.Add($OptionButtonsLabel,0,0)
+$OptionButtonsTableLayoutPanel.Controls.Add($DisplayReportsPanelButton,0,1)
+
+$OptionButtonsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+#endregion
+
+$MainTableLayoutPanel.Controls.Add($tableLayoutPanel2,0,0)
+$MainTableLayoutPanel.Controls.Add($ExpiryTableLayoutPanel,1,2)
+$tableLayoutPanel2.Controls.Add($ADReportsTableLayoutPanel,2,0)
+$tableLayoutPanel2.Controls.Add($OptionButtonsTableLayoutPanel,2,0)
+
+$MainTableLayoutPanel.SetColumnSpan($tableLayoutPanel2,6)
+$tableLayoutPanel2.SetColumnSpan($ADReportsTableLayoutPanel,3)
+$tableLayoutPanel2.SetRowSpan($ADReportsTableLayoutPanel,5)
+$tableLayoutPanel2.SetRowSpan($OptionButtonsTableLayoutPanel,5)
 #endregion
 #endregion
 
@@ -314,7 +330,8 @@ $handler_ADLookupButton_Click =
     try {
         $principal = $ADPrincipalTextBox.Text
         if ($principal) {
-            Clear-ReportPanel 
+            Clear-ReportPanel
+            Clear-OptionsPanel 
             $Script:objPrincipal = switch ($true) {
                 $ADSearchUsersRadioButton.Checked { Get-ADUser -Identity $principal -Properties *; break } 
                 $ADSearchComputersRadioButton.Checked { Get-ADComputer -Identity $principal -Properties *; break }
@@ -362,6 +379,7 @@ $handler_ADLookupButton_Click =
                 $ADAccountUnlockUserAccountButton.Enabled = $objPrincipal.LockedOut
                 $ADAccountResetAccountPasswordButton.Visible = $true
                 if ($objPrincipal.ObjectClass -eq 'user') {
+                    $ValidateNPUserButton.Visible = $true
                     $ADAccountRequiresSmartcardLabel.Visible = $true
                     $ADAccountRequiresSmartcardCheckBox.Visible = $true
                 }
@@ -600,7 +618,7 @@ $hander_ADAccountExpiryButton_Click =
     Clear-Console
     $DisplayInfoBox.Visible = $false
     $DisplayTitleLabel.Text = "Modify Account Expiration Date"
-    $tableLayoutPanel3.Visible = $true
+    $ExpiryTableLayoutPanel.Visible = $true
     $ADAccountExpiryDatePicker.Visible = $true
     $ADAccountClearExpiryButton.Visible = $true
     $ADAccountClearExpiryButton.Enabled = $objPrincipal.AccountExpirationDate -ne $null
@@ -622,7 +640,7 @@ $handler_ADAccountClearExpiryButton_Click =
 
             $DisplayInfoBox.Visible = $true
             $DisplayTitleLabel.Text = "Account Properties"
-            $tableLayoutPanel3.Visible = $false
+            $ExpiryTableLayoutPanel.Visible = $false
             $ADAccountClearExpiryButton.Visible = $false
         }
     }
@@ -653,7 +671,7 @@ $handler_UpdateExpiryButton_Click =
                 $ADAccountExpiryDatePicker.Visible = $false
                 $UpdateExpiryButton.Visible = $false
                 $ADAccountClearExpiryButton.Visible = $false
-                $tableLayoutPanel3.Visible = $false
+                $ExpiryTableLayoutPanel.Visible = $false
             }
         # }
     }
@@ -779,7 +797,7 @@ $handler_ADAccountResetAccountPasswordButton_Click =
     Clear-Console
     $DisplayInfoBox.Visible = $false
     $DisplayTitleLabel.Text = "Reset Account Password"
-    $tableLayoutPanel3.Visible = $true
+    $ExpiryTableLayoutPanel.Visible = $true
     $NewPasswordTextBox.Visible = $true
     $UpdatePasswordButton.Visible = $true
 }
@@ -810,6 +828,59 @@ $handler_UpdatePasswordButton_Click =
     }
 }
 
+$handler_DisplayReportsPanelButton_Click = 
+{
+    $OptionButtonsTableLayoutPanel.Visible = $false
+    $ADReportsTableLayoutPanel.Visible = $true
+}
+
+$handler_ValidateNPUserButton_Click = 
+{
+    try {
+        Write-Host "Validate Notepad User"
+        $ini = Get-IniContent .\config.ini
+        $serverInstance = $ini.NotepadDbConfig.SqlServerInstance
+        $database = $ini.NotepadDbConfig.Database
+        $pidQuery = $ini.NotepadDbConfig.PIDQuery
+        $updateQuery = $ini.NotepadDbConfig.UpdateQuery
+        $encrypt = switch ($ini.NotepadDbConfig.Encrypt) {
+            {[string]::IsNullOrWhiteSpace($PSItem)} { 'Mandatory'; break }
+            {$PSItem -in @('Mandatory', 'Strict', 'Optional')} { $PSItem; break }
+            default { throw "Valid values for Encrypt attribute are 'Mandatory', 'Strict', or 'Optional'"}
+        }
+        $trustServerCertificate = switch ($ini.NotepadDbConfig.TrustServerCertificate) {
+            'True' { $true; break }
+            'False' { $false; break }
+            {[string]::IsNullOrWhiteSpace($PSItem)} { $false; break }
+            default { throw "Valid values for TrustServerCertificate switch are 'True' or 'False'"}
+        }
+
+        $sqlParameters = @{
+            ServerInstance = $serverInstance
+            Database = $database
+            Query = $pidQuery
+            Encrypt = $encrypt
+            TrustServerCertificate = $trustServerCertificate
+        }
+        
+        # get the users PID from NOTEPAD
+        $_PID = Invoke-Sqlcmd @sqlParameters
+        if (!$_PID) { throw "A PID for user $($objPrincipal.SamAccountName) was not found in NOTEPAD." }
+        
+        # update the login id in Notepad
+        $sqlParameters["Query"] = $updateQuery
+        Invoke-Sqlcmd @sqlParameters
+
+        Write-Log -Message "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database"
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        Write-log -Message $error[0].Exception.Message -Severity Error
+        [System.Windows.MessageBox]::Show("Unable to validate user against NOTEPAD", "NOTEPAD Validation Failed",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+}
+
 $handler_formclose =
   {
     1..3 | ForEach-Object {[GC]::Collect()}
@@ -825,7 +896,17 @@ $handler_formclose =
         $databaseName = $ini.LoggerConfig.Database
         $schemaName = $ini.LoggerConfig.Schema
         $tableName = $ini.LoggerConfig.Table
-
+        $encrypt = switch ($ini.LoggerConfig.Encrypt) {
+            {[string]::IsNullOrWhiteSpace($PSItem)} { 'Mandatory'; break }
+            {$PSItem -in @('Mandatory', 'Strict', 'Optional')} { $PSItem; break }
+            default { throw "Valid values for Encrypt attribute are 'Mandatory', 'Strict', or 'Optional'"}
+        }
+        $trustServerCertificate = switch ($ini.LoggerConfig.TrustServerCertificate) {
+            'True' { $true; break }
+            'False' { $false; break }
+            {[string]::IsNullOrWhiteSpace($PSItem)} { $false; break }
+            default { throw "Valid values for TrustServerCertificate switch are 'True' or 'False'"}
+        }
         $sessionLog = Import-Csv $env:Temp\LogFile.csv
 
         Write-Log -Message "Importing Session Logs" -Severity Information
@@ -836,6 +917,8 @@ $handler_formclose =
             DatabaseName=$databaseName
             SchemaName = $schemaName
             TableName=$tableName
+            Encrypt=$encrypt
+            TrustServerCertificate=$trustServerCertificate
             Force=$true
         }
         Write-SqlTableData @sqlParameters
@@ -871,6 +954,7 @@ $form.ClientSize = $System_Drawing_Size
 $form.StartPosition = "WindowsDefaultLocation"
 
 #region configure the controls
+#region lookup principal
 #region Username label
 $ADUserLabel.Text = "Enter a Username"
 $ADUserLabel.AutoSize = $true
@@ -897,7 +981,9 @@ $ADLookupButton.Text = "Lookup User"
 $ADLookupButton.Font = $BoxFont
 $ADLookupButton.add_Click($handler_ADLookupButton_Click)
 #endregion
+#endregion
 
+#region search type choices (user, computer, service account)
 #region search type label
 $ADSearchTypeLabel.Text = "Search Type"
 $ADSearchTypeLabel.AutoSize = $true
@@ -931,8 +1017,35 @@ $ADSearchServiceAccountsRadioButton.Checked = $false
 $ADSearchServiceAccountsRadioButton.UseVisualStyleBackColor = $True
 $ADSearchServiceAccountsRadioButton.add_Click($handler_ADSearchServiceAccountsRadioButton_Click)
 #endregion
+#endregion
 
-#region AD Repors Label
+#region option button panel controls (Display Report panel, Validate NP User)
+#region Option Buttons Label
+$OptionButtonsLabel.Name = "OptionButtonsLabel"
+$OptionButtonsLabel.Text = "Other Options"
+$OptionButtonsLabel.Font = $BoldBoxFont
+$OptionButtonsLabel.AutoSize = $true
+#endregion
+
+#region display report panel button
+$DisplayReportsPanelButton.Name = "DisplayReportsPanelButton"
+$DisplayReportsPanelButton.Text = "Active Directory Reports"
+$DisplayReportsPanelButton.Font = $BoxFont
+$DisplayReportsPanelButton.AutoSize = $true
+$DisplayReportsPanelButton.add_Click($handler_DisplayReportsPanelButton_Click)
+#endregion
+
+#region validate NP user
+$ValidateNPUserButton.Name = "ValidateNPUserButton"
+$ValidateNPUserButton.Text = "Validate Notepad User"
+$ValidateNPUserButton.Font = $BoxFont
+$ValidateNPUserButton.AutoSize = $true
+$ValidateNPUserButton.add_Click($handler_ValidateNPUserButton_Click)
+#endregion
+#endregion
+
+#region reports controls
+#region AD Reports Label
 $ADReportsLabel.Name = "ADReportsLabel"
 $ADReportsLabel.Text = "Active Directory Reports"
 $ADReportsLabel.Font = $BoldBoxFont
@@ -1022,7 +1135,9 @@ $ADReportsUsersWithoutManagerButton.Font = $BoxFont
 $ADReportsUsersWithoutManagerButton.Autosize = $true
 $ADReportsUsersWithoutManagerButton.add_Click($handler_ADReportsUsersWithoutManagerButton_Click)
 #endregion
+#endregion
 
+#region account status labels
 #region Account Status Label
 $ADAccountStatusLabel.Name = "ADAccountStatusLabel"
 $ADAccountStatusLabel.Text = "Account Status"
@@ -1032,7 +1147,7 @@ $ADAccountStatusLabel.AutoSize = $true
 
 #region Account Expiration Label
 $ADAccountExpirationLabel.Name = "ADAccountExpirationLabel"
-$ADAccountExpirationLabel.Text = "Account Expiration Date: $($objPrincipal.AccountExpirationDate.ToString("MM/dd/yyyy"))"
+$ADAccountExpirationLabel.Text = "Account Expiration Date: "
 $ADAccountExpirationLabel.Font = $BoxFont
 $ADAccountExpirationLabel.AutoSize = $true
 #endregion
@@ -1057,7 +1172,9 @@ $ADAccountRequiresSmartcardLabel.Text = "Smartcard Required: $($objPrincipal.Sma
 $ADAccountRequiresSmartcardLabel.Font = $BoxFont
 $ADAccountRequiresSmartcardLabel.AutoSize = $true
 #endregion
+#endregion
 
+#region console controls (Display title, Display text box)
 #region Display title Label
 $DisplayTitleLabel.Name = "DisplayTitleLabel"
 $DisplayTitleLabel.Font = $TitleFont
@@ -1079,7 +1196,9 @@ $DisplayInfoBox.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
 -bor [System.Windows.Forms.AnchorStyles]::Left `
 -bor [System.Windows.Forms.AnchorStyles]::Right
 #endregion
+#endregion
 
+#region account actions (modify expiry, reset pwd, unlock account, enable/disable account, smartcardlogon, group membership)
 #region account actions label
 $ADAccountActionsLabel.Name = "ADAccountActionsLabel"
 $ADAccountActionsLabel.Text = "Account Actions"
@@ -1091,6 +1210,7 @@ $ADAccountActionsLabel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
     -bor [System.Windows.Forms.AnchorStyles]::Right
 #endregion
 
+#region modify expiry
 #region account expiry button
 $ADAccountSetExpiryButton.Name = "ADAccountSetExpiryButton"
 $ADAccountSetExpiryButton.Text = "Modify Expiry"
@@ -1121,6 +1241,16 @@ $UpdateExpiryButton.Font = $BoxFont
 $UpdateExpiryButton.AutoSize = $true
 $UpdateExpiryButton.add_Click($handler_UpdateExpiryButton_Click)
 #endregion
+#endregion
+
+#region reset user password
+#region AD Reset Account Password button
+$ADAccountResetAccountPasswordButton.Name = "ADReportsAccountPasswordButton"
+$ADAccountResetAccountPasswordButton.Text = "Reset Account Password"
+$ADAccountResetAccountPasswordButton.Font = $BoxFont
+$ADAccountResetAccountPasswordButton.Autosize = $true
+$ADAccountResetAccountPasswordButton.add_Click($handler_ADAccountResetAccountPasswordButton_Click)
+#endregion
 
 #region New Password Text Box
 $NewPasswordTextBox.Name = "NewPasswordTextBox"
@@ -1137,6 +1267,7 @@ $UpdatePasswordButton.Name = "UpdatePasswordButton"
 $UpdatePasswordButton.Text = "Reset Password"
 $UpdatePasswordButton.AutoSize = $true
 $UpdatePasswordButton.add_Click($handler_UpdatePasswordButton_Click)
+#endregion
 #endregion
 
 #region Enable/Disable Account button
@@ -1168,14 +1299,7 @@ $ADAccountRequiresSmartcardCheckBox.UseVisualStyleBackColor = $True
 $ADAccountRequiresSmartcardCheckBox.add_Click($handler_ADAccountRequiresSmartCardCheckbox_Click)
 #endregion
 
-#region AD Reset Account Password button
-$ADAccountResetAccountPasswordButton.Name = "ADReportsAccountPasswordButton"
-$ADAccountResetAccountPasswordButton.Text = "Reset Account Password"
-$ADAccountResetAccountPasswordButton.Font = $BoxFont
-$ADAccountResetAccountPasswordButton.Autosize = $true
-$ADAccountResetAccountPasswordButton.add_Click($handler_ADAccountResetAccountPasswordButton_Click)
-#endregion
-
+#region group membership
 #region Enumerate group memberships Button
 $ADGetGroupMembershipButton.Name = "ADGetGroupMembershipButton"
 $ADGetGroupMembershipButton.AutoSize = $true
@@ -1231,8 +1355,9 @@ $UpdateGroupMembershipsButton.Font = $BoxFont
 $UpdateGroupMembershipsButton.add_Click($handler_UpdateGroupMembershipButton_Click)
 #endregion
 #endregion
+#endregion
 
-$form.Controls.AddRange(@($tableLayoutPanel1))
+$form.Controls.AddRange(@($MainTableLayoutPanel))
 $form.ResumeLayout()
 
 # set control visibility on form load
