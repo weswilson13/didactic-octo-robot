@@ -22,6 +22,9 @@ function Clear-ReportPanel {
 function Clear-OptionsPanel {
     $OptionButtonsTableLayoutPanel.Visible = $false
 }
+function Clear-DomainServersPanel {
+    $DomainServersTableLayoutPanel.Visible = $false
+}
 function Reset-Form {
     param(
         [switch]$ExceptPrincipal
@@ -43,7 +46,8 @@ function Reset-Form {
     $ADAccountUnlockUserAccountButton.Visible = $false
     $ADReportsTableLayoutPanel.Visible = $false
     $ValidateNPUserButton.Visible = $false
-    $OptionButtonsTableLayoutPanel.Visible= $true
+    $OptionButtonsTableLayoutPanel.Visible = $true
+    $DomainServersTableLayoutPanel.Visible = $true
 
     Clear-Console
 }
@@ -52,7 +56,7 @@ function Get-ConnectionParameters {
         [string]$IniSection
     )
 
-    $ini = Get-IniContent .\config.ini
+    # $ini = Get-IniContent .\config.ini
 
     $encrypt = switch ($ini.$IniSection.Encrypt) {
         {[string]::IsNullOrWhiteSpace($PSItem)} { 'Mandatory'; break }
@@ -108,7 +112,7 @@ function Get-UserMapping {
     param()
 
     try {
-        $ini = Get-IniContent .\config.ini
+        # $ini = Get-IniContent .\config.ini
 
         return [PSCustomObject]@{
             First_Name = $ini.UserMappingNPtoAD.First_Name
@@ -154,12 +158,15 @@ $null = [ProcessDPI]::SetProcessDPIAware()
 Import-Module ActiveDirectory,PSIni
 Import-Module SqlServer -MinimumVersion 22.0.0
 
+#load config
+$script:ini = Get-IniContent .\config.ini
+
 #region font objects
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
 # $BodyFont = New-Object System.Drawing.Font("Calibri",18,[Drawing.FontStyle]::Bold)
 $BoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Regular)
 $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Bold)
-$ConsoleFont = New-Object System.Drawing.Font("Lucida Console", 10, [Drawing.FontStyle]::Regular)
+$ConsoleFont = New-Object System.Drawing.Font("Lucida Console", 9, [Drawing.FontStyle]::Regular)
 #endregion
 
 #region create the controls
@@ -297,7 +304,7 @@ $tableLayoutPanel2.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle
     # column 1
 $tableLayoutPanel2.Controls.Add($ADUserLabel,0,0)
 $tableLayoutPanel2.Controls.Add($ADPrincipalTextBox,0,1)
-$tableLayoutPanel2.Controls.Add($ADLookupButton,0,3)
+$tableLayoutPanel2.Controls.Add($ADLookupButton,0,2)
     #column 2
 $tableLayoutPanel2.Controls.Add($ADSearchTypeLabel,1,0)
 $tableLayoutPanel2.Controls.Add($ADSearchUsersRadioButton,1,1)
@@ -322,6 +329,7 @@ $tableLayoutPanel2.Controls.Add($UpdateGroupMembershipsButton,4,2)
 $tableLayoutPanel2.Controls.Add($ValidateNPUserButton,4,3)
 
 $tableLayoutPanel2.SetColumnSpan($ADAccountActionsLabel,2)
+$tableLayoutPanel2.SetRowSpan($ADLookupButton,2)
 
 $tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::Fill
 #endregion tablelayoutpanel2
@@ -356,17 +364,23 @@ $ADReportsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
     -bor [System.Windows.Forms.AnchorStyles]::Bottom `
     -bor [System.Windows.Forms.AnchorStyles]::Left `
     -bor [System.Windows.Forms.AnchorStyles]::Right
+$ADReportsTableLayoutPanel.BorderStyle = "Fixed3d"
+# $ADReportsTableLayoutPanel.CellBorderStyle = "Outset"
 # $ADReportsTableLayoutPanel.CellBorderStyle = "Inset" 
 
+$ADReportsTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,33.3))) | Out-Null
+$ADReportsTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,33.3))) | Out-Null
+$ADReportsTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,33.3))) | Out-Null
+
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 
-$ADReportsTableLayoutPanel.SetColumnSpan($ADReportsLabel,3)
+# $ADReportsTableLayoutPanel.SetColumnSpan($ADReportsLabel,3)
 
-$ADReportsTableLayoutPanel.Controls.Add($ADReportsLabel,0,0)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsLabel,1,0)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsDomainControllersButton,0,1)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsDisabledComputersButton,0,2)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsInactiveComputersButton,0,3)
@@ -384,6 +398,7 @@ $ADReportsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
 #region Options Buttons Panel
 $OptionButtonsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
 $OptionButtonsTableLayoutPanel.RowCount = 5
+$OptionButtonsRowSpan = 5
 $OptionButtonsTableLayoutPanel.ColumnCount = 3
 $OptionButtonsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
     -bor [System.Windows.Forms.AnchorStyles]::Bottom `
@@ -399,22 +414,84 @@ $OptionButtonsTableLayoutPanel.Controls.Add($DisplayReportsPanelButton,0,1)
 $OptionButtonsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
 #endregion option buttons panel
 
+#region Domain Servers Panel
+$DomainServersTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
+$DomainServersTableLayoutPanel.RowCount = 1
+$DomainServersTableLayoutPanel.ColumnCount = 6
+$DomainServersTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+    -bor [System.Windows.Forms.AnchorStyles]::Left `
+    -bor [System.Windows.Forms.AnchorStyles]::Right
+# $DomainServersTableLayoutPanel.CellBorderStyle = "Outset"
+
+if ($ini.Custom.ADServers) {
+    $OptionButtonsRowSpan = 4
+    $labelParams = @{
+        TypeName = 'System.Windows.Forms.Label'
+        Property = @{
+            Text = 'Directory Servers:'
+            Font = $BoldBoxFont
+            AutoSize = $true
+            Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+                -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+                -bor [System.Windows.Forms.AnchorStyles]::Left `
+                -bor [System.Windows.Forms.AnchorStyles]::Right
+        }
+    }
+    $DomainServersTableLayoutPanel.Controls.Add((New-Object @labelParams),0,0)
+    $i=1
+    $ini.Custom.ADServers.split(',') | Foreach-Object {
+        $domain = $PSItem
+        $objectParams = @{
+            TypeName = 'System.Windows.Forms.RadioButton'
+            Property = @{
+                Name = $domain
+                Text = $domain
+                Font = $BoxFont
+                AutoSize = $true
+                # Checked = $PSItem -eq $env:USERDNSDOMAIN
+                Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+                    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+                    -bor [System.Windows.Forms.AnchorStyles]::Left `
+                    -bor [System.Windows.Forms.AnchorStyles]::Right
+            }
+        }
+        $DomainServersTableLayoutPanel.Controls.Add((New-Object @objectParams),$i,0)
+        $DomainServersTableLayoutPanel.Controls.Item($PSItem).add_Click({ 
+            Write-Host "Set Domain Server to $domain"
+            $script:server = $domain 
+        })
+        if ($PSItem -eq $env:USERDNSDOMAIN) {
+            $DomainServersTableLayoutPanel.Controls.Item($PSItem).PerformClick()
+        }
+        $i++
+    }
+}
+
+$DomainServersTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+#endregion domain servers panel
+
 $MainTableLayoutPanel.Controls.Add($tableLayoutPanel2,0,0)
 $MainTableLayoutPanel.Controls.Add($ExpiryTableLayoutPanel,1,2)
 $tableLayoutPanel2.Controls.Add($ADReportsTableLayoutPanel,2,0)
 $tableLayoutPanel2.Controls.Add($OptionButtonsTableLayoutPanel,2,0)
+$tableLayoutPanel2.Controls.Add($DomainServersTableLayoutPanel,0,4)
 
 $MainTableLayoutPanel.SetColumnSpan($tableLayoutPanel2,6)
 $tableLayoutPanel2.SetColumnSpan($ADReportsTableLayoutPanel,3)
 $tableLayoutPanel2.SetColumnSpan($OptionButtonsTableLayoutPanel,3)
+$tableLayoutPanel2.SetColumnSpan($DomainServersTableLayoutPanel,6)
 $tableLayoutPanel2.SetRowSpan($ADReportsTableLayoutPanel,5)
-$tableLayoutPanel2.SetRowSpan($OptionButtonsTableLayoutPanel,5)
+$tableLayoutPanel2.SetRowSpan($OptionButtonsTableLayoutPanel,$OptionButtonsRowSpan)
 #endregion tablelayoutpanels
 #endregion
 
 #region event handlers
 $handler_ADLookupButton_Click = 
   {
+    $adParams = @{}
+    if ($script:server) { $adParams["Server"] = $script:server }
+    
     # reset the form
     Reset-Form -ExceptPrincipal
 
@@ -423,10 +500,11 @@ $handler_ADLookupButton_Click =
         if ($principal) {
             Clear-ReportPanel
             Clear-OptionsPanel 
+            Clear-DomainServersPanel
             $Script:objPrincipal = switch ($true) {
-                $ADSearchUsersRadioButton.Checked { Get-ADUser -Identity $principal -Properties *; break } 
-                $ADSearchComputersRadioButton.Checked { Get-ADComputer -Identity $principal -Properties *; break }
-                $ADSearchServiceAccountsRadioButton.Checked { Get-ADServiceAccount -Identity $principal -Properties *;break }
+                $ADSearchUsersRadioButton.Checked { Get-ADUser @adParams -Identity $principal -Properties *; break } 
+                $ADSearchComputersRadioButton.Checked { Get-ADComputer @adParams -Identity $principal -Properties *; break }
+                $ADSearchServiceAccountsRadioButton.Checked { Get-ADServiceAccount @adParams -Identity $principal -Properties *;break }
             }
 
             if ([string]::IsNullOrWhiteSpace($objPrincipal)) {
@@ -939,27 +1017,39 @@ $handler_ValidateNPUserButton_Click =
             TrustServerCertificate = $connectionParams.TrustServerCertificate
         }
         
-        # get the users PID from NOTEPAD
+        #region get the users PID from NOTEPAD
+        # first get the AD attributes used to identify the user from the [UserMappingNPtoAD] section in config.ini
         $mapping = Get-UserMapping
+
+        # get the PID query from the [NotepadDbConfig] section in config.ini
         $ini = Get-IniContent .\config.ini 
         $pidQuery = $ini.NotepadDbConfig.PIDQuery
+        
+        # update the PID query with the AD attributes
         $pidQuery = $pidQuery.replace('<firstname>', $objPrincipal.$($mapping.First_Name))
         $pidQuery = $pidQuery.replace('<lastname>', $objPrincipal.$($mapping.Last_Name))
         $pidQuery = $pidQuery.replace('<rate>', $objPrincipal.$($mapping.Rate))
-        Write-Host $pidQuery
-
+        Write-Verbose $pidQuery
         $sqlParameters["Query"] = $pidQuery
+
+        # execute the query
         $_PID = Invoke-Sqlcmd @sqlParameters
         if (!$_PID) { throw "A PID for user $($objPrincipal.SamAccountName) was not found in NOTEPAD." }
-        
-        # update the login id in Notepad
+        #endregion PID Query
+
+        #region update the login id in Notepad
+        # get the update query from the [NotepadDbConfig] section in config.ini
         $updateQuery = $ini.NotepadDbConfig.UpdateQuery
+
+        # update the query for the specific user
         $updateQuery = $updateQuery.Replace('<username>', $objPrincipal.UserPrincipalName)
         $updateQuery = $updateQuery.Replace('<pid>', $_PID.PID)
-        Write-Host $updateQuery
-
+        Write-Verbose $updateQuery
         $sqlParameters["Query"] = $updateQuery
+        
+        # execute the query
         Invoke-Sqlcmd @sqlParameters
+        #endregion Update NP user
 
         $logMessage = "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database.`n"
         $logMessage += "Updated WinLogonID to $($objPrincipal.UserPrincipalName) for the PID $($_PID.PID)."
@@ -1030,9 +1120,9 @@ $ADPrincipalTextBox.Font = $BoxFont
 $ADLookupButton.Name = "ADLookupButton"
 $ADLookupButton.AutoSize = $true
 $ADLookupButton.AutoSizeMode = "GrowAndShrink"
-$ADLookupButton.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
-    -bor [System.Windows.Forms.AnchorStyles]::Left `
-    -bor [System.Windows.Forms.AnchorStyles]::Bottom
+# $ADLookupButton.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+#     -bor [System.Windows.Forms.AnchorStyles]::Left `
+#     -bor [System.Windows.Forms.AnchorStyles]::Bottom
 $ADLookupButton.UseVisualStyleBackColor = $True
 $ADLookupButton.Text = "Lookup User"
 $ADLookupButton.Font = $BoxFont
