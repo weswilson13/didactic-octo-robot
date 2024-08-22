@@ -47,7 +47,81 @@ function Reset-Form {
 
     Clear-Console
 }
+function Get-ConnectionParameters {
+    param(
+        [string]$IniSection
+    )
 
+    $ini = Get-IniContent .\config.ini
+
+    $encrypt = switch ($ini.$IniSection.Encrypt) {
+        {[string]::IsNullOrWhiteSpace($PSItem)} { 'Mandatory'; break }
+        {$PSItem -in @('Mandatory', 'Strict', 'Optional')} { $PSItem; break }
+        default { throw "Valid values for Encrypt attribute are 'Mandatory', 'Strict', or 'Optional'"}
+    }
+    $trustServerCertificate = switch ($ini.$IniSection.TrustServerCertificate) {
+        'True' { $true; break }
+        'False' { $false; break }
+        {[string]::IsNullOrWhiteSpace($PSItem)} { $false; break }
+        default { throw "Valid values for TrustServerCertificate switch are 'True' or 'False'"}
+    }
+
+    return [hashtable]@{
+        ServerInstance = $ini.$IniSection.SqlServerInstance
+        DatabaseName = $ini.$IniSection.Database
+        SchemaName = $ini.$IniSection.Schema
+        TableName = $ini.$IniSection.Table
+        Encrypt = $encrypt
+        TrustServerCertificate = $trustServerCertificate
+    }
+}
+function Import-SessionLog {
+    try {
+        Write-Host "Importing Session Log"
+        
+        $connectionParams = Get-ConnectionParameters -IniSection LoggerConfig
+        $sessionLog = Import-Csv $env:Temp\LogFile.csv
+        $sqlParameters = @{
+            InputData = $sessionLog
+            ServerInstance = $connectionParams.ServerInstance
+            DatabaseName = $connectionParams.DatabaseName
+            SchemaName = $connectionParams.SchemaName
+            TableName = $connectionParams.TableName
+            Encrypt = $connectionParams.Encrypt
+            TrustServerCertificate = $connectionParams.TrustServerCertificate
+            Force = $true
+        }
+
+        Write-Log -Message "Importing Session Logs" -Severity Information
+        Write-SqlTableData @sqlParameters
+
+        Remove-Item $env:TEMP\LogFile.csv -Force
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        Write-Log -Message $error[0].Exception.Message -Severity Error
+        [System.Windows.MessageBox]::Show("Failed to import session logs.", "Application Logging Failure",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+}
+function Get-UserMapping {
+    param()
+
+    try {
+        $ini = Get-IniContent .\config.ini
+
+        return [PSCustomObject]@{
+            First_Name = $ini.UserMappingNPtoAD.First_Name
+            Last_Name = $ini.UserMappingNPtoAD.Last_Name
+            Rate = $ini.UserMappingNPtoAD.Rate
+            PRSGROUP = $ini.UserMappingNPtoAD.PRSGROUP
+        }
+    }
+    catch {
+        $error[0] | Out-String | Write-Error
+        Write-Log -Message $error[0].Exception.Message -Severity Information
+    }
+}
 #dot sourced functions
 . "$PSScriptRoot\Functions\Write-Log.ps1"
 . "$PSScriptRoot\Functions\Get-DisabledComputers.ps1"
@@ -196,11 +270,16 @@ $MainTableLayoutPanel.Controls.Add($AddGroupButton,3,2)
 $MainTableLayoutPanel.Controls.Add($ADGroupMembershipBox,4,2)
 
 $MainTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
-#endregion
+#endregion main table
 
+#region tablelayoutpanel2
 $tableLayoutPanel2 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel2.RowCount = 5
 $tableLayoutPanel2.ColumnCount = 5
+$tableLayoutPanel2.Anchor =[System.Windows.Forms.AnchorStyles]::Top `
+    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+    -bor [System.Windows.Forms.AnchorStyles]::Left `
+    -bor [System.Windows.Forms.AnchorStyles]::Right
 # $tableLayoutPanel2.CellBorderStyle = "Inset"
 
 $tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
@@ -245,11 +324,16 @@ $tableLayoutPanel2.Controls.Add($ValidateNPUserButton,4,3)
 $tableLayoutPanel2.SetColumnSpan($ADAccountActionsLabel,2)
 
 $tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::Fill
+#endregion tablelayoutpanel2
 
 #region Account Expiration Panel
 $ExpiryTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
 $ExpiryTableLayoutPanel.RowCount = 3 #how many rows
 $ExpiryTableLayoutPanel.ColumnCount = 1 #how many columns
+$ExpiryTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+    -bor [System.Windows.Forms.AnchorStyles]::Left `
+    -bor [System.Windows.Forms.AnchorStyles]::Right
 # $ExpiryTableLayoutPanel.CellBorderStyle = "Inset" 
 
 $ExpiryTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
@@ -262,16 +346,16 @@ $ExpiryTableLayoutPanel.Controls.Add($UpdateExpiryButton,0,2)
 $ExpiryTableLayoutPanel.Controls.Add($UpdatePasswordButton,0,2)
 
 $ExpiryTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
-#endregion
+#endregion account expiration panel
 
 #region Reports Panel
 $ADReportsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
 $ADReportsTableLayoutPanel.RowCount = 5 #how many rows
 $ADReportsTableLayoutPanel.ColumnCount = 3 #how many columns
 $ADReportsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
--bor [System.Windows.Forms.AnchorStyles]::Bottom `
--bor [System.Windows.Forms.AnchorStyles]::Left `
--bor [System.Windows.Forms.AnchorStyles]::Right
+    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+    -bor [System.Windows.Forms.AnchorStyles]::Left `
+    -bor [System.Windows.Forms.AnchorStyles]::Right
 # $ADReportsTableLayoutPanel.CellBorderStyle = "Inset" 
 
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
@@ -295,19 +379,25 @@ $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyModifiedButton,2,
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersWithoutManagerButton,2,2)
 
 $ADReportsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
-#endregion
+#endregion reports panel
 
 #region Options Buttons Panel
 $OptionButtonsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
 $OptionButtonsTableLayoutPanel.RowCount = 5
-$OptionButtonsTableLayoutPanel.ColumnCount = 1
+$OptionButtonsTableLayoutPanel.ColumnCount = 3
+$OptionButtonsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+    -bor [System.Windows.Forms.AnchorStyles]::Left `
+    -bor [System.Windows.Forms.AnchorStyles]::Right
 # $OptionButtonsTableLayoutPanel.CellBorderStyle = "Inset"
+
+$OptionButtonsTableLayoutPanel.SetColumnSpan($OptionButtonsLabel,3)
 
 $OptionButtonsTableLayoutPanel.Controls.Add($OptionButtonsLabel,0,0)
 $OptionButtonsTableLayoutPanel.Controls.Add($DisplayReportsPanelButton,0,1)
 
 $OptionButtonsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
-#endregion
+#endregion option buttons panel
 
 $MainTableLayoutPanel.Controls.Add($tableLayoutPanel2,0,0)
 $MainTableLayoutPanel.Controls.Add($ExpiryTableLayoutPanel,1,2)
@@ -316,9 +406,10 @@ $tableLayoutPanel2.Controls.Add($OptionButtonsTableLayoutPanel,2,0)
 
 $MainTableLayoutPanel.SetColumnSpan($tableLayoutPanel2,6)
 $tableLayoutPanel2.SetColumnSpan($ADReportsTableLayoutPanel,3)
+$tableLayoutPanel2.SetColumnSpan($OptionButtonsTableLayoutPanel,3)
 $tableLayoutPanel2.SetRowSpan($ADReportsTableLayoutPanel,5)
 $tableLayoutPanel2.SetRowSpan($OptionButtonsTableLayoutPanel,5)
-#endregion
+#endregion tablelayoutpanels
 #endregion
 
 #region event handlers
@@ -838,37 +929,31 @@ $handler_ValidateNPUserButton_Click =
 {
     try {
         Write-Host "Validate Notepad User"
-        $ini = Get-IniContent .\config.ini
-        $serverInstance = $ini.NotepadDbConfig.SqlServerInstance
-        $database = $ini.NotepadDbConfig.Database
-        $pidQuery = $ini.NotepadDbConfig.PIDQuery
-        $updateQuery = $ini.NotepadDbConfig.UpdateQuery
-        $encrypt = switch ($ini.NotepadDbConfig.Encrypt) {
-            {[string]::IsNullOrWhiteSpace($PSItem)} { 'Mandatory'; break }
-            {$PSItem -in @('Mandatory', 'Strict', 'Optional')} { $PSItem; break }
-            default { throw "Valid values for Encrypt attribute are 'Mandatory', 'Strict', or 'Optional'"}
-        }
-        $trustServerCertificate = switch ($ini.NotepadDbConfig.TrustServerCertificate) {
-            'True' { $true; break }
-            'False' { $false; break }
-            {[string]::IsNullOrWhiteSpace($PSItem)} { $false; break }
-            default { throw "Valid values for TrustServerCertificate switch are 'True' or 'False'"}
-        }
+        
+        $connectionParams = Get-ConnectionParameters -IniSection NotepadDbConfig
 
         $sqlParameters = @{
-            ServerInstance = $serverInstance
-            Database = $database
+            ServerInstance = $connectionParams.ServerInstance
+            Database = $connectionParams.DatabaseName
             Query = $pidQuery
-            Encrypt = $encrypt
-            TrustServerCertificate = $trustServerCertificate
+            Encrypt = $connectionParams.Encrypt
+            TrustServerCertificate = $connectionParams.TrustServerCertificate
         }
         
         # get the users PID from NOTEPAD
+        $ini = Get-IniContent .\config.ini 
+        $mapping = Get-UserMapping
+        $pidQuery = $pidQuery.replace('<firstname>', $objPrincipal.$($mapping.First_Name))
+        $pidQuery = $pidQuery.replace('<lastname>', $objPrincipal.$($mapping.Last_Name))
+        $pidQuery = $pidQuery.replace('<rate>', $objPrincipal.$($mapping.Rate))
+        Write-Host $pidQuery
+
+        $sqlParameters["Query"] = $pidQuery
         $_PID = Invoke-Sqlcmd @sqlParameters
         if (!$_PID) { throw "A PID for user $($objPrincipal.SamAccountName) was not found in NOTEPAD." }
         
         # update the login id in Notepad
-        $sqlParameters["Query"] = $updateQuery
+        $sqlParameters["Query"] = $ini.NotepadDbConfig.UpdateQuery
         Invoke-Sqlcmd @sqlParameters
 
         Write-Log -Message "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database"
@@ -889,46 +974,7 @@ $handler_formclose =
     
     $form.Dispose()
 
-    try {
-        Write-Host "Importing Session Log"
-        $ini = Get-IniContent .\config.ini
-        $serverInstance = $ini.LoggerConfig.SqlServerInstance
-        $databaseName = $ini.LoggerConfig.Database
-        $schemaName = $ini.LoggerConfig.Schema
-        $tableName = $ini.LoggerConfig.Table
-        $encrypt = switch ($ini.LoggerConfig.Encrypt) {
-            {[string]::IsNullOrWhiteSpace($PSItem)} { 'Mandatory'; break }
-            {$PSItem -in @('Mandatory', 'Strict', 'Optional')} { $PSItem; break }
-            default { throw "Valid values for Encrypt attribute are 'Mandatory', 'Strict', or 'Optional'"}
-        }
-        $trustServerCertificate = switch ($ini.LoggerConfig.TrustServerCertificate) {
-            'True' { $true; break }
-            'False' { $false; break }
-            {[string]::IsNullOrWhiteSpace($PSItem)} { $false; break }
-            default { throw "Valid values for TrustServerCertificate switch are 'True' or 'False'"}
-        }
-        $sessionLog = Import-Csv $env:Temp\LogFile.csv
-
-        Write-Log -Message "Importing Session Logs" -Severity Information
-
-        $sqlParameters = @{
-            InputData=$sessionLog
-            ServerInstance=$serverInstance
-            DatabaseName=$databaseName
-            SchemaName = $schemaName
-            TableName=$tableName
-            Encrypt=$encrypt
-            TrustServerCertificate=$trustServerCertificate
-            Force=$true
-        }
-        Write-SqlTableData @sqlParameters
-        Remove-Item $env:TEMP\LogFile.csv -Force
-    }
-    catch {
-        $error[0] | Out-String | Write-Error
-        [System.Windows.MessageBox]::Show("Failed to import session logs.", "Application Logging Failure",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-    }
+    Import-SessionLog
 }
 #endregion
 
@@ -951,7 +997,7 @@ $System_Drawing_Size = New-Object System.Drawing.Size
 $System_Drawing_Size.Width = $screen.Width * .75
 $System_Drawing_Size.Height = $screen.Height * .75
 $form.ClientSize = $System_Drawing_Size
-$form.StartPosition = "WindowsDefaultLocation"
+# $form.StartPosition = "WindowsDefaultLocation"
 
 #region configure the controls
 #region lookup principal
@@ -981,7 +1027,7 @@ $ADLookupButton.Text = "Lookup User"
 $ADLookupButton.Font = $BoxFont
 $ADLookupButton.add_Click($handler_ADLookupButton_Click)
 #endregion
-#endregion
+#endregion lookup principal
 
 #region search type choices (user, computer, service account)
 #region search type label
@@ -1017,7 +1063,7 @@ $ADSearchServiceAccountsRadioButton.Checked = $false
 $ADSearchServiceAccountsRadioButton.UseVisualStyleBackColor = $True
 $ADSearchServiceAccountsRadioButton.add_Click($handler_ADSearchServiceAccountsRadioButton_Click)
 #endregion
-#endregion
+#endregion search type choices
 
 #region option button panel controls (Display Report panel, Validate NP User)
 #region Option Buttons Label
@@ -1025,6 +1071,10 @@ $OptionButtonsLabel.Name = "OptionButtonsLabel"
 $OptionButtonsLabel.Text = "Other Options"
 $OptionButtonsLabel.Font = $BoldBoxFont
 $OptionButtonsLabel.AutoSize = $true
+$OptionButtonsLabel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+    -bor [System.Windows.Forms.AnchorStyles]::Left `
+    -bor [System.Windows.Forms.AnchorStyles]::Right
 #endregion
 
 #region display report panel button
@@ -1042,7 +1092,7 @@ $ValidateNPUserButton.Font = $BoxFont
 $ValidateNPUserButton.AutoSize = $true
 $ValidateNPUserButton.add_Click($handler_ValidateNPUserButton_Click)
 #endregion
-#endregion
+#endregion option button panel controls
 
 #region reports controls
 #region AD Reports Label
@@ -1135,7 +1185,7 @@ $ADReportsUsersWithoutManagerButton.Font = $BoxFont
 $ADReportsUsersWithoutManagerButton.Autosize = $true
 $ADReportsUsersWithoutManagerButton.add_Click($handler_ADReportsUsersWithoutManagerButton_Click)
 #endregion
-#endregion
+#endregion reports controls
 
 #region account status labels
 #region Account Status Label
@@ -1172,7 +1222,7 @@ $ADAccountRequiresSmartcardLabel.Text = "Smartcard Required: $($objPrincipal.Sma
 $ADAccountRequiresSmartcardLabel.Font = $BoxFont
 $ADAccountRequiresSmartcardLabel.AutoSize = $true
 #endregion
-#endregion
+#endregion account status labels
 
 #region console controls (Display title, Display text box)
 #region Display title Label
@@ -1196,7 +1246,7 @@ $DisplayInfoBox.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
 -bor [System.Windows.Forms.AnchorStyles]::Left `
 -bor [System.Windows.Forms.AnchorStyles]::Right
 #endregion
-#endregion
+#endregion console controls
 
 #region account actions (modify expiry, reset pwd, unlock account, enable/disable account, smartcardlogon, group membership)
 #region account actions label
@@ -1354,8 +1404,8 @@ $UpdateGroupMembershipsButton.Text = "Update Group Membership"
 $UpdateGroupMembershipsButton.Font = $BoxFont
 $UpdateGroupMembershipsButton.add_Click($handler_UpdateGroupMembershipButton_Click)
 #endregion
-#endregion
-#endregion
+#endregion group membership
+#endregion account actions
 
 $form.Controls.AddRange(@($MainTableLayoutPanel))
 $form.ResumeLayout()
@@ -1368,4 +1418,3 @@ $form.Add_FormClosed($handler_formclose)
 #Show the Form
 Write-Log -Message "$env:USERNAME started a new session." -Severity Information 
 $form.ShowDialog()
-# $null = [Windows.Forms.Application]::Run($form)
