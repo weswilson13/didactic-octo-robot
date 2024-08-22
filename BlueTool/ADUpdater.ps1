@@ -935,14 +935,14 @@ $handler_ValidateNPUserButton_Click =
         $sqlParameters = @{
             ServerInstance = $connectionParams.ServerInstance
             Database = $connectionParams.DatabaseName
-            Query = $pidQuery
             Encrypt = $connectionParams.Encrypt
             TrustServerCertificate = $connectionParams.TrustServerCertificate
         }
         
         # get the users PID from NOTEPAD
-        $ini = Get-IniContent .\config.ini 
         $mapping = Get-UserMapping
+        $ini = Get-IniContent .\config.ini 
+        $pidQuery = $ini.NotepadDbConfig.PIDQuery
         $pidQuery = $pidQuery.replace('<firstname>', $objPrincipal.$($mapping.First_Name))
         $pidQuery = $pidQuery.replace('<lastname>', $objPrincipal.$($mapping.Last_Name))
         $pidQuery = $pidQuery.replace('<rate>', $objPrincipal.$($mapping.Rate))
@@ -953,7 +953,12 @@ $handler_ValidateNPUserButton_Click =
         if (!$_PID) { throw "A PID for user $($objPrincipal.SamAccountName) was not found in NOTEPAD." }
         
         # update the login id in Notepad
-        $sqlParameters["Query"] = $ini.NotepadDbConfig.UpdateQuery
+        $updateQuery = $ini.NotepadDbConfig.UpdateQuery
+        $updateQuery = $updateQuery.Replace('<username>', $objPrincipal.UserPrincipalName)
+        $updateQuery = $updateQuery.Replace('<pid>', $_PID.PID)
+        Write-Host $updateQuery
+
+        $sqlParameters["Query"] = $updateQuery
         Invoke-Sqlcmd @sqlParameters
 
         Write-Log -Message "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database"
