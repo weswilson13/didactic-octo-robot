@@ -961,7 +961,13 @@ $handler_ValidateNPUserButton_Click =
         $sqlParameters["Query"] = $updateQuery
         Invoke-Sqlcmd @sqlParameters
 
-        Write-Log -Message "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database"
+        $logMessage = "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database.`n"
+        $logMessage += "Updated WinLogonID to $($objPrincipal.UserPrincipalName) for the PID $($_PID.PID)."
+        
+        [System.Windows.MessageBox]::Show($logMessage, "NP User Validation",`
+                    [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+
+        Write-Log -Message $logMessage -Severity Information
     }
     catch {
         $error[0] | Out-String | Write-Error
