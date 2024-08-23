@@ -1,1 +1,1 @@
-powershell -WindowStyle Hidden -File .\ADUpdater.ps1
+powershell -WindowStyle Minimized -File .\ADUpdater.ps1 -Verbose
