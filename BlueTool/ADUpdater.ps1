@@ -146,6 +146,19 @@ function New-ErrorMessage {
     [System.Windows.MessageBox]::Show($ErrorMessage, $MessageTitle,`
         [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
 }
+function Reset-GroupLists {
+    param()
+
+    Write-Host "Resetting group list boxes"
+    $ADGroupMembershipBox.Items.Clear()
+    $ADGroupsBox.Items.Clear()
+    Get-ADGroup -Filter 'GroupScope -ne "DomainLocal" -and Name -ne "Domain Users"' | 
+        Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
+        ForEach-Object {
+            $ADGroupsBox.Items.Add($PSItem.Name)
+        }
+    $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
+}
 #region event handlers
 function handler_ADLookupButton_Click {
     $adParams = @{}
@@ -234,7 +247,6 @@ function handler_ADSearchUsersRadioButton_Click {
     $ADUserLabel.Text = "Enter a username"
     $ADLookupButton.Text = "Lookup User"
 }
-
 function handler_ADSearchServiceAccountsRadioButton_Click {
     Write-Host "ServiceAccounts Radio Button Pressed"
     Reset-Form
@@ -254,12 +266,13 @@ function handler_ADGetGroupMembershipButton_Click {
             $ADGroupMembershipBox.Visible = $true
             $GroupControlsTableLayoutPanel.Visible = $true
             $NTKAssignmentButton.Enabled = $objPrincipal.ObjectClass -eq 'User'
-            Get-ADGroup -Filter 'GroupScope -ne "DomainLocal" -and Name -ne "Domain Users"' | 
-                Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
-                ForEach-Object {
-                    $ADGroupsBox.Items.Add($PSItem.Name)
-                }
-            $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
+            Reset-GroupLists
+            # Get-ADGroup -Filter 'GroupScope -ne "DomainLocal" -and Name -ne "Domain Users"' | 
+            #     Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
+            #     ForEach-Object {
+            #         $ADGroupsBox.Items.Add($PSItem.Name)
+            #     }
+            # $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
             Write-Log -Message "$env:USERNAME enumerated group membership for $($objPrincipal.SamAccountName)" -Severity Information
         }
     }
@@ -431,9 +444,7 @@ function handler_ADAccountExpiryButton_Click {
     $ADAccountClearExpiryButton.Enabled = $null -ne $objPrincipal.AccountExpirationDate
     $UpdateExpiryButton.Visible = $true
 }
-
-function handler_ADAccountClearExpiryButton_Click 
-{
+function handler_ADAccountClearExpiryButton_Click {
     try {
         Write-Host "Clear Expiry Button Clicked"
         $ans = [System.Windows.MessageBox]::Show("Clear Account Expiration?", "Verify Action",`
@@ -458,9 +469,7 @@ function handler_ADAccountClearExpiryButton_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
-
-function handler_UpdateExpiryButton_Click
-{
+function handler_UpdateExpiryButton_Click {
     try {
         Write-Host "Update Expiry Button Clicked"
             $expiry = $ADAccountExpiryDatePicker.Text
@@ -490,32 +499,25 @@ function handler_UpdateExpiryButton_Click
     }
 }
  #region Reports Error Handlers
-function handler_ADReportsDisabledComputersButton_Click
-{
+function handler_ADReportsDisabledComputersButton_Click {
         Write-Host "Get DisabledComputers Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Disabled Computers"
         $DisplayInfoBox.Text = (Get-DisabledComputers | Format-Table -AutoSize | Out-String)
 }
-
-function handler_ADReportsDomainControllersButton_Click
-{
+function handler_ADReportsDomainControllersButton_Click {
         Write-Host "Get DomainControllers Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Domain Controllers"
         $DisplayInfoBox.Text = (Get-DomainControllers | Format-Table -AutoSize | Out-String)
 }
-
-function handler_ADReportsInactiveComputersButton_Click
-{
+function handler_ADReportsInactiveComputersButton_Click {
         Write-Host "Get InactiveComputers Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Inactive Computers"
         $DisplayInfoBox.Text = (Get-InactiveComputers | Format-Table -AutoSize | Out-String)
 }
-
-function handler_ADReportsInactiveUsersButton_Click
-{
+function handler_ADReportsInactiveUsersButton_Click {
         Write-Host "Get InactiveUsers Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Inactive Users"
@@ -524,56 +526,43 @@ function handler_ADReportsInactiveUsersButton_Click
         Get-InactiveUsers
         $DisplayInfoBox.Text = (Import-Csv $env:TEMP\InactiveUsers.csv) | Out-String
 }
-
-function handler_ADReportsLockedOutUsersButton_Click
-{
+function handler_ADReportsLockedOutUsersButton_Click {
         Write-Host "Get LockedOutUsers Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Locked Out Users"
         $DisplayInfoBox.Text = (Get-LockedOutUsers | Format-Table -AutoSize | Out-String)
 }
-
-function handler_ADReportsUsersNeverLoggedOnButton_Click
-{
+function handler_ADReportsUsersNeverLoggedOnButton_Click {
         Write-Host "Get UsersNeverLoggedOn Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Users Never Logged On"
         $DisplayInfoBox.Text = (Get-UsersNeverLoggedOn | Format-Table -AutoSize | Out-String)
 }
-
-function handler_ADReportsUsersRecentlyCreatedButton_Click
-{
+function handler_ADReportsUsersRecentlyCreatedButton_Click {
         Write-Host "Get UsersRecentlyCreated Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Users Recently Created"
         $DisplayInfoBox.Text = (Get-UsersRecentlyCreated | Format-Table -AutoSize | Out-String)
 }
-
-function handler_ADReportsUsersRecentlyDeletedButton_Click
-{
+function handler_ADReportsUsersRecentlyDeletedButton_Click {
         Write-Host "Get UsersRecentlyDeleted Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Users Recently Deleted"
         $DisplayInfoBox.Text = (Get-UsersRecentlyDeleted | Format-Table -AutoSize | Out-String)
 }
-
-function handler_ADReportsUsersRecentlyModifiedButton_Click
-{
+function handler_ADReportsUsersRecentlyModifiedButton_Click {
         Write-Host "Get Users Recently Modified Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Users Recently Modified"
         $DisplayInfoBox.Text = (Get-UsersRecentlyModified | Format-Table -AutoSize | Out-String)
 }
-
-function handler_ADReportsUsersWithoutManagerButton_Click
-{
+function handler_ADReportsUsersWithoutManagerButton_Click {
         Write-Host "Get Users Without Manager Report"
         Clear-Console
         $DisplayTitleLabel.Text = "Users Without Manager"
         $DisplayInfoBox.Text = (Get-UsersWithoutManager | Format-Table -AutoSize | Out-String)
 }
 #endregion
-
 function handler_ADAccountUnlockUserAccountButton_Click {
     try {
         Write-Host "Unlock User Account Button Clicked"
@@ -636,58 +625,61 @@ function handler_DisplayReportsPanelButton_Click {
 function handler_ValidateNPUserButton_Click {
     try {
         Write-Host "Validate Notepad User"
-        
-        $connectionParams = Get-ConnectionParameters -IniSection NotepadDbConfig
+        $ans = [System.Windows.MessageBox]::Show("Validate $($objPrincipal.SamAccountName) against NOTEPAD?", "Verify Action",`
+                [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($ans -eq "Yes") {
+            $connectionParams = Get-ConnectionParameters -IniSection NotepadDbConfig
 
-        $sqlParameters = @{
-            ServerInstance = $connectionParams.ServerInstance
-            Database = $connectionParams.DatabaseName
-            Encrypt = $connectionParams.Encrypt
-            TrustServerCertificate = $connectionParams.TrustServerCertificate
-            ApplicationName = "ActiveDirectoryApplet"
+            $sqlParameters = @{
+                ServerInstance = $connectionParams.ServerInstance
+                Database = $connectionParams.DatabaseName
+                Encrypt = $connectionParams.Encrypt
+                TrustServerCertificate = $connectionParams.TrustServerCertificate
+                ApplicationName = "ActiveDirectoryApplet"
+            }
+            
+            #region get the users PID from NOTEPAD
+            # first get the AD attributes used to identify the user from the [UserMappingNPtoAD] section in config.ini
+            $mapping = Get-UserMapping
+
+            # get the PID query from the [NotepadDbConfig] section in config.ini
+            $ini = Get-IniContent .\config.ini 
+            $pidQuery = $ini.NotepadDbConfig.PIDQuery
+            
+            # update the PID query with the AD attributes
+            $pidQuery = $pidQuery.replace('<firstname>', $objPrincipal.$($mapping.First_Name))
+            $pidQuery = $pidQuery.replace('<lastname>', $objPrincipal.$($mapping.Last_Name))
+            $pidQuery = $pidQuery.replace('<rate>', $objPrincipal.$($mapping.Rate))
+            Write-Verbose $pidQuery
+            $sqlParameters["Query"] = $pidQuery
+
+            # execute the query
+            $_PID = Invoke-Sqlcmd @sqlParameters
+            if (!$_PID) { throw "A PID for user $($objPrincipal.SamAccountName) was not found in NOTEPAD." }
+            #endregion PID Query
+
+            #region update the login id in Notepad
+            # get the update query from the [NotepadDbConfig] section in config.ini
+            $updateQuery = $ini.NotepadDbConfig.UpdateQuery
+
+            # update the query for the specific user
+            $updateQuery = $updateQuery.Replace('<username>', $objPrincipal.UserPrincipalName)
+            $updateQuery = $updateQuery.Replace('<pid>', $_PID.PID)
+            Write-Verbose $updateQuery
+            $sqlParameters["Query"] = $updateQuery
+            
+            # execute the query
+            Invoke-Sqlcmd @sqlParameters
+            #endregion Update NP user
+
+            $logMessage = "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database.`n"
+            $logMessage += "Updated WinLogonID to $($objPrincipal.UserPrincipalName) for the PID $($_PID.PID)."
+            
+            [System.Windows.MessageBox]::Show($logMessage, "NP User Validation",`
+                        [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+
+            Write-Log -Message $logMessage -Severity Information
         }
-        
-        #region get the users PID from NOTEPAD
-        # first get the AD attributes used to identify the user from the [UserMappingNPtoAD] section in config.ini
-        $mapping = Get-UserMapping
-
-        # get the PID query from the [NotepadDbConfig] section in config.ini
-        $ini = Get-IniContent .\config.ini 
-        $pidQuery = $ini.NotepadDbConfig.PIDQuery
-        
-        # update the PID query with the AD attributes
-        $pidQuery = $pidQuery.replace('<firstname>', $objPrincipal.$($mapping.First_Name))
-        $pidQuery = $pidQuery.replace('<lastname>', $objPrincipal.$($mapping.Last_Name))
-        $pidQuery = $pidQuery.replace('<rate>', $objPrincipal.$($mapping.Rate))
-        Write-Verbose $pidQuery
-        $sqlParameters["Query"] = $pidQuery
-
-        # execute the query
-        $_PID = Invoke-Sqlcmd @sqlParameters
-        if (!$_PID) { throw "A PID for user $($objPrincipal.SamAccountName) was not found in NOTEPAD." }
-        #endregion PID Query
-
-        #region update the login id in Notepad
-        # get the update query from the [NotepadDbConfig] section in config.ini
-        $updateQuery = $ini.NotepadDbConfig.UpdateQuery
-
-        # update the query for the specific user
-        $updateQuery = $updateQuery.Replace('<username>', $objPrincipal.UserPrincipalName)
-        $updateQuery = $updateQuery.Replace('<pid>', $_PID.PID)
-        Write-Verbose $updateQuery
-        $sqlParameters["Query"] = $updateQuery
-        
-        # execute the query
-        Invoke-Sqlcmd @sqlParameters
-        #endregion Update NP user
-
-        $logMessage = "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database.`n"
-        $logMessage += "Updated WinLogonID to $($objPrincipal.UserPrincipalName) for the PID $($_PID.PID)."
-        
-        [System.Windows.MessageBox]::Show($logMessage, "NP User Validation",`
-                    [System.Windows.MessageBoxButton]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-
-        Write-Log -Message $logMessage -Severity Information
     }
     catch {
         $error[0] | Out-String | Write-Error
@@ -703,22 +695,33 @@ function handler_NTKAssignmentButton_Click {
 function handler_NTKRadioButton_Click {
     Param(
         # NTK Group
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$false)]
         [ValidateSet('None','NonNuclearTrained','NuclearTrained','InformationSecurityDepartment','PhysicalSecurity','SeniorStaff')]
         [string]$NTKAssignment = 'None'
     )
 
-    Write-Host "$NTKAssignment NTK Selected"
     try {   
-        Remove-NTKGroups -ADUser $objPrincipal
-        Set-NTKGroups -ADUser $objPrincipal -NTKAssignment $NTKAssignment
-        $logMessage = @{
-            Message = "$env:USERNAME reset NTK Groups to '$NTKAssignment' for user $($objPrincipal.SamAccountName)"
-            Severity = 'Information'
+        Write-Host "$NTKAssignment NTK Selected"
+        $ans = [System.Windows.MessageBox]::Show("Assign $NTKAssignment NTKs to $($objPrincipal.SamAccountName)?", "Verify Action",`
+                [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($ans -eq "Yes") {
+            Remove-NTKGroups -ADUser $objPrincipal
+            Set-NTKGroups -ADUser $objPrincipal -NTKAssignment $NTKAssignment
+
+            # update the AD User object
+            $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
+
+            $logMessage = @{
+                Message = "$env:USERNAME reset NTK Groups to '$NTKAssignment' for user $($objPrincipal.SamAccountName)"
+                Severity = 'Information'
+            }
+            $message = "$($LogMessage.Message). Please allow ~10 seconds for Active Directory to reflect the changes."
+            [System.Windows.MessageBox]::Show($message, "NTK Group Assignment Success",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            Write-Log @logMessage
+
+            Clear-Console
         }
-        [System.Windows.MessageBox]::Show($LogMessage.Message, "NTK Group Assignment Success",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-        Write-Log @logMessage
     }
     catch {
         $errorMessage = @{
@@ -1529,10 +1532,7 @@ $objParams = @{
     }
 }
 $NonNuclearNTKRadioButton = New-Object @objParams
-$NonNuclearNTKRadioButton.add_Click({
-    Write-Host "Non-Nuclear Trained NTK Selected"
-    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment NonNuclearTrained
-})
+$NonNuclearNTKRadioButton.add_Click({handler_NTKRadioButton_Click -NTKAssignment NonNuclearTrained})
 #endregion NonNuclear NTK radiobutton
 
 #region Nuclear NTK radiobutton
@@ -1546,10 +1546,7 @@ $objParams = @{
     }
 }
 $NuclearNTKRadioButton = New-Object @objParams
-$NuclearNTKRadioButton.add_Click({
-    Write-Host "Nuclear Trained NTK Selected"
-    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment NuclearTrained
-})
+$NuclearNTKRadioButton.add_Click({handler_NTKRadioButton_Click -NTKAssignment NuclearTrained})
 #endregion Nuclear NTK radiobutton
 
 #region ISD NTK radiobutton
@@ -1563,10 +1560,7 @@ $objParams = @{
     }
 }
 $IsdNTKRadioButton = New-Object @objParams
-$IsdNTKRadioButton.add_Click({
-    Write-Host "No NTK Selected"
-    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment InformationSecurityDepartment
-})
+$IsdNTKRadioButton.add_Click({handler_NTKRadioButton_Click -NTKAssignment InformationSecurityDepartment})
 #endregion ISD NTK radiobutton
 
 #region Security NTK radiobutton
@@ -1580,10 +1574,7 @@ $objParams = @{
     }
 }
 $SecurityNTKRadioButton = New-Object @objParams
-$SecurityNTKRadioButton.add_Click({
-    Write-Host "No NTK Selected"
-    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment PhysicalSecurity
-})
+$SecurityNTKRadioButton.add_Click({handler_NTKRadioButton_Click -NTKAssignment PhysicalSecurity})
 #endregion Security NTK radiobutton
 
 #region Senior Staff NTK radiobutton
@@ -1597,10 +1588,7 @@ $objParams = @{
     }
 }
 $SeniorStaffNTKRadioButton = New-Object @objParams
-$SeniorStaffNTKRadioButton.add_Click({
-    Write-Host "No NTK Selected"
-    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment SeniorStaff
-})
+$SeniorStaffNTKRadioButton.add_Click({handler_NTKRadioButton_Click -NTKAssignment SeniorStaff})
 #endregion Senior Staff NTK radiobutton
 
 #endregion NTK controls
