@@ -1210,14 +1210,20 @@ $objParams = @{
     }
 }
 $ADAccountSetExpiryButton = New-Object @objParams
-$ADAccountSetExpiryButton.add_Click($hander_ADAccountExpiryButton_Click)
+$ADAccountSetExpiryButton.add_Click({hander_ADAccountExpiryButton_Click})
 #endregion
 
 #region Account expiry datepicker
-$ADAccountExpiryDatePicker.Name = "ADAccountExpiryDatePicker"
-$ADAccountExpiryDatePicker.Font = $BoxFont
-$ADAccountExpiryDatePicker.Format = "Custom"
-$ADAccountExpiryDatePicker.CustomFormat = "ddd, dd MMM yyyy"
+$objParams = @{
+    TypeName = 'System.Windows.Forms.DateTimePicker'
+    Property = @{
+        Name = "ADAccountExpiryDatePicker"
+        Font = $BoxFont
+        Format = "Custom"
+        CustomFormat = "ddd, dd MMM yyyy"
+    }
+}
+$ADAccountExpiryDatePicker = New-Object @objParams
 #endregion
 
 #region account clear expiry button
@@ -1265,13 +1271,19 @@ $ADAccountResetAccountPasswordButton.add_Click({handler_ADAccountResetAccountPas
 #endregion
 
 #region New Password Text Box
-$NewPasswordTextBox.Name = "NewPasswordTextBox"
-$NewPasswordTextBox.Font = $BoxFont
-$NewPasswordTextBox.PasswordChar = "*"
-$NewPasswordTextBox.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
-    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
-    -bor [System.Windows.Forms.AnchorStyles]::Left `
-    -bor [System.Windows.Forms.AnchorStyles]::Right
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TextBox'
+    Property = @{
+        Name = "NewPasswordTextBox"
+        Font = $BoxFont
+        PasswordChar = "*"
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+    }
+}
+$NewPasswordTextBox = New-Object @objParams
 #endregion
 
 #region Update Password Button
