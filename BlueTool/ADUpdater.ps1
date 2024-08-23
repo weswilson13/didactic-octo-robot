@@ -15,6 +15,7 @@ function Clear-Console {
     $UpdatePasswordButton.Visible = $false
     $NewPasswordTextBox.Visible = $false
     $ExpiryTableLayoutPanel.Visible = $false
+    Clear-GroupControlsPanel
     Clear-NTKAssignmentPanel
 }
 function Clear-ReportPanel {
