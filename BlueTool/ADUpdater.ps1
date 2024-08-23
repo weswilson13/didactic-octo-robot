@@ -147,8 +147,7 @@ function New-ErrorMessage {
         [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
 }
 #region event handlers
-function handler_ADLookupButton_Click
-  {
+function handler_ADLookupButton_Click {
     $adParams = @{}
     if ($script:server) { $adParams["Server"] = $script:server }
     
@@ -223,30 +222,26 @@ function handler_ADLookupButton_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     } 
   }
-function handler_ADSearchComputersRadioButton_Click
-{   
+function handler_ADSearchComputersRadioButton_Click {   
     Write-Host "Computers Radio Button Pressed"
     Reset-Form
     $ADUserLabel.Text = "Enter a computer name"
     $ADLookupButton.Text = "Lookup Computer"
 }
-function handler_ADSearchUsersRadioButton_Click
-{
+function handler_ADSearchUsersRadioButton_Click {
     Write-Host "Users Radio Button Pressed"
     Reset-Form
     $ADUserLabel.Text = "Enter a username"
     $ADLookupButton.Text = "Lookup User"
 }
 
-function handler_ADSearchServiceAccountsRadioButton_Click
-{
+function handler_ADSearchServiceAccountsRadioButton_Click {
     Write-Host "ServiceAccounts Radio Button Pressed"
     Reset-Form
     $ADUserLabel.Text = "Enter a sMSA/gMSA"
     $ADLookupButton.Text = "Lookup Service Account"
 }
-function handler_ADGetGroupMembershipButton_Click
-{
+function handler_ADGetGroupMembershipButton_Click {
     try {
         Write-Host "Get Group Memberships"
         Clear-Console
@@ -273,8 +268,7 @@ function handler_ADGetGroupMembershipButton_Click
         Write-log -Message $error[0].Exception.Message -Severity Error
     }
 }
-function handler_AddGroupButton_Click 
-{
+function handler_AddGroupButton_Click {
     $group = $ADGroupsBox.SelectedItems
     if ($group) {
         [System.Collections.ArrayList]$tmpADGroupsBox = @()
@@ -291,9 +285,7 @@ function handler_AddGroupButton_Click
         $UpdateGroupMembershipsButton.Visible = $true 
     }
 }
-
-function handler_RemoveGroupButton_Click
-{
+function handler_RemoveGroupButton_Click {
     $group = $ADGroupMembershipBox.SelectedItems
     if ($group) {
         [System.Collections.ArrayList]$tmpADGroupMembershipBox = @()
@@ -310,9 +302,7 @@ function handler_RemoveGroupButton_Click
         $UpdateGroupMembershipsButton.Visible = $true 
     }
 }
-
-function handler_UpdateGroupMembershipButton_Click
-{
+function handler_UpdateGroupMembershipButton_Click {
     try {
         $memberGroups = $objPrincipal.MemberOf.ForEach({Get-ADGroup -Filter "DistinguishedName -eq '$PSItem'"})
         $removedGroups = @()
@@ -357,9 +347,7 @@ function handler_UpdateGroupMembershipButton_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
-
-function handler_ADAccountEnableButton_Click
-{
+function handler_ADAccountEnableButton_Click {
     try {
         # Set-ADUser $objPrincipal -Enabled (!$objPrincipal.Enabled) -Confirm:$false
         $action = switch ($objPrincipal.Enabled) {
@@ -399,9 +387,7 @@ function handler_ADAccountEnableButton_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
-
-function handler_ADAccountRequiresSmartCardCheckbox_Click 
-{
+function handler_ADAccountRequiresSmartCardCheckbox_Click {
     try {
         $currentState = switch($objPrincipal.SmartcardLogonRequired) {
             $true { "Disable";break }
@@ -435,9 +421,7 @@ function handler_ADAccountRequiresSmartCardCheckbox_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
-
-function handler_ADAccountExpiryButton_Click
-{
+function handler_ADAccountExpiryButton_Click {
     Clear-Console
     $DisplayInfoBox.Visible = $false
     $DisplayTitleLabel.Text = "Modify Account Expiration Date"
@@ -660,6 +644,7 @@ function handler_ValidateNPUserButton_Click {
             Database = $connectionParams.DatabaseName
             Encrypt = $connectionParams.Encrypt
             TrustServerCertificate = $connectionParams.TrustServerCertificate
+            ApplicationName = "ActiveDirectoryApplet"
         }
         
         #region get the users PID from NOTEPAD
@@ -714,6 +699,35 @@ function handler_ValidateNPUserButton_Click {
 function handler_NTKAssignmentButton_Click {
     $NTKAssignmentPanel.Visible = $true
 }
+
+function handler_NTKRadioButton_Click {
+    Param(
+        # NTK Group
+        [Parameter(Mandatory=$true)]
+        [ValidateSet('None','NonNuclearTrained','NuclearTrained','InformationSecurityDepartment','PhysicalSecurity','SeniorStaff')]
+        [string]$NTKAssignment = 'None'
+    )
+
+    Write-Host "$NTKAssignment NTK Selected"
+    try {   
+        Remove-NTKGroups -ADUser $objPrincipal
+        Set-NTKGroups -ADUser $objPrincipal -NTKAssignment $NTKAssignment
+        $logMessage = @{
+            Message = "$env:USERNAME reset NTK Groups to '$NTKAssignment' for user $($objPrincipal.SamAccountName)"
+            Severity = 'Information'
+        }
+        [System.Windows.MessageBox]::Show($LogMessage.Message, "NTK Group Assignment Success",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        Write-Log @logMessage
+    }
+    catch {
+        $errorMessage = @{
+            ErrorMessage = "Failed to Set NTK Group. Check session logs for additional details."
+            MessageTitle = "NTK Group Assignment Failed"
+        }
+        New-ErrorMessage @errorMessage
+    }
+}
 function handler_formclose
   {
     1..3 | ForEach-Object {[GC]::Collect()}
@@ -723,10 +737,12 @@ function handler_formclose
     $form.Dispose()
 
     Import-SessionLog
+    [Microsoft.Data.SqlClient.SqlConnection]::ClearAllPools()
 }
 #endregion
 
 #dot sourced functions
+. "$PSScriptRoot\Functions\Clear-NTKGroups.ps1"
 . "$PSScriptRoot\Functions\Set-NTKGroups.ps1"
 . "$PSScriptRoot\Functions\Write-Log.ps1"
 . "$PSScriptRoot\Functions\Get-DisabledComputers.ps1"
@@ -1499,20 +1515,7 @@ $objParams = @{
     }
 }
 $NoNTKRadioButton = New-Object @objParams
-$NoNTKRadioButton.add_Click({
-    Write-Host "No NTK Selected"
-    try {
-        Set-NTKGroups -ADUser $objPrincipal -NTKAssignment None
-    }
-    catch {
-        $errorMessage = @{
-            ErrorMessage = "Failed to Set NTK Group. Check session logs for additional details."
-            MessageTitle = "NTK Group Assignment Failed"
-        }
-        New-ErrorMessage @errorMessage
-
-    }
-})
+$NoNTKRadioButton.add_Click({handler_NTKRadioButton_Click -NTKAssignment None})
 #endregion No NTK radiobutton
 
 #region NonNuclear NTK radiobutton
