@@ -15,6 +15,7 @@ function Clear-Console {
     $UpdatePasswordButton.Visible = $false
     $NewPasswordTextBox.Visible = $false
     $ExpiryTableLayoutPanel.Visible = $false
+    Clear-NTKAssignmentPanel
 }
 function Clear-ReportPanel {
     $ADReportsTableLayoutPanel.Visible = $false    
@@ -27,6 +28,9 @@ function Clear-DomainServersPanel {
 }
 function Clear-GroupControlsPanel {
     $GroupControlsTableLayoutPanel.Visible = $false
+}
+function Clear-NTKAssignmentPanel {
+    $NTKAssignmentPanel.Visible = $false
 }
 function Reset-Form {
     param(
@@ -129,6 +133,18 @@ function Get-UserMapping {
         $error[0] | Out-String | Write-Error
         Write-Log -Message $error[0].Exception.Message -Severity Information
     }
+}
+function New-ErrorMessage {
+    [CmdletBinding()]
+    Param(
+        [string]$ErrorMessage,
+        [string]$MessageTitle
+    )
+
+    $error[0] | Out-String | Write-Error
+    Write-Log -Message $error[0].Exception.Message -Severity Error
+    [System.Windows.MessageBox]::Show($ErrorMessage, $MessageTitle,`
+        [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
 }
 #region event handlers
 function handler_ADLookupButton_Click
@@ -242,11 +258,12 @@ function handler_ADGetGroupMembershipButton_Click
             $AddGroupButton.Visible = $true
             $ADGroupMembershipBox.Visible = $true
             $GroupControlsTableLayoutPanel.Visible = $true
+            $NTKAssignmentButton.Enabled = $objPrincipal.ObjectClass -eq 'User'
             Get-ADGroup -Filter 'GroupScope -ne "DomainLocal" -and Name -ne "Domain Users"' | 
-            Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
-            ForEach-Object {
-                $ADGroupsBox.Items.Add($PSItem.Name)
-            }
+                Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
+                ForEach-Object {
+                    $ADGroupsBox.Items.Add($PSItem.Name)
+                }
             $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
             Write-Log -Message "$env:USERNAME enumerated group membership for $($objPrincipal.SamAccountName)" -Severity Information
         }
@@ -346,8 +363,6 @@ function handler_ADAccountEnableButton_Click
     try {
         # Set-ADUser $objPrincipal -Enabled (!$objPrincipal.Enabled) -Confirm:$false
         $action = switch ($objPrincipal.Enabled) {
-            # $true { Disable-ADAccount $objPrincipal -Confirm:$false;break }
-            # $false { Enable-ADAccount $objPrincipal -Confirm:$false;break }
             $true { "Disable" }
             $false { "Enable" }
         }
@@ -429,7 +444,7 @@ function handler_ADAccountExpiryButton_Click
     $ExpiryTableLayoutPanel.Visible = $true
     $ADAccountExpiryDatePicker.Visible = $true
     $ADAccountClearExpiryButton.Visible = $true
-    $ADAccountClearExpiryButton.Enabled = $objPrincipal.AccountExpirationDate -ne $null
+    $ADAccountClearExpiryButton.Enabled = $null -ne $objPrincipal.AccountExpirationDate
     $UpdateExpiryButton.Visible = $true
 }
 
@@ -575,8 +590,7 @@ function handler_ADReportsUsersWithoutManagerButton_Click
 }
 #endregion
 
-function handler_ADAccountUnlockUserAccountButton_Click
-{
+function handler_ADAccountUnlockUserAccountButton_Click {
     try {
         Write-Host "Unlock User Account Button Clicked"
         $ans = [System.Windows.MessageBox]::Show("Unlock $($objPrincipal.SamAccountName)?", "Verify Action",`
@@ -597,9 +611,7 @@ function handler_ADAccountUnlockUserAccountButton_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
-
-function handler_ADAccountResetAccountPasswordButton_Click
-{
+function handler_ADAccountResetAccountPasswordButton_Click {
     Write-Host "Reset account password button clicked"
     Clear-Console
     Clear-Console
@@ -609,9 +621,7 @@ function handler_ADAccountResetAccountPasswordButton_Click
     $NewPasswordTextBox.Visible = $true
     $UpdatePasswordButton.Visible = $true
 }
-
-function handler_UpdatePasswordButton_Click
-{
+function handler_UpdatePasswordButton_Click {
     try {
         Write-Host "Update Password Button Clicked"
         $ans = [System.Windows.MessageBox]::Show("Reset Password for $($objPrincipal.SamAccountName)?", "Verify Action",`
@@ -635,15 +645,11 @@ function handler_UpdatePasswordButton_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
-
-function handler_DisplayReportsPanelButton_Click
-{
+function handler_DisplayReportsPanelButton_Click {
     $OptionButtonsTableLayoutPanel.Visible = $false
     $ADReportsTableLayoutPanel.Visible = $true
 }
-
-function handler_ValidateNPUserButton_Click
-{
+function handler_ValidateNPUserButton_Click {
     try {
         Write-Host "Validate Notepad User"
         
@@ -705,7 +711,9 @@ function handler_ValidateNPUserButton_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
-
+function handler_NTKAssignmentButton_Click {
+    $NTKAssignmentPanel.Visible = $true
+}
 function handler_formclose
   {
     1..3 | ForEach-Object {[GC]::Collect()}
@@ -758,6 +766,7 @@ $script:ini = Get-IniContent .\config.ini
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
 # $BodyFont = New-Object System.Drawing.Font("Calibri",18,[Drawing.FontStyle]::Bold)
 $BoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Regular)
+$ButtonFont = New-Object System.Drawing.Font($BoxFont.FontFamily, 10, $BoxFont.Style)
 $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Bold)
 $ConsoleFont = New-Object System.Drawing.Font("Lucida Console", 9, [Drawing.FontStyle]::Regular)
 #endregion
@@ -1210,7 +1219,7 @@ $objParams = @{
     }
 }
 $ADAccountSetExpiryButton = New-Object @objParams
-$ADAccountSetExpiryButton.add_Click({hander_ADAccountExpiryButton_Click})
+$ADAccountSetExpiryButton.add_Click({handler_ADAccountExpiryButton_Click})
 #endregion
 
 #region Account expiry datepicker
@@ -1431,10 +1440,14 @@ $objParams = @{
     Typename = 'System.Windows.Forms.Button'
     Property = @{
         Name = "UpdateGroupMembershipsButton"
-        Text = "Update Membership"
-        Font = $BoxFont
+        Text = "Update`nMembership"
+        Font = $ButtonFont
         AutoSize = $true
         UseVisualStyleBackColor = $true
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
     }
 }
 $UpdateGroupMembershipsButton = New-Object @objParams
@@ -1444,6 +1457,24 @@ $UpdateGroupMembershipsButton.add_Click({handler_UpdateGroupMembershipButton_Cli
 #endregion account actions
 
 #region NTK controls
+#region NTK Button
+$objParams = @{
+    TypeName = 'System.Windows.Forms.Button'
+    Property = @{
+        Name = "NTKAssignmentButton"
+        Text = "Assign`nNTK Groups"
+        Font = $ButtonFont
+        AutoSize = $true
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+    }
+}
+$NTKAssignmentButton = New-Object @objParams
+$NTKAssignmentButton.add_Click({handler_NTKAssignmentButton_Click})
+#endregion NTK button
+
 #region NTK label
 $objParams = @{
     TypeName = 'System.Windows.Forms.Label'
@@ -1468,6 +1499,20 @@ $objParams = @{
     }
 }
 $NoNTKRadioButton = New-Object @objParams
+$NoNTKRadioButton.add_Click({
+    Write-Host "No NTK Selected"
+    try {
+        Set-NTKGroups -ADUser $objPrincipal -NTKAssignment None
+    }
+    catch {
+        $errorMessage = @{
+            ErrorMessage = "Failed to Set NTK Group. Check session logs for additional details."
+            MessageTitle = "NTK Group Assignment Failed"
+        }
+        New-ErrorMessage @errorMessage
+
+    }
+})
 #endregion No NTK radiobutton
 
 #region NonNuclear NTK radiobutton
@@ -1481,6 +1526,10 @@ $objParams = @{
     }
 }
 $NonNuclearNTKRadioButton = New-Object @objParams
+$NonNuclearNTKRadioButton.add_Click({
+    Write-Host "Non-Nuclear Trained NTK Selected"
+    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment NonNuclearTrained
+})
 #endregion NonNuclear NTK radiobutton
 
 #region Nuclear NTK radiobutton
@@ -1494,6 +1543,10 @@ $objParams = @{
     }
 }
 $NuclearNTKRadioButton = New-Object @objParams
+$NuclearNTKRadioButton.add_Click({
+    Write-Host "Nuclear Trained NTK Selected"
+    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment NuclearTrained
+})
 #endregion Nuclear NTK radiobutton
 
 #region ISD NTK radiobutton
@@ -1507,6 +1560,10 @@ $objParams = @{
     }
 }
 $IsdNTKRadioButton = New-Object @objParams
+$IsdNTKRadioButton.add_Click({
+    Write-Host "No NTK Selected"
+    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment InformationSecurityDepartment
+})
 #endregion ISD NTK radiobutton
 
 #region Security NTK radiobutton
@@ -1514,12 +1571,16 @@ $objParams = @{
     TypeName = 'System.Windows.Forms.RadioButton'
     Property = @{
         Name = "SecurityNTKRadioButton"
-        Text = "Physical Security (ATO, DAD, CSM, MAA, Director DTS, Director DTP, ISD)"
+        Text = "Physical Security`n(ATO, DAD, CSM, MAA, Director DTS, Director DTP, ISD)"
         Font = $BoxFont
         AutoSize = $true
     }
 }
 $SecurityNTKRadioButton = New-Object @objParams
+$SecurityNTKRadioButton.add_Click({
+    Write-Host "No NTK Selected"
+    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment PhysicalSecurity
+})
 #endregion Security NTK radiobutton
 
 #region Senior Staff NTK radiobutton
@@ -1527,12 +1588,16 @@ $objParams = @{
     TypeName = 'System.Windows.Forms.RadioButton'
     Property = @{
         Name = "SeniorStaffNTKRadioButton"
-        Text = "Senior Staff (CO, XO, Director NFAS, Director NPS, CMC)"
+        Text = "Senior Staff (CO, XO, DOS-A, DOS-P, CMC)"
         Font = $BoxFont
         AutoSize = $true
     }
 }
 $SeniorStaffNTKRadioButton = New-Object @objParams
+$SeniorStaffNTKRadioButton.add_Click({
+    Write-Host "No NTK Selected"
+    Set-NTKGroups -ADUser $objPrincipal -NTKAssignment SeniorStaff
+})
 #endregion Senior Staff NTK radiobutton
 
 #endregion NTK controls
@@ -1540,11 +1605,22 @@ $SeniorStaffNTKRadioButton = New-Object @objParams
 
 #region TableLayoutPanels
 #region main table layout panel
-$MainTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$MainTableLayoutPanel.RowCount = 3 #how many rows
-$MainTableLayoutPanel.ColumnCount = 6 #how many columns
-$MainTableLayoutPanel.BorderStyle = "Fixed3D"
-# $MainTableLayoutPanel.CellBorderStyle = "Inset"
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        Name = "MainTableLayoutPanel"
+        RowCount = 3 #how many rows
+        ColumnCount = 6 #how many columns
+        Dock = [System.Windows.Forms.DockStyle]::Fill
+        BorderStyle = "Fixed3D"
+        Anchor =[System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        # CellBorderStyle = "Inset"
+    }
+}
+$MainTableLayoutPanel = New-Object @objParams
 
 $MainTableLayoutPanel.SetColumnSpan($DisplayTitleLabel,6)
 $MainTableLayoutPanel.SetColumnSpan($DisplayInfoBox,6)
@@ -1555,12 +1631,12 @@ $MainTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([S
 $MainTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 8))) | Out-Null
 $MainTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 62))) | Out-Null
 
-$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
+$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,1))) | Out-Null
 $MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
 $MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
 $MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,5))) | Out-Null
 $MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
-$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,45))) | Out-Null
+$MainTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,49))) | Out-Null
 
 # column 1
 $MainTableLayoutPanel.Controls.Add($DisplayTitleLabel,0,1)
@@ -1574,19 +1650,24 @@ $MainTableLayoutPanel.Controls.Add($ADAccountClearExpiryButton,2,2)
 $MainTableLayoutPanel.Controls.Add($AddGroupButton,3,2)
 # column 5
 $MainTableLayoutPanel.Controls.Add($ADGroupMembershipBox,4,2)
-
-$MainTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
 #endregion main table
 
 #region tablelayoutpanel2
-$tableLayoutPanel2 = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel2.RowCount = 5
-$tableLayoutPanel2.ColumnCount = 5
-$tableLayoutPanel2.Anchor =[System.Windows.Forms.AnchorStyles]::Top `
-    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
-    -bor [System.Windows.Forms.AnchorStyles]::Left `
-    -bor [System.Windows.Forms.AnchorStyles]::Right
-# $tableLayoutPanel2.CellBorderStyle = "Inset"
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        Name = "TableLayoutPanel2"
+        RowCount = 5
+        ColumnCount = 5
+        Dock = [System.Windows.Forms.DockStyle]::Fill
+        Anchor =[System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        # CellBorderStyle = "Inset"
+    }
+}
+$tableLayoutPanel2 = New-Object @objParams
 
 $tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $tableLayoutPanel2.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
@@ -1628,8 +1709,6 @@ $tableLayoutPanel2.Controls.Add($ValidateNPUserButton,4,3)
 
 $tableLayoutPanel2.SetColumnSpan($ADAccountActionsLabel,2)
 $tableLayoutPanel2.SetRowSpan($ADLookupButton,2)
-
-$tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::Fill
 #endregion tablelayoutpanel2
 
 #region Account Expiration Panel
@@ -1713,14 +1792,21 @@ $OptionButtonsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
 #endregion option buttons panel
 
 #region Domain Servers Panel
-$DomainServersTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$DomainServersTableLayoutPanel.RowCount = 1
-$DomainServersTableLayoutPanel.ColumnCount = 6
-$DomainServersTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
-    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
-    -bor [System.Windows.Forms.AnchorStyles]::Left `
-    -bor [System.Windows.Forms.AnchorStyles]::Right
-# $DomainServersTableLayoutPanel.CellBorderStyle = "Outset"
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        Name = "DomainServersPanel"
+        RowCount = 1
+        ColumnCount = 6
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        Dock = [System.Windows.Forms.DockStyle]::Fill
+#       CellBorderStyle = "Outset"
+    }
+}
+$DomainServersTableLayoutPanel = New-Object @objParams
 
 if ($ini.Custom.ADServers) {
     $OptionButtonsRowSpan = 4
@@ -1765,32 +1851,58 @@ if ($ini.Custom.ADServers) {
         $i++
     }
 }
-
-$DomainServersTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
 #endregion domain servers panel
 
 #region Group controls Panel
-$GroupControlsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$GroupControlsTableLayoutPanel.RowCount = 7
-$GroupControlsTableLayoutPanel.ColumnCount = 3
-$GroupControlsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
-    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
-    -bor [System.Windows.Forms.AnchorStyles]::Left `
-    -bor [System.Windows.Forms.AnchorStyles]::Right
-$GroupControlsTableLayoutPanel.BorderStyle = "None"
-# $GroupControlsTableLayoutPanel.CellBorderStyle = "Inset"
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        Name = "GroupControlsPanel"
+        RowCount = 7
+        ColumnCount = 2
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        Dock = [System.Windows.Forms.DockStyle]::Fill
+        BorderStyle = "None"
+        # CellBorderStyle = "Inset"
+    }
+}
+$GroupControlsTableLayoutPanel = New-Object @objParams
+
+$GroupControlsTableLayoutPanel.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$GroupControlsTableLayoutPanel.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,80))) | Out-Null
 
 $GroupControlsTableLayoutPanel.Controls.Add($UpdateGroupMembershipsButton,0,1)
-$GroupControlsTableLayoutPanel.Controls.Add($NTKLabel,2,0)
-$GroupControlsTableLayoutPanel.Controls.Add($NoNTKRadioButton,2,1)
-$GroupControlsTableLayoutPanel.Controls.Add($NonNuclearNTKRadioButton,2,2)
-$GroupControlsTableLayoutPanel.Controls.Add($NuclearNTKRadioButton,2,3)
-$GroupControlsTableLayoutPanel.Controls.Add($IsdNTKRadioButton,2,4)
-$GroupControlsTableLayoutPanel.Controls.Add($SecurityNTKRadioButton,2,5)
-$GroupControlsTableLayoutPanel.Controls.Add($SeniorStaffNTKRadioButton,2,6)
-
-$GroupControlsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+$GroupControlsTableLayoutPanel.Controls.Add($NTKAssignmentButton,0,2)
 #endregion group controls panel
+
+#region NTK assignment Panel
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        Name = "NTKAssignmentPanel"
+        RowCount = 7
+        ColumnCount = 1
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        Dock = [System.Windows.Forms.DockStyle]::Fill
+        BorderStyle = "None"
+        # CellBorderStyle = "Inset"
+    }
+}
+$NTKAssignmentPanel = New-Object @objParams
+$NTKAssignmentPanel.Controls.Add($NTKLabel,0,0)
+$NTKAssignmentPanel.Controls.Add($NoNTKRadioButton,0,1)
+$NTKAssignmentPanel.Controls.Add($NonNuclearNTKRadioButton,0,2)
+$NTKAssignmentPanel.Controls.Add($NuclearNTKRadioButton,0,3)
+$NTKAssignmentPanel.Controls.Add($IsdNTKRadioButton,0,4)
+$NTKAssignmentPanel.Controls.Add($SecurityNTKRadioButton,0,5)
+$NTKAssignmentPanel.Controls.Add($SeniorStaffNTKRadioButton,0,6)
+#endregion NTK assignment panel
 
 $MainTableLayoutPanel.Controls.Add($tableLayoutPanel2,0,0)
 $MainTableLayoutPanel.Controls.Add($ExpiryTableLayoutPanel,1,2)
@@ -1798,6 +1910,7 @@ $MainTableLayoutPanel.Controls.Add($GroupControlsTableLayoutPanel,5,2)
 $tableLayoutPanel2.Controls.Add($ADReportsTableLayoutPanel,2,0)
 $tableLayoutPanel2.Controls.Add($OptionButtonsTableLayoutPanel,2,0)
 $tableLayoutPanel2.Controls.Add($DomainServersTableLayoutPanel,0,4)
+$GroupControlsTableLayoutPanel.Controls.Add($NTKAssignmentPanel,2,0)
 
 $MainTableLayoutPanel.SetColumnSpan($tableLayoutPanel2,6)
 $tableLayoutPanel2.SetColumnSpan($ADReportsTableLayoutPanel,3)
@@ -1805,6 +1918,7 @@ $tableLayoutPanel2.SetColumnSpan($OptionButtonsTableLayoutPanel,3)
 $tableLayoutPanel2.SetColumnSpan($DomainServersTableLayoutPanel,6)
 $tableLayoutPanel2.SetRowSpan($ADReportsTableLayoutPanel,5)
 $tableLayoutPanel2.SetRowSpan($OptionButtonsTableLayoutPanel,$OptionButtonsRowSpan)
+$GroupControlsTableLayoutPanel.SetRowSpan($NTKAssignmentPanel,7)
 #endregion tablelayoutpanels
 #endregion 
 
