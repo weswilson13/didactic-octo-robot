@@ -1,1 +1,1 @@
-powershell -WindowStyle Minimized -File .\ADUpdater.ps1 -Verbose
+powershell -WindowStyle Minimized -ExecutionPolicy Bypass -File .\ADUpdater.ps1 -Verbose
