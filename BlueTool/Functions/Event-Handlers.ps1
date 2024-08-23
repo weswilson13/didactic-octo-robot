@@ -134,7 +134,7 @@ function handler_AddGroupButton_Click {
         $ADGroupsBox.Items.Clear()
         $ADGroupsBox.Items.AddRange($tmpADGroupsBox)
 
-        $UpdateGroupMembershipsButton.Visible = $true 
+        $UpdateGroupMembershipsButton.Enabled = $true 
     }
 }
 function handler_RemoveGroupButton_Click {
@@ -151,7 +151,7 @@ function handler_RemoveGroupButton_Click {
         $ADGroupMembershipBox.Items.Clear()
         $ADGroupMembershipBox.Items.AddRange($tmpADGroupMembershipBox)
 
-        $UpdateGroupMembershipsButton.Visible = $true 
+        $UpdateGroupMembershipsButton.Enabled = $true 
     }
 }
 function handler_UpdateGroupMembershipButton_Click {
