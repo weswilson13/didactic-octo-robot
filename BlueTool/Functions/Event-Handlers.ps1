@@ -565,8 +565,6 @@ function handler_NTKRadioButton_Click {
             [System.Windows.MessageBox]::Show($message, "NTK Group Assignment Success",`
                 [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
             Write-Log @logMessage
-
-            Clear-Console
         }
     }
     catch {
