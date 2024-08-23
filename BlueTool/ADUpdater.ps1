@@ -642,7 +642,7 @@ function handler_ValidateNPUserButton_Click {
                 Database = $connectionParams.DatabaseName
                 Encrypt = $connectionParams.Encrypt
                 TrustServerCertificate = $connectionParams.TrustServerCertificate
-                ApplicationName = "ActiveDirectoryApplet"
+                ApplicationName = $form.Name
             }
             
             #region get the users PID from NOTEPAD
@@ -1930,7 +1930,7 @@ $System_Drawing_Size.Height = $screen.Height * .75
 $objParams = @{
     TypeName = 'System.Windows.Forms.Form'
     Property = @{
-        Name = "form"
+        Name = "ActiveDirectoryApplet"
         Text = "Account Viewer and Updater"
         FormBorderStyle = "FixedDialog"
         StartPosition = "CenterScreen"
