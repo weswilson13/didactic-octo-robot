@@ -40,7 +40,7 @@ function Set-NTKGroups {
 
                 foreach ($group in $groups) {
                     Write-Host "Adding $($ADUser.SamAccountName) to $group"
-                    Get-ADGroup $group | Add-ADGroupMember -Members $ADUser
+                    Get-ADGroup $group | Add-ADGroupMember -Members $ADUser -Confirm:$false
                     Write-Log -Message "Added $($ADUser.SamAccountName) to $group" -Severity Information
                 }
             }
