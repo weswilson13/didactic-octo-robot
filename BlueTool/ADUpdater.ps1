@@ -880,6 +880,7 @@ $objParams = @{
         Text = "Update`nMembership"
         Font = $ButtonFont
         AutoSize = $true
+        Enabled = $false
         UseVisualStyleBackColor = $true
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
@@ -902,6 +903,7 @@ $objParams = @{
         Text = "Assign`nNTK Groups"
         Font = $ButtonFont
         AutoSize = $true
+        Enabled = $false
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
             -bor [System.Windows.Forms.AnchorStyles]::Left `
@@ -1020,7 +1022,7 @@ $objParams = @{
         Name = "MainTableLayoutPanel"
         RowCount = 3 #how many rows
         ColumnCount = 6 #how many columns
-        Dock = [System.Windows.Forms.DockStyle]::Fill
+        Dock = "Fill"
         BorderStyle = "Fixed3D"
         Anchor =[System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
@@ -1031,8 +1033,8 @@ $objParams = @{
 }
 $MainTableLayoutPanel = New-Object @objParams
 
-$MainTableLayoutPanel.SetColumnSpan($DisplayTitleLabel,6)
-$MainTableLayoutPanel.SetColumnSpan($DisplayInfoBox,6)
+$MainTableLayoutPanel.SetColumnSpan($DisplayTitleLabel,$MainTableLayoutPanel.ColumnCount)
+$MainTableLayoutPanel.SetColumnSpan($DisplayInfoBox,$MainTableLayoutPanel.ColumnCount)
 $MainTableLayoutPanel.SetColumnSpan($ADAccountClearExpiryButton,3)
 $MainTableLayoutPanel.SetRowSpan($DisplayInfoBox,2)
 
@@ -1068,7 +1070,7 @@ $objParams = @{
         Name = "TableLayoutPanel2"
         RowCount = 5
         ColumnCount = 5
-        Dock = [System.Windows.Forms.DockStyle]::Fill
+        Dock = "Fill"
         Anchor =[System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
             -bor [System.Windows.Forms.AnchorStyles]::Left `
@@ -1139,7 +1141,7 @@ $ExpiryTableLayoutPanel.Controls.Add($NewPasswordTextBox,0,0)
 $ExpiryTableLayoutPanel.Controls.Add($UpdateExpiryButton,0,2)
 $ExpiryTableLayoutPanel.Controls.Add($UpdatePasswordButton,0,2)
 
-$ExpiryTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+$ExpiryTableLayoutPanel.Dock = "Fill"
 #endregion account expiration panel
 
 #region Reports Panel
@@ -1178,7 +1180,7 @@ $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyDeletedButton,1,4
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyModifiedButton,2,1)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersWithoutManagerButton,2,2)
 
-$ADReportsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+$ADReportsTableLayoutPanel.Dock = "Fill"
 #endregion reports panel
 
 #region Options Buttons Panel
@@ -1197,7 +1199,7 @@ $OptionButtonsTableLayoutPanel.SetColumnSpan($OptionButtonsLabel,3)
 $OptionButtonsTableLayoutPanel.Controls.Add($OptionButtonsLabel,0,0)
 $OptionButtonsTableLayoutPanel.Controls.Add($DisplayReportsPanelButton,0,1)
 
-$OptionButtonsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
+$OptionButtonsTableLayoutPanel.Dock = "Fill"
 #endregion option buttons panel
 
 #region Domain Servers Panel
@@ -1211,7 +1213,7 @@ $objParams = @{
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
             -bor [System.Windows.Forms.AnchorStyles]::Left `
             -bor [System.Windows.Forms.AnchorStyles]::Right
-        Dock = [System.Windows.Forms.DockStyle]::Fill
+        Dock = "Fill"
 #       CellBorderStyle = "Outset"
     }
 }
@@ -1273,7 +1275,7 @@ $objParams = @{
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
             -bor [System.Windows.Forms.AnchorStyles]::Left `
             -bor [System.Windows.Forms.AnchorStyles]::Right
-        Dock = [System.Windows.Forms.DockStyle]::Fill
+        Dock = "Fill"
         BorderStyle = "None"
         # CellBorderStyle = "Inset"
     }
@@ -1298,7 +1300,7 @@ $objParams = @{
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
             -bor [System.Windows.Forms.AnchorStyles]::Left `
             -bor [System.Windows.Forms.AnchorStyles]::Right
-        Dock = [System.Windows.Forms.DockStyle]::Fill
+        Dock = "Fill"
         BorderStyle = "None"
         # CellBorderStyle = "Inset"
     }
