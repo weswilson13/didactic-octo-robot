@@ -207,7 +207,6 @@ function handler_ADLookupButton_Click
             [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     } 
   }
-
 function handler_ADSearchComputersRadioButton_Click
 {   
     Write-Host "Computers Radio Button Pressed"
@@ -215,7 +214,6 @@ function handler_ADSearchComputersRadioButton_Click
     $ADUserLabel.Text = "Enter a computer name"
     $ADLookupButton.Text = "Lookup Computer"
 }
-
 function handler_ADSearchUsersRadioButton_Click
 {
     Write-Host "Users Radio Button Pressed"
@@ -231,7 +229,6 @@ function handler_ADSearchServiceAccountsRadioButton_Click
     $ADUserLabel.Text = "Enter a sMSA/gMSA"
     $ADLookupButton.Text = "Lookup Service Account"
 }
-
 function handler_ADGetGroupMembershipButton_Click
 {
     try {
@@ -259,7 +256,6 @@ function handler_ADGetGroupMembershipButton_Click
         Write-log -Message $error[0].Exception.Message -Severity Error
     }
 }
-
 function handler_AddGroupButton_Click 
 {
     $group = $ADGroupsBox.SelectedItems
@@ -275,7 +271,6 @@ function handler_AddGroupButton_Click
         $ADGroupsBox.Items.Clear()
         $ADGroupsBox.Items.AddRange($tmpADGroupsBox)
 
-        $ADGetGroupMembershipButton.Visible = $false
         $UpdateGroupMembershipsButton.Visible = $true 
     }
 }
@@ -295,7 +290,6 @@ function handler_RemoveGroupButton_Click
         $ADGroupMembershipBox.Items.Clear()
         $ADGroupMembershipBox.Items.AddRange($tmpADGroupMembershipBox)
 
-        $ADGetGroupMembershipButton.Visible = $false
         $UpdateGroupMembershipsButton.Visible = $true 
     }
 }
@@ -725,6 +719,7 @@ function handler_formclose
 #endregion
 
 #dot sourced functions
+. "$PSScriptRoot\Functions\Set-NTKGroups.ps1"
 . "$PSScriptRoot\Functions\Write-Log.ps1"
 . "$PSScriptRoot\Functions\Get-DisabledComputers.ps1"
 . "$PSScriptRoot\Functions\Get-DomainControllers.ps1"
@@ -771,80 +766,7 @@ $ConsoleFont = New-Object System.Drawing.Font("Lucida Console", 9, [Drawing.Font
 # FORM CONTROLS
 ####################################################
 #region create the controls
-
-#region OLD CONTROLS. DELETE WHEN TESTED SAT
-#region Labels
-# $ADUserLabel = New-Object System.Windows.Forms.Label
-# $ADSearchTypeLabel = New-Object System.Windows.Forms.Label
-# $ADAccountStatusLabel = New-Object System.Windows.Forms.Label
-# $ADAccountExpirationLabel = New-Object System.Windows.Forms.Label
-# $ADAccountEnableLabel = New-Object System.Windows.Forms.Label
-# $ADAccountUnlockLabel = New-Object System.Windows.Forms.Label
-# $ADAccountRequiresSmartcardLabel = New-Object System.Windows.Forms.Label
-# $ADAccountActionsLabel = New-Object System.Windows.Forms.Label
-# $DisplayTitleLabel = New-Object System.Windows.Forms.Label
-# $ADReportsLabel = New-Object System.Windows.Forms.Label
-# $OptionButtonsLabel = New-Object System.Windows.Forms.Label
-# #endregion
-
-# #region Text boxes
-# $ADPrincipalTextBox = New-Object System.Windows.Forms.TextBox
-# $NewPasswordTextBox = New-Object System.Windows.Forms.TextBox
-# #endregion
-
-# #region RichTextBoxes
-# $DisplayInfoBox = New-Object System.Windows.Forms.RichTextBox
-# #endregion
-
-# #region Buttons
-# $ADLookupButton = New-Object System.Windows.Forms.Button
-# $ADGetGroupMembershipButton = New-Object System.Windows.Forms.Button
-# $AddGroupButton = New-Object System.Windows.Forms.Button
-# $RemoveGroupButton = New-Object System.Windows.Forms.Button
-# # $UpdateGroupMembershipsButton = New-Object System.Windows.Forms.Button
-# $ADAccountEnableButton = New-Object System.Windows.Forms.Button
-# $ADAccountSetExpiryButton = New-Object System.Windows.Forms.Button
-# $UpdateExpiryButton = New-Object System.Windows.Forms.Button
-# $ADReportsDisabledComputersButton = New-Object System.Windows.Forms.Button
-# $ADReportsDomainControllersButton = New-Object System.Windows.Forms.Button
-# $ADReportsInactiveComputersButton = New-Object System.Windows.Forms.Button
-# $ADReportsInactiveUsersButton = New-Object System.Windows.Forms.Button
-# $ADReportsLockedOutUsersButton = New-Object System.Windows.Forms.Button
-# $ADReportsUsersNeverLoggedOnButton = New-Object System.Windows.Forms.Button
-# $ADReportsUsersRecentlyCreatedButton = New-Object System.Windows.Forms.Button
-# $ADReportsUsersRecentlyDeletedButton = New-Object System.Windows.Forms.Button
-# $ADReportsUsersRecentlyModifiedButton = New-Object System.Windows.Forms.Button
-# $ADReportsUsersWithoutManagerButton = New-Object System.Windows.Forms.Button
-# $ADAccountClearExpiryButton = New-Object System.Windows.Forms.Button
-# $ADAccountUnlockUserAccountButton = New-Object System.Windows.Forms.Button
-# $ADAccountResetAccountPasswordButton = New-Object System.Windows.Forms.Button
-# $UpdatePasswordButton = New-Object System.Windows.Forms.Button
-# $DisplayReportsPanelButton = New-Object System.Windows.Forms.Button
-# $ValidateNPUserButton = New-Object System.Windows.Forms.Button
-# #endregion
-
-# #region ListBoxes
-# $ADGroupsBox = New-Object System.Windows.Forms.ListBox
-# # $ADGroupMembershipBox = New-Object System.Windows.Forms.ListBox
-# #endregion
-
-# #region Datepicker
-# $ADAccountExpiryDatePicker = New-Object System.Windows.Forms.DateTimePicker
-# #endregion
-
-# #region RadioButtons
-# $ADSearchUsersRadioButton = New-Object System.Windows.Forms.RadioButton
-# $ADSearchComputersRadioButton = New-Object System.Windows.Forms.RadioButton
-# $ADSearchServiceAccountsRadioButton = New-Object System.Windows.Forms.RadioButton
-# #endregion
-
-# #region Checkboxes
-# $ADAccountRequiresSmartcardCheckBox = New-Object System.Windows.Forms.CheckBox
-# # $ADAccountExpiryCheckbox = New-Object System.Windows.Forms.CheckBox
-# #endregion
-#endregion old controls
-
-#region configure the controls
+#region configure individual controls
 #region lookup principal
 #region Username label
 $objParams = @{
@@ -1508,13 +1430,108 @@ $UpdateGroupMembershipsButton.add_Click({handler_UpdateGroupMembershipButton_Cli
 #endregion
 #endregion group membership
 #endregion account actions
-#endregion configure the controls
+
+#region NTK controls
+#region NTK label
+$objParams = @{
+    TypeName = 'System.Windows.Forms.Label'
+    Property = @{
+        Name = "NTKLabel"
+        Text = "Need-To-Know Assignments"
+        Font = $BoldBoxFont
+        AutoSize = $true
+    }
+}
+$NTKLabel = New-Object @objParams
+#endregion NTK label
+
+#region No NTK radiobutton
+$objParams = @{
+    TypeName = 'System.Windows.Forms.RadioButton'
+    Property = @{
+        Name = "NoNTKRadioButton"
+        Text = "None (Exam/Comp Accounts)"
+        Font = $BoxFont
+        AutoSize = $true
+    }
+}
+$NoNTKRadioButton = New-Object @objParams
+#endregion No NTK radiobutton
+
+#region NonNuclear NTK radiobutton
+$objParams = @{
+    TypeName = 'System.Windows.Forms.RadioButton'
+    Property = @{
+        Name = "NonNuclearNTKRadioButton"
+        Text = 'Non-Nuclear Trained (DTS, DTP)'
+        Font = $BoxFont
+        AutoSize = $true
+    }
+}
+$NonNuclearNTKRadioButton = New-Object @objParams
+#endregion NonNuclear NTK radiobutton
+
+#region Nuclear NTK radiobutton
+$objParams = @{
+    TypeName = 'System.Windows.Forms.RadioButton'
+    Property = @{
+        Name = "NuclearNTKRadioButton"
+        Text = 'Nuclear Trained (NPS, NFAS)'
+        Font = $BoxFont
+        AutoSize = $true
+    }
+}
+$NuclearNTKRadioButton = New-Object @objParams
+#endregion Nuclear NTK radiobutton
+
+#region ISD NTK radiobutton
+$objParams = @{
+    TypeName = 'System.Windows.Forms.RadioButton'
+    Property = @{
+        Name = "IsdNTKRadioButton"
+        Text = "Information Security (ISD)"
+        Font = $BoxFont
+        AutoSize = $true
+    }
+}
+$IsdNTKRadioButton = New-Object @objParams
+#endregion ISD NTK radiobutton
+
+#region Security NTK radiobutton
+$objParams = @{
+    TypeName = 'System.Windows.Forms.RadioButton'
+    Property = @{
+        Name = "SecurityNTKRadioButton"
+        Text = "Physical Security (ATO, DAD, CSM, MAA, Director DTS, Director DTP, ISD)"
+        Font = $BoxFont
+        AutoSize = $true
+    }
+}
+$SecurityNTKRadioButton = New-Object @objParams
+#endregion Security NTK radiobutton
+
+#region Senior Staff NTK radiobutton
+$objParams = @{
+    TypeName = 'System.Windows.Forms.RadioButton'
+    Property = @{
+        Name = "SeniorStaffNTKRadioButton"
+        Text = "Senior Staff (CO, XO, Director NFAS, Director NPS, CMC)"
+        Font = $BoxFont
+        AutoSize = $true
+    }
+}
+$SeniorStaffNTKRadioButton = New-Object @objParams
+#endregion Senior Staff NTK radiobutton
+
+#endregion NTK controls
+#endregion configure individual controls
 
 #region TableLayoutPanels
 #region main table layout panel
 $MainTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
 $MainTableLayoutPanel.RowCount = 3 #how many rows
 $MainTableLayoutPanel.ColumnCount = 6 #how many columns
+$MainTableLayoutPanel.BorderStyle = "Fixed3D"
 # $MainTableLayoutPanel.CellBorderStyle = "Inset"
 
 $MainTableLayoutPanel.SetColumnSpan($DisplayTitleLabel,6)
@@ -1711,7 +1728,7 @@ if ($ini.Custom.ADServers) {
     $i=1
     $ini.Custom.ADServers.split(',') | Foreach-Object {
         $domain = $PSItem
-        $objectParams = @{
+        $objParams = @{
             TypeName = 'System.Windows.Forms.RadioButton'
             Property = @{
                 Name = $domain
@@ -1725,7 +1742,7 @@ if ($ini.Custom.ADServers) {
                     -bor [System.Windows.Forms.AnchorStyles]::Right
             }
         }
-        $DomainServersTableLayoutPanel.Controls.Add((New-Object @objectParams),$i,0)
+        $DomainServersTableLayoutPanel.Controls.Add((New-Object @objParams),$i,0)
         $DomainServersTableLayoutPanel.Controls.Item($PSItem).add_Click({ 
             Write-Host "Set Domain Server to $domain"
             $script:server = $domain 
@@ -1742,7 +1759,7 @@ $DomainServersTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
 
 #region Group controls Panel
 $GroupControlsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$GroupControlsTableLayoutPanel.RowCount = 6
+$GroupControlsTableLayoutPanel.RowCount = 7
 $GroupControlsTableLayoutPanel.ColumnCount = 3
 $GroupControlsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
     -bor [System.Windows.Forms.AnchorStyles]::Bottom `
@@ -1752,6 +1769,13 @@ $GroupControlsTableLayoutPanel.BorderStyle = "None"
 # $GroupControlsTableLayoutPanel.CellBorderStyle = "Inset"
 
 $GroupControlsTableLayoutPanel.Controls.Add($UpdateGroupMembershipsButton,0,1)
+$GroupControlsTableLayoutPanel.Controls.Add($NTKLabel,2,0)
+$GroupControlsTableLayoutPanel.Controls.Add($NoNTKRadioButton,2,1)
+$GroupControlsTableLayoutPanel.Controls.Add($NonNuclearNTKRadioButton,2,2)
+$GroupControlsTableLayoutPanel.Controls.Add($NuclearNTKRadioButton,2,3)
+$GroupControlsTableLayoutPanel.Controls.Add($IsdNTKRadioButton,2,4)
+$GroupControlsTableLayoutPanel.Controls.Add($SecurityNTKRadioButton,2,5)
+$GroupControlsTableLayoutPanel.Controls.Add($SeniorStaffNTKRadioButton,2,6)
 
 $GroupControlsTableLayoutPanel.Dock = [System.Windows.Forms.DockStyle]::Fill
 #endregion group controls panel
@@ -1770,6 +1794,7 @@ $tableLayoutPanel2.SetColumnSpan($DomainServersTableLayoutPanel,6)
 $tableLayoutPanel2.SetRowSpan($ADReportsTableLayoutPanel,5)
 $tableLayoutPanel2.SetRowSpan($OptionButtonsTableLayoutPanel,$OptionButtonsRowSpan)
 #endregion tablelayoutpanels
+#endregion 
 
 # size the form depending on the display size
 $screen = [System.Windows.Forms.SystemInformation]::VirtualScreen
