@@ -229,10 +229,11 @@ function handler_ADLookupButton_Click {
         }
     }
     catch {
-        $error[0] | Out-String | Write-Error
-        Write-log -Message $error[0].Exception.Message -Severity Error
-        [System.Windows.MessageBox]::Show("Unable to find $principal", "Active Directory Search Failed",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        $errorMessage = @{
+            ErrorMessage = "Unable to find $principal. Check session logs for additional details."
+            MessageTitle = "Active Directory Search Failed"
+        }
+        New-ErrorMessage @errorMessage
     } 
   }
 function handler_ADSearchComputersRadioButton_Click {   
@@ -354,10 +355,11 @@ function handler_UpdateGroupMembershipButton_Click {
         Write-Log -Message "$env:USERNAME $($message.Replace('Finished modifying', 'modified'))" -Severity Information
     }
     catch {
-        $error[0] | Out-String | Write-Error
-        Write-log -Message $error[0].Exception.Message -Severity Error
-        [System.Windows.MessageBox]::Show($error[0].Exception.Message, "Group Membership Update Failed",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        $errorMessage = @{
+            ErrorMessage = "Failed to update group memberships. Check session logs for additional details."
+            MessageTitle = "Group Membership Update Failed"
+        }
+        New-ErrorMessage @errorMessage
     }
 }
 function handler_ADAccountEnableButton_Click {
@@ -394,10 +396,11 @@ function handler_ADAccountEnableButton_Click {
         }
     }
     catch {
-        $error[0] | Out-String | Write-Error
-        Write-log -Message $error[0].Exception.Message -Severity Error
-        [System.Windows.MessageBox]::Show("Unable to update account", "Account Enable/Disable Failed",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        $errorMessage = @{
+            ErrorMessage = "Unable to update account. Check session logs for additional details."
+            MessageTitle = "Account Enable/Disable Failed"
+        }
+        New-ErrorMessage @errorMessage
     }
 }
 function handler_ADAccountRequiresSmartCardCheckbox_Click {
@@ -428,10 +431,11 @@ function handler_ADAccountRequiresSmartCardCheckbox_Click {
         }
     }
     catch {
-        $error[0] | Out-String | Write-Error
-        Write-log -Message $error[0].Exception.Message -Severity Error
-        [System.Windows.MessageBox]::Show("Unable to update account", "SmartcardLogonRequired Enable/Disable Failed",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        $errorMessage = @{
+            ErrorMessage = "Unable to $currentState account. Check session logs for additional details."
+            MessageTitle = "SmartcardLogonRequired Enable/Disable Failed"
+        }
+        New-ErrorMessage @errorMessage
     }
 }
 function handler_ADAccountExpiryButton_Click {
@@ -463,10 +467,11 @@ function handler_ADAccountClearExpiryButton_Click {
         }
     }
     catch {
-        $error[0] | Out-String | Write-Error
-        Write-log -Message $error[0].Exception.Message -Severity Error
-        [System.Windows.MessageBox]::Show("Unable to clear account expiration", "Expiry update Failed",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        $errorMessage = @{
+            ErrorMessage = "Unable to clear account expiration. Check session logs for additional details."
+            MessageTitle = "Expiry update Failed"
+        }
+        New-ErrorMessage @errorMessage
     }
 }
 function handler_UpdateExpiryButton_Click {
@@ -492,10 +497,11 @@ function handler_UpdateExpiryButton_Click {
         # }
     }
     catch {
-        $error[0] | Out-String | Write-Error
-        Write-log -Message $error[0].Exception.Message -Severity Error
-        [System.Windows.MessageBox]::Show("Unable to update account expiration", "Account update Failed",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        $errorMessage = @{
+            ErrorMessage = "Unable to update account expiration. Check session logs for additional details."
+            MessageTitle = "Account update Failed"
+        }
+        New-ErrorMessage @errorMessage
     }
 }
  #region Reports Error Handlers
@@ -612,10 +618,11 @@ function handler_UpdatePasswordButton_Click {
         }
     }
     catch {
-        $error[0] | Out-String | Write-Error
-        Write-log -Message $error[0].Exception.Message -Severity Error
-        [System.Windows.MessageBox]::Show("Unable to reset password", "Password Reset Failed",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        $errorMessage = @{
+            ErrorMessage = "Unable to reset password. Check session logs for additional details."
+            MessageTitle = "Password Reset Failed"
+        }
+        New-ErrorMessage @errorMessage
     }
 }
 function handler_DisplayReportsPanelButton_Click {
@@ -682,10 +689,11 @@ function handler_ValidateNPUserButton_Click {
         }
     }
     catch {
-        $error[0] | Out-String | Write-Error
-        Write-log -Message $error[0].Exception.Message -Severity Error
-        [System.Windows.MessageBox]::Show("Unable to validate user against NOTEPAD", "NOTEPAD Validation Failed",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        $errorMessage = @{
+            ErrorMessage = "Unable to validate user against NOTEPAD. Check session logs for additional details."
+            MessageTitle = "NOTEPAD Validation Failed"
+        }
+        New-ErrorMessage @errorMessage
     }
 }
 function handler_NTKAssignmentButton_Click {
@@ -731,8 +739,7 @@ function handler_NTKRadioButton_Click {
         New-ErrorMessage @errorMessage
     }
 }
-function handler_formclose
-  {
+function handler_formclose {
     1..3 | ForEach-Object {[GC]::Collect()}
     
     Write-Log -Message "$env:USERNAME ended the session." -Severity Information 
