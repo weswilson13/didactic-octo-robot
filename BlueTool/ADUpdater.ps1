@@ -794,6 +794,20 @@ $ADAccountRequiresSmartcardCheckBox = New-Object @objParams
 $ADAccountRequiresSmartcardCheckBox.add_Click({handler_ADAccountRequiresSmartCardCheckbox_Click})
 #endregion
 
+#region update user information button
+$objParams = @{
+    TypeName = 'System.Windows.Forms.Button'
+    Property = @{
+        Name = "ADUpdateUserInformationButton"
+        Text = "Modify User Info"
+        Font = $BoxFont
+        Autosize = $true
+    }
+}
+$ADUpdateUserInformationButton = New-Object @objParams
+$ADUpdateUserInformationButton.add_Click({handler_ADUpdateUserInformationButton_Click})
+#endregion
+
 #region group membership
 #region Enumerate group memberships Button
 $objParams = @{
@@ -1116,7 +1130,8 @@ $tableLayoutPanel2.Controls.Add($ADAccountRequiresSmartcardCheckBox,3,4)
     #column 5
 $tableLayoutPanel2.Controls.Add($ADAccountResetAccountPasswordButton,4,1)
 $tableLayoutPanel2.Controls.Add($ADGetGroupMembershipButton,4,2)
-$tableLayoutPanel2.Controls.Add($ValidateNPUserButton,4,3)
+$tableLayoutPanel2.Controls.Add($ADUpdateUserInformationButton,4,3)
+$tableLayoutPanel2.Controls.Add($ValidateNPUserButton,4,4)
 
 $tableLayoutPanel2.SetColumnSpan($ADAccountActionsLabel,2)
 $tableLayoutPanel2.SetRowSpan($ADLookupButton,2)
