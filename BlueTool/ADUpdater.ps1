@@ -1242,14 +1242,21 @@ $tableLayoutPanel2.SetRowSpan($ADLookupButton,2)
 #endregion tablelayoutpanel2
 
 #region Account Expiration Panel
-$ExpiryTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$ExpiryTableLayoutPanel.RowCount = 3 #how many rows
-$ExpiryTableLayoutPanel.ColumnCount = 1 #how many columns
-$ExpiryTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
-    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
-    -bor [System.Windows.Forms.AnchorStyles]::Left `
-    -bor [System.Windows.Forms.AnchorStyles]::Right
-# $ExpiryTableLayoutPanel.CellBorderStyle = "Inset" 
+$objParams =@{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        Name = "AccountExpiryPanel"
+        RowCount = 3
+        ColumnCount = 1
+        Dock = "Fill"
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        # CellBorderStyle = "Inset"
+    }
+}
+$ExpiryTableLayoutPanel = New-Object @objParams
 
 $ExpiryTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
 $ExpiryTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 20))) | Out-Null
@@ -1259,8 +1266,6 @@ $ExpiryTableLayoutPanel.Controls.Add($ADAccountExpiryDatePicker,0,0)
 $ExpiryTableLayoutPanel.Controls.Add($NewPasswordTextBox,0,0)
 $ExpiryTableLayoutPanel.Controls.Add($UpdateExpiryButton,0,2)
 $ExpiryTableLayoutPanel.Controls.Add($UpdatePasswordButton,0,2)
-
-$ExpiryTableLayoutPanel.Dock = "Fill"
 #endregion account expiration panel
 
 #region Reports Panel
