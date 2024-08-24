@@ -575,6 +575,14 @@ function handler_NTKRadioButton_Click {
         New-ErrorMessage @errorMessage
     }
 }
+function handler_ADUpdateUserInformationButton_Click {
+
+    Write-Host "Update User Information Button Clicked"
+    
+    Clear-Console
+    $UserInformationPanel.Visible = $true
+
+}
 function handler_formclose {
     1..3 | ForEach-Object {[GC]::Collect()}
     
