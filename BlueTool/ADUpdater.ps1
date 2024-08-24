@@ -17,6 +17,7 @@ function Clear-Console {
     $ExpiryTableLayoutPanel.Visible = $false
     Clear-GroupControlsPanel
     Clear-NTKAssignmentPanel
+    Clear-UserInformationPanel
 }
 function Clear-ReportPanel {
     $ADReportsTableLayoutPanel.Visible = $false    
@@ -32,6 +33,9 @@ function Clear-GroupControlsPanel {
 }
 function Clear-NTKAssignmentPanel {
     $NTKAssignmentPanel.Visible = $false
+}
+function Clear-UserInformationPanel {
+    $ADUpdateUserInformationPanel.Visible = $false
 }
 function Reset-Form {
     param(
@@ -53,6 +57,7 @@ function Reset-Form {
     $ADAccountResetAccountPasswordButton.Visible = $false
     $ADAccountUnlockUserAccountButton.Visible = $false
     $ADReportsTableLayoutPanel.Visible = $false
+    $ADUpdateUserInformationButton.Visible = $false
     $ValidateNPUserButton.Visible = $false
     $OptionButtonsTableLayoutPanel.Visible = $true
     $DomainServersTableLayoutPanel.Visible = $true
@@ -62,7 +67,10 @@ function Reset-Form {
 }
 function Get-ConnectionParameters {
     param(
-        [string]$IniSection
+        [string]$IniSection,
+
+        [Validateset('InvokeSqlCmd','WriteSqlTableData')]
+        [string]$Cmdlet
     )
 
     # $ini = Get-IniContent .\config.ini
@@ -79,20 +87,34 @@ function Get-ConnectionParameters {
         default { throw "Valid values for TrustServerCertificate switch are 'True' or 'False'"}
     }
 
-    return [hashtable]@{
-        ServerInstance = $ini.$IniSection.SqlServerInstance
-        DatabaseName = $ini.$IniSection.Database
-        SchemaName = $ini.$IniSection.Schema
-        TableName = $ini.$IniSection.Table
-        Encrypt = $encrypt
-        TrustServerCertificate = $trustServerCertificate
+    $obj =  switch ($Cmdlet) {
+        'WriteSqlTableData' {
+            [hashtable]@{
+                ServerInstance = $ini.$IniSection.SqlServerInstance
+                DatabaseName = $ini.$IniSection.Database
+                SchemaName = $ini.$IniSection.Schema
+                TableName = $ini.$IniSection.Table
+                Encrypt = $encrypt
+                TrustServerCertificate = $trustServerCertificate
+            }
+        }
+        'InvokeSqlCmd' {
+            [hashtable]@{
+                ServerInstance = $ini.$IniSection.SqlServerInstance
+                Database = $ini.$IniSection.Database
+                Encrypt = $encrypt
+                TrustServerCertificate = $trustServerCertificate
+            }
+        }
     }
+
+    return $obj
 }
 function Import-SessionLog {
     try {
         Write-Host "Importing Session Log"
         
-        $connectionParams = Get-ConnectionParameters -IniSection LoggerConfig
+        $connectionParams = Get-ConnectionParameters -IniSection LoggerConfig -Cmdlet WriteSqlTableData
         $sessionLog = Import-Csv $env:Temp\LogFile.csv
         $sqlParameters = @{
             InputData = $sessionLog
@@ -128,6 +150,7 @@ function Get-UserMapping {
             Last_Name = $ini.UserMappingNPtoAD.Last_Name
             Rate = $ini.UserMappingNPtoAD.Rate
             PRSGROUP = $ini.UserMappingNPtoAD.PRSGROUP
+            PRD = $ini.UserMappingNPtoAD.PRD
         }
     }
     catch {
@@ -722,7 +745,8 @@ $objParams = @{
     Property = @{
         Name = "NewPasswordTextBox"
         Font = $BoxFont
-        PasswordChar = "*"
+        # PasswordChar = "*"
+        UseSystemPasswordChar = $true
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
             -bor [System.Windows.Forms.AnchorStyles]::Left `
@@ -794,6 +818,7 @@ $ADAccountRequiresSmartcardCheckBox = New-Object @objParams
 $ADAccountRequiresSmartcardCheckBox.add_Click({handler_ADAccountRequiresSmartCardCheckbox_Click})
 #endregion
 
+#region upate user information region
 #region update user information button
 $objParams = @{
     TypeName = 'System.Windows.Forms.Button'
@@ -806,6 +831,85 @@ $objParams = @{
 }
 $ADUpdateUserInformationButton = New-Object @objParams
 $ADUpdateUserInformationButton.add_Click({handler_ADUpdateUserInformationButton_Click})
+#endregion
+
+#region user information text boxes and lables
+$ADUserInfoAttributes = 'Last Name','First Name','Rate','Office','Telephone Number','PRD','Description'
+@('TextBox','Label') | ForEach-Object {
+    foreach ($item in $ADUserInfoAttributes) {
+        $objParams = @{
+            TypeName = "System.Windows.Forms.$PSItem"
+            Property = @{
+                Name = "ADUser" + $item.Replace(' ','') + $PSItem
+                Text = $item
+                Font = $BoxFont
+                AutoSize = $true
+                Dock = "Fill"
+            }
+        }
+        New-Variable -Name $objParams.Property.Name -Value (New-Object @objParams) -Force -ErrorAction SilentlyContinue
+    }
+}
+
+#region set up auto complete for Rate and Office text boxes
+$sqlParameters = Get-ConnectionParameters -IniSection NotepadDbConfig -Cmdlet InvokeSqlCmd
+$rates = Invoke-Sqlcmd @sqlParameters -Query $ini.NotepadDbConfig.RateQuery
+$offices = Invoke-Sqlcmd @sqlParameters -Query $ini.NotepadDbConfig.OfficeQuery
+
+$rateSource = New-Object System.Windows.Forms.AutoCompleteStringCollection
+$officeSource = New-Object System.Windows.Forms.AutoCompleteStringCollection
+$rateSource.AddRange($rates.Prefix)
+$officeSource.AddRange($offices.Office)
+$ADUserRateTextBox.AutoCompleteSource = 'CustomSource'
+$ADUserRateTextBox.AutoCompleteCustomSource = $rateSource
+$ADUserRateTextBox.AutoCompleteMode = 'SuggestAppend'
+$ADUserOfficeTextBox.AutoCompleteSource = 'CustomSource'
+$ADUserOfficeTextBox.AutoCompleteCustomSource = $officeSource
+$ADUserOfficeTextBox.AutoCompleteMode = 'SuggestAppend'
+#endregion auto complete for Rate and Office text boxes
+#endregion user information text boxes and labels
+
+#region user office phone masktextbox
+$objParams = @{
+    TypeName = "System.Windows.Forms.MaskedTextBox"
+    Property = @{
+        Name = "ADUserTelephoneNumberTextBox"
+        Mask = "(###) ###-####"
+        Font = $BoxFont
+        AutoSize = $true
+        Dock = "Fill"
+    }
+}
+$ADUserTelephoneNumberTextBox = New-Object @objParams
+#endregion user office phone
+
+#region user PRD datepicker
+$objParams = @{
+    TypeName = 'System.Windows.Forms.DateTimePicker'
+    Property = @{
+        Name = "ADUserPRDDatePicker"
+        Font = $BoxFont
+        Format = "Custom"
+        CustomFormat = "ddd, dd MMM yyyy"
+    }
+}
+$ADUserPRDTextBox = New-Object @objParams
+#nedregion user PRD datepicker
+
+#region Update user info button
+$objParams =@{
+    TypeName = 'System.Windows.Forms.Button'
+    Property = @{
+        Name = 'SetUserInfoButton'
+        Text = 'Update User Information'
+        Font = $BoxFont
+        AutoSize = $true
+    }
+}
+$SetUserInfoButton = New-Object @objParams
+$SetUserInfoButton.add_Click({handler_SetUserInfoButton_Click})
+#endregion update user info button
+
 #endregion
 
 #region group membership
@@ -1160,16 +1264,21 @@ $ExpiryTableLayoutPanel.Dock = "Fill"
 #endregion account expiration panel
 
 #region Reports Panel
-$ADReportsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$ADReportsTableLayoutPanel.RowCount = 5 #how many rows
-$ADReportsTableLayoutPanel.ColumnCount = 3 #how many columns
-$ADReportsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
-    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
-    -bor [System.Windows.Forms.AnchorStyles]::Left `
-    -bor [System.Windows.Forms.AnchorStyles]::Right
-$ADReportsTableLayoutPanel.BorderStyle = "Fixed3d"
-# $ADReportsTableLayoutPanel.CellBorderStyle = "Outset"
-# $ADReportsTableLayoutPanel.CellBorderStyle = "Inset" 
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        RowCount = 5 #how many rows
+        ColumnCount = 3 #how many columns
+        BorderStyle = "Fixed3D"
+        Dock = "Fill"
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        # CellBorderStyle = "Outset"
+    }
+}
+$ADReportsTableLayoutPanel = New-Object @objParams
 
 $ADReportsTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,33.3))) | Out-Null
 $ADReportsTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,33.3))) | Out-Null
@@ -1180,8 +1289,6 @@ $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowSty
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
-
-# $ADReportsTableLayoutPanel.SetColumnSpan($ADReportsLabel,3)
 
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsLabel,1,0)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsDomainControllersButton,0,1)
@@ -1194,8 +1301,6 @@ $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyCreatedButton,1,3
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyDeletedButton,1,4)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersRecentlyModifiedButton,2,1)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersWithoutManagerButton,2,2)
-
-$ADReportsTableLayoutPanel.Dock = "Fill"
 #endregion reports panel
 
 #region Options Buttons Panel
@@ -1330,15 +1435,66 @@ $NTKAssignmentPanel.Controls.Add($SecurityNTKRadioButton,0,5)
 $NTKAssignmentPanel.Controls.Add($SeniorStaffNTKRadioButton,0,6)
 #endregion NTK assignment panel
 
+#region Update user information panel
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        Name = "UpdateUserInformationPanel"
+        RowCount = 5 #how many rows
+        ColumnCount = 5 #how many columns
+        BorderStyle = "Fixed3D"
+        Dock = "Fill"
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        # CellBorderStyle = "Outset"
+    }
+}
+$ADUpdateUserInformationPanel = New-Object @objParams
+
+$ADUpdateUserInformationPanel.SetColumnSpan($ADUserDescriptionTextBox,3)
+
+$ADUpdateUserInformationPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,10))) | Out-Null
+$ADUpdateUserInformationPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$ADUpdateUserInformationPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,10))) | Out-Null
+$ADUpdateUserInformationPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
+$ADUpdateUserInformationPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,40))) | Out-Null
+
+# $ADUpdateUserInformationPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 10))) | Out-Null
+# $ADUpdateUserInformationPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 10))) | Out-Null
+# $ADUpdateUserInformationPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 10))) | Out-Null
+# $ADUpdateUserInformationPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 10))) | Out-Null
+# $ADUpdateUserInformationPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 10))) | Out-Null
+
+$ADUpdateUserInformationPanel.Controls.Add($ADUserFirstNameLabel,0,0)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserFirstNameTextBox,1,0)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserLastNameLabel,2,0)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserLastNameTextBox,3,0)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserRateLabel,0,1)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserRateTextBox,1,1)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserOfficeLabel,0,2)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserOfficeTextBox,1,2)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserTelephoneNumberLabel,2,2)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserTelephoneNumberTextBox,3,2)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserPRDLabel,0,3)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserPRDTextBox,1,3)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserDescriptionLabel,0,4)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserDescriptionTextBox,1,4)
+$ADUpdateUserInformationPanel.Controls.Add($SetUserInfoButton,4,1)
+#endregion update user information panel
+
 $MainTableLayoutPanel.Controls.Add($tableLayoutPanel2,0,0)
 $MainTableLayoutPanel.Controls.Add($ExpiryTableLayoutPanel,1,2)
 $MainTableLayoutPanel.Controls.Add($GroupControlsTableLayoutPanel,5,2)
+$MainTableLayoutPanel.Controls.Add($ADUpdateUserInformationPanel,0,2)
 $tableLayoutPanel2.Controls.Add($ADReportsTableLayoutPanel,2,0)
 $tableLayoutPanel2.Controls.Add($OptionButtonsTableLayoutPanel,2,0)
 $tableLayoutPanel2.Controls.Add($DomainServersTableLayoutPanel,0,4)
 $GroupControlsTableLayoutPanel.Controls.Add($NTKAssignmentPanel,2,0)
 
 $MainTableLayoutPanel.SetColumnSpan($tableLayoutPanel2,6)
+$MainTableLayoutPanel.SetColumnSpan($ADUpdateUserInformationPanel,$MainTableLayoutPanel.ColumnCount)
 $tableLayoutPanel2.SetColumnSpan($ADReportsTableLayoutPanel,3)
 $tableLayoutPanel2.SetColumnSpan($OptionButtonsTableLayoutPanel,3)
 $tableLayoutPanel2.SetColumnSpan($DomainServersTableLayoutPanel,6)

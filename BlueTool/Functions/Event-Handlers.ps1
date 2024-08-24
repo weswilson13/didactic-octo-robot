@@ -59,6 +59,7 @@ function handler_ADLookupButton_Click {
                 $ADAccountResetAccountPasswordButton.Visible = $true
                 if ($objPrincipal.ObjectClass -eq 'user') {
                     $ValidateNPUserButton.Visible = $true
+                    $ADUpdateUserInformationButton.Visible = $true
                     $ADAccountRequiresSmartcardLabel.Visible = $true
                     $ADAccountRequiresSmartcardCheckBox.Visible = $true
                 }
@@ -473,11 +474,11 @@ function handler_ValidateNPUserButton_Click {
         $ans = [System.Windows.MessageBox]::Show("Validate $($objPrincipal.SamAccountName) against NOTEPAD?", "Verify Action",`
                 [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
         if ($ans -eq "Yes") {
-            $connectionParams = Get-ConnectionParameters -IniSection NotepadDbConfig
+            $connectionParams = Get-ConnectionParameters -IniSection NotepadDbConfig -Cmdlet InvokeSqlCmd
 
             $sqlParameters = @{
                 ServerInstance = $connectionParams.ServerInstance
-                Database = $connectionParams.DatabaseName
+                Database = $connectionParams.Database
                 Encrypt = $connectionParams.Encrypt
                 TrustServerCertificate = $connectionParams.TrustServerCertificate
                 ApplicationName = $form.Name
@@ -577,11 +578,70 @@ function handler_NTKRadioButton_Click {
 }
 function handler_ADUpdateUserInformationButton_Click {
 
-    Write-Host "Update User Information Button Clicked"
+    Write-Host "Modify User Information Button Clicked"
     
     Clear-Console
-    $UserInformationPanel.Visible = $true
+    $DisplayTitleLabel.Text = "Modify User Information"
+    $DisplayInfoBox.Visible = $false
+    $ADUpdateUserInformationPanel.Visible = $true
 
+    $ADMapping = Get-UserMapping
+    $ADUserFirstNameTextBox.Text = $objPrincipal.GivenName
+    $ADUserLastNameTextBox.Text = $objPrincipal.Surname
+    $ADUserRateTextBox.Text = $objPrincipal.$($ADMapping.Rate)
+    $ADUserOfficeTextBox.Text = $objPrincipal.Office
+    $ADUserTelephoneNumberTextBox.Text = $objPrincipal.OfficePhone
+    $ADUserPRDTextBox.Value = $objPrincipal.$($ADMapping.PRD)
+    $ADUserDescriptionTextBox.Multiline = $true
+    $ADUserDescriptionTextBox.Text = $objPrincipal.Description
+}
+function handler_SetUserInfoButton_Click {
+    function Set-Attribute {
+        param(
+            [string]$Value,
+            [string]$Attribute
+        )
+
+        if ($Value) { $adParams["$Attribute"] = $Value}
+        else { $attributesToClear.Add($Attribute) }        
+    }
+
+    try {
+        Write-Host "Update User Info Panel Button Clicked"
+        $ans = [System.Windows.MessageBox]::Show("Update AD attributes for user $($objPrincipal.SamAccountName)?", "Verify Action",`
+                [System.Windows.MessageBoxButton]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
+        if ($ans -eq "Yes") {
+            $ADMapping = Get-UserMapping
+            $adParams = @{}
+            [System.Collections.ArrayList]$attributesToClear = @()
+            
+            Set-Attribute -Value $ADUserFirstNameTextBox.Text -Attribute GivenName
+            Set-Attribute -Value $ADUserLastNameTextBox.Text -Attribute Surname
+            Set-Attribute -Value $ADUserRateTextBox.Text -Attribute $($ADMapping.Rate)
+            Set-Attribute -Value $ADUserOfficeTextBox.Text -Attribute Office
+            Set-Attribute -Value $ADUserTelephoneNumberTextBox.Text -Attribute OfficePhone
+            Set-Attribute -Value $ADUserDescriptionTextBox.Text -Attribute Description
+            Set-Attribute -Value $ADUserPRDTextBox.Text -Attribute $($ADMapping.PRD)
+            
+            if ($attributesToClear) { $adParams["Clear"] = $attributesToClear -join ','}
+            
+            $objPrincipal | Set-AdUser @adParams -Confirm:$false
+            $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
+
+            $message = "$env:USERNAME updated AD attributes for $($objPrincipal.SamAccountName):`n$($adParams | Out-String)"
+            Write-Log -Message $message -Severity Information
+
+            [System.Windows.MessageBox]::Show($message, "Active Directory Update Success",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        }
+    }
+    catch {
+        $errorMessage = @{
+            ErrorMessage = "Failed to set AD attributes. Check session logs for additional details."
+            MessageTitle = "Active Directory Update Failed"
+        }
+        New-ErrorMessage @errorMessage
+    }
 }
 function handler_formclose {
     1..3 | ForEach-Object {[GC]::Collect()}
