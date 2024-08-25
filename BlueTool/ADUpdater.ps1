@@ -49,7 +49,7 @@ On load the user may choose to look up an Active Directory object (user account,
 
 Looking up an object will display the current object state in Active Directory and enable several actions that may be performed on the object:
 
-Modify Expiry - Clear the expiration date of an account, or set/change the existing date
+Modify Expiry - Clear the expiration date of the current object account, or set/change the existing date
 Disable/Enable Account - Disables or Enables the current object account
 Unlock Account - Unlocks the current object account
 SmartCardLogonRequired - Toggles the SmartCardLogonRequired attribute for the account

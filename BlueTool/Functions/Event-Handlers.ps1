@@ -7,6 +7,7 @@ function handler_ADLookupButton_Click {
 
     try {
         $principal = $ADPrincipalTextBox.Text
+        Write-Host "Looking up user $principal"
         if ($principal) {
             Clear-ReportPanel
             Clear-OptionsPanel 
