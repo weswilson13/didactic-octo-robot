@@ -73,7 +73,7 @@ function handler_ADLookupButton_Click {
     }
     catch {
         $errorMessage = @{
-            ErrorMessage = "Unable to find $principal. Check session logs for additional details."
+            ErrorMessage = "$($error[0].Exception.Message) Check session logs for additional details."
             MessageTitle = "Active Directory Search Failed"
         }
         New-ErrorMessage @errorMessage
