@@ -272,7 +272,7 @@ $objParams = @{
         Font = $BoxFont
         AutoSize = $true
         AutoSizeMode = "GrowAndShrink"
-        UseVisualStyleBackColor = $True
+        UseVisualStyleBackColor = $true
     }
 }
 $ADLookupButton = New-Object @objParams
@@ -638,6 +638,7 @@ $objParams = @{
         Scrollbars = "Both"
         Readonly = $true
         Font = $ConsoleFont
+        BackColor = 'LightBlue'
 # $DisplayInfoBox.Font = [System.Drawing.Font]::new($BoxFont.FontFamily, $BoxFont.Size-2, $BoxFont.Style)
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
@@ -834,7 +835,7 @@ $ADUpdateUserInformationButton.add_Click({handler_ADUpdateUserInformationButton_
 #endregion
 
 #region user information text boxes and lables
-$ADUserInfoAttributes = 'Last Name','First Name','Rate','Office','Telephone Number','PRD','Description'
+$ADUserInfoAttributes = 'Last Name','First Name','Rate','Office','Office Number','PRD','Description'
 @('TextBox','Label') | ForEach-Object {
     foreach ($item in $ADUserInfoAttributes) {
         $objParams = @{
@@ -873,14 +874,14 @@ $ADUserOfficeTextBox.AutoCompleteMode = 'SuggestAppend'
 $objParams = @{
     TypeName = "System.Windows.Forms.MaskedTextBox"
     Property = @{
-        Name = "ADUserTelephoneNumberTextBox"
+        Name = "ADUserOfficeNumberTextBox"
         Mask = "(###) ###-####"
         Font = $BoxFont
         AutoSize = $true
         Dock = "Fill"
     }
 }
-$ADUserTelephoneNumberTextBox = New-Object @objParams
+$ADUserOfficeNumberTextBox = New-Object @objParams
 #endregion user office phone
 
 #region user PRD datepicker
@@ -901,7 +902,7 @@ $objParams =@{
     TypeName = 'System.Windows.Forms.Button'
     Property = @{
         Name = 'SetUserInfoButton'
-        Text = 'Update User Information'
+        Text = "Update User`nInformation"
         Font = $BoxFont
         AutoSize = $true
     }
@@ -1309,22 +1310,27 @@ $ADReportsTableLayoutPanel.Controls.Add($ADReportsUsersWithoutManagerButton,2,2)
 #endregion reports panel
 
 #region Options Buttons Panel
-$OptionButtonsTableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$OptionButtonsTableLayoutPanel.RowCount = 5
+$objParams = @{
+    TypeName = 'System.Windows.Forms.TableLayoutPanel'
+    Property = @{
+        Name = "OptionButtonsTableLayoutPanel"
+        RowCount = 5
+        ColumnCount = 3
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+        Dock = 'Fill'
+        # CellBorderStyle = "Inset"
+    }
+}
+$OptionButtonsTableLayoutPanel = New-Object @objParams
 $OptionButtonsRowSpan = 5
-$OptionButtonsTableLayoutPanel.ColumnCount = 3
-$OptionButtonsTableLayoutPanel.Anchor = [System.Windows.Forms.AnchorStyles]::Top `
-    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
-    -bor [System.Windows.Forms.AnchorStyles]::Left `
-    -bor [System.Windows.Forms.AnchorStyles]::Right
-# $OptionButtonsTableLayoutPanel.CellBorderStyle = "Inset"
 
 $OptionButtonsTableLayoutPanel.SetColumnSpan($OptionButtonsLabel,3)
 
 $OptionButtonsTableLayoutPanel.Controls.Add($OptionButtonsLabel,0,0)
 $OptionButtonsTableLayoutPanel.Controls.Add($DisplayReportsPanelButton,0,1)
-
-$OptionButtonsTableLayoutPanel.Dock = "Fill"
 #endregion option buttons panel
 
 #region Domain Servers Panel
@@ -1421,6 +1427,7 @@ $objParams = @{
         Name = "NTKAssignmentPanel"
         RowCount = 7
         ColumnCount = 1
+        BackColor = 'Yellow'
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
             -bor [System.Windows.Forms.AnchorStyles]::Left `
@@ -1459,6 +1466,7 @@ $objParams = @{
 $ADUpdateUserInformationPanel = New-Object @objParams
 
 $ADUpdateUserInformationPanel.SetColumnSpan($ADUserDescriptionTextBox,3)
+$ADUpdateUserInformationPanel.SetRowSpan($SetUserInfoButton,2)
 
 $ADUpdateUserInformationPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,10))) | Out-Null
 $ADUpdateUserInformationPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,20))) | Out-Null
@@ -1480,8 +1488,8 @@ $ADUpdateUserInformationPanel.Controls.Add($ADUserRateLabel,0,1)
 $ADUpdateUserInformationPanel.Controls.Add($ADUserRateTextBox,1,1)
 $ADUpdateUserInformationPanel.Controls.Add($ADUserOfficeLabel,0,2)
 $ADUpdateUserInformationPanel.Controls.Add($ADUserOfficeTextBox,1,2)
-$ADUpdateUserInformationPanel.Controls.Add($ADUserTelephoneNumberLabel,2,2)
-$ADUpdateUserInformationPanel.Controls.Add($ADUserTelephoneNumberTextBox,3,2)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserOfficeNumberLabel,2,2)
+$ADUpdateUserInformationPanel.Controls.Add($ADUserOfficeNumberTextBox,3,2)
 $ADUpdateUserInformationPanel.Controls.Add($ADUserPRDLabel,0,3)
 $ADUpdateUserInformationPanel.Controls.Add($ADUserPRDTextBox,1,3)
 $ADUpdateUserInformationPanel.Controls.Add($ADUserDescriptionLabel,0,4)
@@ -1524,6 +1532,7 @@ $objParams = @{
         FormBorderStyle = "FixedDialog"
         StartPosition = "CenterScreen"
         ClientSize = $System_Drawing_Size
+        BackColor = "LightBlue"
         # AutoScaleDimensions =  New-Object System.Drawing.SizeF(96, 96)
         # AutoScaleMode  = [System.Windows.Forms.AutoScaleMode]::Dpi
         # AutoScale = $true
