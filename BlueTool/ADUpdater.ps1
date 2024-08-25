@@ -1375,49 +1375,50 @@ $objParams = @{
 }
 $DomainServersTableLayoutPanel = New-Object @objParams
 
-if ($ini.Custom.ADServers) {
-    $OptionButtonsRowSpan = 4
-    $labelParams = @{
-        TypeName = 'System.Windows.Forms.Label'
+$adServers = (Get-ADDomain).DNSRoot
+if ($ini.Custom.ADServers) { $adServers = $ini.Custom.ADServers.split(',') }
+
+$OptionButtonsRowSpan = 4
+$labelParams = @{
+    TypeName = 'System.Windows.Forms.Label'
+    Property = @{
+        Text = 'Domains:'
+        Font = $BoldBoxFont
+        AutoSize = $true
+        Anchor = [System.Windows.Forms.AnchorStyles]::Top `
+            -bor [System.Windows.Forms.AnchorStyles]::Bottom `
+            -bor [System.Windows.Forms.AnchorStyles]::Left `
+            -bor [System.Windows.Forms.AnchorStyles]::Right
+    }
+}
+$DomainServersTableLayoutPanel.Controls.Add((New-Object @labelParams),0,0)
+$i=1
+$adServers | Foreach-Object {
+    $domain = $PSItem
+    $objParams = @{
+        TypeName = 'System.Windows.Forms.RadioButton'
         Property = @{
-            Text = 'Directory Servers:'
-            Font = $BoldBoxFont
+            Name = $domain
+            Text = $domain
+            Font = $BoxFont
             AutoSize = $true
+            # Checked = $PSItem -eq $env:USERDNSDOMAIN
             Anchor = [System.Windows.Forms.AnchorStyles]::Top `
                 -bor [System.Windows.Forms.AnchorStyles]::Bottom `
                 -bor [System.Windows.Forms.AnchorStyles]::Left `
                 -bor [System.Windows.Forms.AnchorStyles]::Right
         }
     }
-    $DomainServersTableLayoutPanel.Controls.Add((New-Object @labelParams),0,0)
-    $i=1
-    $ini.Custom.ADServers.split(',') | Foreach-Object {
-        $domain = $PSItem
-        $objParams = @{
-            TypeName = 'System.Windows.Forms.RadioButton'
-            Property = @{
-                Name = $domain
-                Text = $domain
-                Font = $BoxFont
-                AutoSize = $true
-                # Checked = $PSItem -eq $env:USERDNSDOMAIN
-                Anchor = [System.Windows.Forms.AnchorStyles]::Top `
-                    -bor [System.Windows.Forms.AnchorStyles]::Bottom `
-                    -bor [System.Windows.Forms.AnchorStyles]::Left `
-                    -bor [System.Windows.Forms.AnchorStyles]::Right
-            }
-        }
-        $DomainServersTableLayoutPanel.Controls.Add((New-Object @objParams),$i,0)
-        $control = $DomainServersTableLayoutPanel.Controls.Item($PSItem)
-        $control.add_Click({ 
-            Write-Host "Set Domain Server to $domain"
-            $script:server = $domain 
-        })
-        if ($PSItem -eq $env:USERDNSDOMAIN) {
-            $control.PerformClick()
-        }
-        $i++
+    $DomainServersTableLayoutPanel.Controls.Add((New-Object @objParams),$i,0)
+    $control = $DomainServersTableLayoutPanel.Controls.Item($PSItem)
+    $control.add_Click({ 
+        Write-Host "Set Domain Server to $domain"
+        $script:server = $domain 
+    })
+    if ($PSItem -eq $env:USERDNSDOMAIN) {
+        $control.PerformClick()
     }
+    $i++
 }
 #endregion domain servers panel
 
