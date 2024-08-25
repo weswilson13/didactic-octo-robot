@@ -215,11 +215,11 @@ function handler_ADAccountEnableButton_Click {
             Invoke-Expression "$action-ADAccount `$objPrincipal -Confirm:`$false"
 
             $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
-            $ADAccountEnableButton.Text = switch($objPrincipal.Enabled) {
+            $this.Text = switch($objPrincipal.Enabled) {
                 $true { "Disable Account";break }
                 $false { "Enable Account";break }
             }
-            Write-Host $ADAccountEnableButton.Text
+            Write-Host $this.Text
             $ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
 
             $state = switch($objPrincipal.Enabled) {

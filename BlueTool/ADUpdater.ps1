@@ -151,6 +151,7 @@ function Import-SessionLog {
         }
 
         Write-Log -Message "Importing session logs for user $env:USERNAME" -Severity Information
+        Write-Host "Writing data (Server: $($sqlParameters.ServerInstance); Database: '[$($sqlParameters.DatabaseName)]'; Table = '[$($sqlParameters.SchemaName)].[$($sqlParameters.TableName)]')"
         Write-SqlTableData @sqlParameters
 
         Remove-Item $env:TEMP\LogFile.csv -Force
@@ -1407,12 +1408,13 @@ if ($ini.Custom.ADServers) {
             }
         }
         $DomainServersTableLayoutPanel.Controls.Add((New-Object @objParams),$i,0)
-        $DomainServersTableLayoutPanel.Controls.Item($PSItem).add_Click({ 
+        $control = $DomainServersTableLayoutPanel.Controls.Item($PSItem)
+        $control.add_Click({ 
             Write-Host "Set Domain Server to $domain"
             $script:server = $domain 
         })
         if ($PSItem -eq $env:USERDNSDOMAIN) {
-            $DomainServersTableLayoutPanel.Controls.Item($PSItem).PerformClick()
+            $control.PerformClick()
         }
         $i++
     }
@@ -1547,6 +1549,8 @@ $System_Drawing_Size = New-Object System.Drawing.Size
 $System_Drawing_Size.Width = $screen.Width * .75
 $System_Drawing_Size.Height = $screen.Height * .75
 
+$formIcon = [System.Drawing.Icon]::new("$PSScriptRoot\AD_icon.ico")
+
 # create the form object
 $objParams = @{
     TypeName = 'System.Windows.Forms.Form'
@@ -1557,6 +1561,7 @@ $objParams = @{
         StartPosition = "CenterScreen"
         ClientSize = $System_Drawing_Size
         BackColor = "LightBlue"
+        Icon = $formIcon
         # AutoScaleDimensions =  New-Object System.Drawing.SizeF(96, 96)
         # AutoScaleMode  = [System.Windows.Forms.AutoScaleMode]::Dpi
         # AutoScale = $true
