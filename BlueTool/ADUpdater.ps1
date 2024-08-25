@@ -44,7 +44,7 @@ function Reset-Form {
 
     if (!$ExceptPrincipal.IsPresent) { $ADPrincipalTextBox.ResetText() }
     $ADGetGroupMembershipButton.Visible = $false
-    # $UpdateGroupMembershipsButton.Visible = $false
+    $UpdateGroupMembershipsButton.Visible = $false
     $ADAccountStatusLabel.Visible = $false
     $ADAccountExpirationLabel.Visible = $false
     $ADAccountEnableLabel.Visible = $false

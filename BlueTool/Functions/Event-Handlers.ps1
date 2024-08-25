@@ -26,6 +26,7 @@ function handler_ADLookupButton_Click {
             $DisplayTitleLabel.Text = "Account Properties"
 
             # set control values that depend on the AD Object
+            $ADAccountEnableButton.Enabled = $objPrincipal.ObjectClass -in @('user','msDS-GroupManagedServiceAccount')
             $ADAccountEnableLabel.Text = "Account Enabled: $($objPrincipal.Enabled)"
             $ADAccountEnableButton.Text = switch ($objPrincipal.Enabled) {
                 $true { "Disable Account";break }
@@ -38,33 +39,34 @@ function handler_ADLookupButton_Click {
             $ADAccountExpirationLabel.Text = "Account Expiry: $strExpiry"
             $ADAccountRequiresSmartcardLabel.Text = "Smartcard Required: $($objPrincipal.SmartcardLogonRequired)"
             $ADAccountRequiresSmartcardCheckBox.Checked = $objPrincipal.SmartcardLogonRequired
+            $ADAccountRequiresSmartcardCheckBox.Enabled = $objPrincipal.ObjectClass -eq 'user'
             $ADAccountUnlockLabel.Text = "Account Locked Out: $($objPrincipal.LockedOut)"
 
             $ADGetGroupMembershipButton.Visible=$true
             $ADAccountActionsLabel.Visible = $true
 
-            if ($objPrincipal.ObjectClass -in @('user','msDS-GroupManagedServiceAccount')) {
-                $ADAccountExpiryDatePicker.Value = switch($objPrincipal.AccountExpirationDate) {
-                    $null { $ADAccountExpiryDatePicker.MaxDate }
-                    default { $PSItem }
-                }
-                $ADAccountStatusLabel.Visible = $true
-                $ADAccountExpirationLabel.Visible = $true
-                $ADAccountEnableLabel.Visible = $true
-                $ADAccountUnlockLabel.Visible = $true
-                $ADAccountEnableButton.Visible = $true
-                $ADAccountSetExpiryButton.Visible = $true
-                $ADAccountUnlockUserAccountButton.Visible = $true
-                $ADAccountUnlockUserAccountButton.Enabled = $objPrincipal.LockedOut
-                $ADUpdateUserInformationButton.Enabled = $objPrincipal.ObjectClass -eq 'user'
-                $ADAccountResetAccountPasswordButton.Visible = $true
-                if ($objPrincipal.ObjectClass -eq 'user') {
-                    $ValidateNPUserButton.Visible = $true
-                    $ADUpdateUserInformationButton.Visible = $true
-                    $ADAccountRequiresSmartcardLabel.Visible = $true
-                    $ADAccountRequiresSmartcardCheckBox.Visible = $true
-                }
+            $ADAccountExpiryDatePicker.Value = switch($objPrincipal.AccountExpirationDate) {
+                $null { $ADAccountExpiryDatePicker.MaxDate }
+                default { $PSItem }
             }
+            $ADAccountStatusLabel.Visible = $true
+            $ADAccountEnableLabel.Visible = $true
+            $ADAccountUnlockLabel.Visible = $true
+            $ADAccountEnableButton.Visible = $true
+            $ADAccountSetExpiryButton.Visible = $true
+            $ADAccountExpirationLabel.Visible = $true
+            $ADAccountSetExpiryButton.Enabled = $objPrincipal.ObjectClass -in @('user','msDS-GroupManagedServiceAccount')
+            $ADAccountUnlockUserAccountButton.Visible = $true
+            $ADAccountUnlockUserAccountButton.Enabled = $objPrincipal.LockedOut
+            $ADUpdateUserInformationButton.Visible = $true
+            $ADUpdateUserInformationButton.Enabled = $objPrincipal.ObjectClass -eq 'user'
+            $ADAccountResetAccountPasswordButton.Visible = $true
+            $ADAccountResetAccountPasswordButton.Enabled = $objPrincipal.ObjectClass -eq 'user'
+            $ValidateNPUserButton.Visible = $true
+            $ValidateNPUserButton.Enabled = $objPrincipal.ObjectClass -eq 'user'
+            $ADAccountRequiresSmartcardLabel.Visible = $true
+            $ADAccountRequiresSmartcardCheckBox.Visible = $true
+            
             Write-Log -Message "$env:USERNAME retrieved account properties for account $($objPrincipal.SamAccountName)" -Severity Information
         }
     }
@@ -106,14 +108,10 @@ function handler_ADGetGroupMembershipButton_Click {
             $AddGroupButton.Visible = $true
             $ADGroupMembershipBox.Visible = $true
             $GroupControlsTableLayoutPanel.Visible = $true
+            $UpdateGroupMembershipsButton.Visible = $true
+            $UpdateGroupMembershipsButton.Enabled = $false
             $NTKAssignmentButton.Enabled = $objPrincipal.ObjectClass -eq 'User'
             Reset-GroupLists
-            # Get-ADGroup -Filter 'GroupScope -ne "DomainLocal" -and Name -ne "Domain Users"' | 
-            #     Where-Object { $_.DistinguishedName -notin $objPrincipal.MemberOf } | 
-            #     ForEach-Object {
-            #         $ADGroupsBox.Items.Add($PSItem.Name)
-            #     }
-            # $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
             Write-Log -Message "$env:USERNAME enumerated group membership for account $($objPrincipal.SamAccountName)" -Severity Information
         }
     }
