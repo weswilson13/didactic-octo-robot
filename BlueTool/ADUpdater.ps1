@@ -41,7 +41,27 @@ function Reset-Form {
     param(
         [switch]$ExceptPrincipal
     )
+    $defaultLabelText = "AD Viewer and Updater"
+    $defaultText =@'
+This tool reads and updates Active Directory data for existing domain objects.
 
+On load the user may choose to look up an Active Directory object (user account, computer account, or service account) or execute a number of reports. Clicking one of the search type radiobuttons will update the search filter, but also reset the form.
+
+Looking up an object will display the current object state in Active Directory and enable several actions that may be performed on the object:
+
+Modify Expiry - Clear the expiration date of an account, or set/change the existing date
+Disable/Enable Account - Disables or Enables the current object account
+Unlock Account - Unlocks the current object account
+SmartCardLogonRequired - Toggles the SmartCardLogonRequired attribute for the account
+Reset Account Password - Reset the password for the current object account
+Get Group Membership - Enumerates the group membership for the current object account. Allows modification of group membership, and assignment of NTK groups.
+Modify User Info - Update First Name, Last Name, Rate, Office, Office Number, PRD, and Description for the object account
+Validate NOTEPAD User - Update the users data in NOTEPAD, if they exist
+
+NOTE: Control enablement is based on the object class of the selected account. Not all actions are available for all account types. 
+
+NOTE: All actions are logged.
+'@
     if (!$ExceptPrincipal.IsPresent) { $ADPrincipalTextBox.ResetText() }
     $ADGetGroupMembershipButton.Visible = $false
     $UpdateGroupMembershipsButton.Visible = $false
@@ -64,6 +84,9 @@ function Reset-Form {
 
     Clear-GroupControlsPanel
     Clear-Console
+
+    $DisplayTitleLabel.Text = $defaultLabelText
+    $DisplayInfoBox.Text = $defaultText
 }
 function Get-ConnectionParameters {
     param(
@@ -224,7 +247,7 @@ $script:ini = Get-IniContent .\config.ini
 
 #region font objects
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
-# $BodyFont = New-Object System.Drawing.Font("Calibri",18,[Drawing.FontStyle]::Bold)
+$BodyFont = New-Object System.Drawing.Font("Calibri",16,[Drawing.FontStyle]::Bold)
 $BoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Regular)
 $ButtonFont = New-Object System.Drawing.Font($BoxFont.FontFamily, 10, $BoxFont.Style)
 $BoldBoxFont = New-Object System.Drawing.Font("Calibri", 12, [Drawing.FontStyle]::Bold)
@@ -243,7 +266,7 @@ $objParams = @{
     Property = @{
         Text = "Enter a Username"
         AutoSize = $true
-        Font = $BoldBoxFont
+        Font = $BodyFont
     }
 }
 $ADUserLabel = New-Object @objParams
@@ -286,7 +309,7 @@ $objParams = @{
     TypeName = 'System.Windows.Forms.Label'
     Property = @{
         Text = "Search Type"
-        Font = $BoldBoxFont
+        Font = $BodyFont
         AutoSize = $true
     }
 }
@@ -347,7 +370,7 @@ $objParams = @{
     Property = @{
         Name = "OptionButtonsLabel"
         Text = "Other Options"
-        Font = $BoldBoxFont
+        Font = $BodyFont
         AutoSize = $true
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
@@ -377,7 +400,7 @@ $objParams = @{
     TypeName = 'System.Windows.Forms.Button'
     Property = @{
         Name = "ValidateNPUserButton"
-        Text = "Validate Notepad User"
+        Text = "Validate NOTEPAD User"
         Font = $BoxFont
         AutoSize = $true
     }
@@ -394,7 +417,7 @@ $objParams = @{
     Property = @{
         Name = "ADReportsLabel"
         Text = "Active Directory Reports"
-        Font = $BoldBoxFont
+        Font = $BodyFont
         AutoSize = $true
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
@@ -553,7 +576,7 @@ $objParams = @{
     Property = @{
         Name = "ADAccountStatusLabel"
         Text = "Account Status"
-        Font = $BoldBoxFont
+        Font = $BodyFont
         AutoSize = $true
     }
 }
@@ -639,7 +662,6 @@ $objParams = @{
         Readonly = $true
         Font = $ConsoleFont
         BackColor = 'LightBlue'
-# $DisplayInfoBox.Font = [System.Drawing.Font]::new($BoxFont.FontFamily, $BoxFont.Size-2, $BoxFont.Style)
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
             -bor [System.Windows.Forms.AnchorStyles]::Left `
@@ -657,7 +679,7 @@ $objParams = @{
     Property = @{
         Name = "ADAccountActionsLabel"
         Text = "Account Actions"
-        Font = $BoldBoxFont
+        Font = $BodyFont
         AutoSize = $true
         Anchor = [System.Windows.Forms.AnchorStyles]::Top `
             -bor [System.Windows.Forms.AnchorStyles]::Bottom `
@@ -1286,6 +1308,8 @@ $objParams = @{
 }
 $ADReportsTableLayoutPanel = New-Object @objParams
 
+$ADReportsTableLayoutPanel.SetColumnSpan($ADReportsLabel,3)
+
 $ADReportsTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,33.3))) | Out-Null
 $ADReportsTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,33.3))) | Out-Null
 $ADReportsTableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent,33.3))) | Out-Null
@@ -1296,7 +1320,7 @@ $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowSty
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $ADReportsTableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 
-$ADReportsTableLayoutPanel.Controls.Add($ADReportsLabel,1,0)
+$ADReportsTableLayoutPanel.Controls.Add($ADReportsLabel,0,0)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsDomainControllersButton,0,1)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsDisabledComputersButton,0,2)
 $ADReportsTableLayoutPanel.Controls.Add($ADReportsInactiveComputersButton,0,3)

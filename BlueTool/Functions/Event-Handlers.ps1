@@ -81,13 +81,13 @@ function handler_ADLookupButton_Click {
 function handler_ADSearchComputersRadioButton_Click {   
     Write-Host "Computers Radio Button Pressed"
     Reset-Form
-    $ADUserLabel.Text = "Enter a computer name"
+    $ADUserLabel.Text = "Enter a Computer"
     $ADLookupButton.Text = "Lookup Computer"
 }
 function handler_ADSearchUsersRadioButton_Click {
     Write-Host "Users Radio Button Pressed"
     Reset-Form
-    $ADUserLabel.Text = "Enter a username"
+    $ADUserLabel.Text = "Enter a Username"
     $ADLookupButton.Text = "Lookup User"
 }
 function handler_ADSearchServiceAccountsRadioButton_Click {
