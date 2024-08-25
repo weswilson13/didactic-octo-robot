@@ -127,7 +127,7 @@ function Import-SessionLog {
             Force = $true
         }
 
-        Write-Log -Message "Importing Session Logs" -Severity Information
+        Write-Log -Message "Importing session logs for user $env:USERNAME" -Severity Information
         Write-SqlTableData @sqlParameters
 
         Remove-Item $env:TEMP\LogFile.csv -Force

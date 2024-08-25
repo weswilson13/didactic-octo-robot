@@ -56,6 +56,7 @@ function handler_ADLookupButton_Click {
                 $ADAccountSetExpiryButton.Visible = $true
                 $ADAccountUnlockUserAccountButton.Visible = $true
                 $ADAccountUnlockUserAccountButton.Enabled = $objPrincipal.LockedOut
+                $ADUpdateUserInformationButton.Enabled = $objPrincipal.ObjectClass -eq 'user'
                 $ADAccountResetAccountPasswordButton.Visible = $true
                 if ($objPrincipal.ObjectClass -eq 'user') {
                     $ValidateNPUserButton.Visible = $true
@@ -64,7 +65,7 @@ function handler_ADLookupButton_Click {
                     $ADAccountRequiresSmartcardCheckBox.Visible = $true
                 }
             }
-            Write-Log -Message "$env:USERNAME looked up account properties for $($objPrincipal.SamAccountName)" -Severity Information
+            Write-Log -Message "$env:USERNAME retrieved account properties for account $($objPrincipal.SamAccountName)" -Severity Information
         }
     }
     catch {
@@ -113,7 +114,7 @@ function handler_ADGetGroupMembershipButton_Click {
             #         $ADGroupsBox.Items.Add($PSItem.Name)
             #     }
             # $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
-            Write-Log -Message "$env:USERNAME enumerated group membership for $($objPrincipal.SamAccountName)" -Severity Information
+            Write-Log -Message "$env:USERNAME enumerated group membership for account $($objPrincipal.SamAccountName)" -Severity Information
         }
     }
     catch {
@@ -263,7 +264,7 @@ function handler_ADAccountRequiresSmartCardCheckbox_Click {
             [System.Windows.MessageBox]::Show("SmartcardLogonRequired was $state. Please wait ~30 seconds for Active Directory to reflect the change.", "Toggle SmartcardLogonRequired Attribute",`
                 [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
         
-                Write-Log -Message "$env:USERNAME $state SmartcardLogonRequired for account $($objPrincipal.SamAccountName)" -Severity Information
+                Write-Log -Message "$env:USERNAME $state SmartcardLogonRequired for user $($objPrincipal.SamAccountName)" -Severity Information
         }
         if ($ans -eq "No") {
             $ADAccountRequiresSmartcardCheckBox.Checked = $false
@@ -518,7 +519,7 @@ function handler_ValidateNPUserButton_Click {
             Invoke-Sqlcmd @sqlParameters
             #endregion Update NP user
 
-            $logMessage = "$env:USERNAME validated $($objPrincipal.SamAccountName) against NOTEPAD database.`n"
+            $logMessage = "$env:USERNAME validated user $($objPrincipal.SamAccountName) against NOTEPAD database.`n"
             $logMessage += "Updated WinLogonID to $($objPrincipal.UserPrincipalName) for the PID $($_PID.PID)."
             
             [System.Windows.MessageBox]::Show($logMessage, "NP User Validation",`
@@ -628,7 +629,7 @@ function handler_SetUserInfoButton_Click {
             $objPrincipal | Set-AdUser @adParams -Confirm:$false
             $script:objPrincipal = Get-ADUser $objPrincipal -Properties *
 
-            $message = "$env:USERNAME updated AD attributes for $($objPrincipal.SamAccountName):`n$($adParams | Out-String)"
+            $message = "$env:USERNAME updated AD attributes for user $($objPrincipal.SamAccountName):`n$($adParams | Out-String)"
             Write-Log -Message $message -Severity Information
 
             [System.Windows.MessageBox]::Show($message, "Active Directory Update Success",`

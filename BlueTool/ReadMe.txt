@@ -7,7 +7,7 @@ Outstanding questions/to-dos:
 
     Need to update Rate and Office queries (config.ini) with proper table and fields.
 
-    Need to update correct AD mapping.
+    Need to update correct AD mapping in config.ini
 
     Incorporate Helper and Exam account logic. Need Jim's direction/feedback.
 
@@ -16,3 +16,7 @@ Outstanding questions/to-dos:
     ASD Stig and actual help file. Maybe incorporate into "Home" console display. 
 
     Configure logging table - currently set to Computers DB. Does this make sense?
+
+    Validate Notepad user function -> update WinLogonID field to correct field and value (currently uses UserPrincipalName attribute)
+
+    hook into ServiceNow
