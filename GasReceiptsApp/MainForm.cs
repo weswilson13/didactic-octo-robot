@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Windows.Forms;
 
 namespace GasReceiptsApp
@@ -63,19 +64,39 @@ namespace GasReceiptsApp
         private void btnUpdateDatabase_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Checking for new receipts...", "Import Receipts", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            var processInfo = new ProcessStartInfo("powershell.exe", "-ExecutionPolicy Bypass -Command \"\\\\raspberrypi4-1\\NAS01\\Scripts\\ScheduledTasks\\Import-GasReceipts_v1.2.ps1\"");
+            var path = "";
+            if (Directory.Exists(@"\\mydomain\dfs\stuff")) {
+                path = @"\\mydomain\dfs\Stuff\Scripts\ScheduledTasks\Import-GasReceipts.ps1";
+            }
+            else if (Directory.Exists(@"Z:\Scripts")) {
+                path = @"Z:\Scripts\ScheduledTasks\Import-GasReceipts.ps1";
+            }
+
+            var command = $"-ExecutionPolicy Bypass -Command \"{path}\"";
+
+            var processInfo = new ProcessStartInfo("powershell.exe", command);
+            processInfo.ErrorDialog = true;
             processInfo.UseShellExecute = false;
             processInfo.CreateNoWindow = true;
 
-            var process = Process.Start(processInfo);
-            process.WaitForExit();
+            try
+            {
+                var process = Process.Start(processInfo);
+                process.WaitForExit();
 
-            var errorLevel = process.ExitCode;
-            process.Close();
-            process.Dispose();
 
-            MessageBox.Show($"Completed with Error Code {errorLevel}");
-            //return errorLevel;
+                var errorLevel = process.ExitCode;
+
+                process.Close();
+                process.Dispose();
+
+                MessageBox.Show($"Completed with Error Code {errorLevel}");
+                //return errorLevel;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
     }
 }
