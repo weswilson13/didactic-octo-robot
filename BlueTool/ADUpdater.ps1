@@ -209,6 +209,7 @@ function Reset-GroupLists {
 }
 
 #dot sourced functions
+. "$PSScriptRoot\menustrip.ps1"
 . "$PSScriptRoot\Functions\Event-Handlers.ps1"
 . "$PSScriptRoot\Functions\Clear-NTKGroups.ps1"
 . "$PSScriptRoot\Functions\Set-NTKGroups.ps1"
@@ -260,6 +261,13 @@ $ConsoleFont = New-Object System.Drawing.Font("Lucida Console", 9, [Drawing.Font
 ####################################################
 #region create the controls
 #region configure individual controls
+#region menu bar
+$objParams = @{
+    Name = "MenuBar"
+
+}
+#endregion menu bar
+
 #region lookup principal
 #region Username label
 $objParams = @{
@@ -1549,6 +1557,7 @@ $screen = [System.Windows.Forms.SystemInformation]::VirtualScreen
 $System_Drawing_Size = New-Object System.Drawing.Size
 $System_Drawing_Size.Width = $screen.Width * .75
 $System_Drawing_Size.Height = $screen.Height * .75
+$maxScreenSize = $ini.Custom.MaximumSizeWxH.Split(',')
 
 $formIcon = [System.Drawing.Icon]::new("$PSScriptRoot\AD_icon.ico")
 
@@ -1563,6 +1572,7 @@ $objParams = @{
         ClientSize = $System_Drawing_Size
         BackColor = "LightBlue"
         Icon = $formIcon
+        MaximumSize = New-Object System.Drawing.Size($maxScreenSize)
         # AutoScaleDimensions =  New-Object System.Drawing.SizeF(96, 96)
         # AutoScaleMode  = [System.Windows.Forms.AutoScaleMode]::Dpi
         # AutoScale = $true
