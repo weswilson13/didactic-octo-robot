@@ -1,0 +1,1 @@
+pwsh.exe -ExecutionPolicy Bypass -WindowStyle Normal -File .\DoD_Id_Entry_Form.ps1
