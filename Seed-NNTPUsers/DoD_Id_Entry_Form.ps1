@@ -27,6 +27,27 @@ $textBox.Add_Click({
     }
 })
 
+$label = New-Object System.Windows.Forms.Label
+$label.Dock = "Fill"
+# $label.Text = "Enter DoD IDs Below"
+# $label.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Bold)
+# $label.AutoSize = $true
+$label.Add_Click({
+    if ([string]::IsNullOrWhiteSpace($textBox.Text)) { $textBox.Text = $defaultText }
+})
+
+$tableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
+$tableLayoutPanel.RowCount = 3
+$tableLayoutPanel.ColumnCount = 1
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 5))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 85))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 10))) | Out-Null
+$tableLayoutPanel.Dock = "Fill"
+# $tableLayoutPanel.CellBorderStyle = "outset"
+$tableLayoutPanel.Controls.Add($label,0,0)
+$tableLayoutPanel.Controls.Add($textBox,0,1)
+$tableLayoutPanel.Controls.Add($button,0,2)
+
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Enter DoD IDs"
 $form.ClientSize = New-Object System.Drawing.Size(400,400)
@@ -36,5 +57,5 @@ $form.Add_FormClosed({
     $form.Dispose()
 })
 
-$form.Controls.AddRange(@($button, $textBox))
+$form.Controls.AddRange(@($tableLayoutPanel))
 $form.ShowDialog()
