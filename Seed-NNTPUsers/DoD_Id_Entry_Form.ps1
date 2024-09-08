@@ -1,6 +1,10 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+$ConfigurationManager = . "$PSScriptRoot\Set-AppConfig.ps1"
+$studentScriptPath = $ConfigurationManager.AppSettings["StudentScriptPath"]
+$instructorScriptPath = $ConfigurationManager.AppSettings["InstructorScriptPath"]
+
 $button = New-Object System.Windows.Forms.Button
 $button.Text = "Enumerate Contents"
 $button.AutoSize = $true
@@ -13,7 +17,7 @@ $button.Add_Click({
         $dodIds += $line
     }
     $textBox.Clear()
-    & "$PSScriptRoot\Get-TSCRUsers.ps1" -DODID $dodIDs
+    & $studentScriptPath -UserDodId $dodIDs
 })
 
 $defaultText = "Enter one or more DoD IDs separated by commas..."
