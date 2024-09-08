@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "nfxzAyktt2s=",
+  "dgSpecHash": "5BdEKr0MBvg=",
   "success": true,
-  "projectFilePath": "F:\\repos\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj",
+  "projectFilePath": "Z:\\Scripts\\didactic-octo-robot\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\wes_admin\\.nuget\\packages\\jetbrains.annotations\\2021.2.0\\jetbrains.annotations.2021.2.0.nupkg.sha512",
     "C:\\Users\\wes_admin\\.nuget\\packages\\json.more.net\\1.9.3\\json.more.net.1.9.3.nupkg.sha512",

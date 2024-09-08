@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\repos\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj": {}
+    "Z:\\Scripts\\didactic-octo-robot\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj": {}
   },
   "projects": {
-    "F:\\repos\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj": {
+    "Z:\\Scripts\\didactic-octo-robot\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\repos\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj",
+        "projectUniqueName": "Z:\\Scripts\\didactic-octo-robot\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj",
         "projectName": "DCIUserUpload",
-        "projectPath": "F:\\repos\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj",
+        "projectPath": "Z:\\Scripts\\didactic-octo-robot\\DCIUserUpload\\DCIUserUpload\\DCIUserUpload.csproj",
         "packagesPath": "C:\\Users\\wes_admin\\.nuget\\packages\\",
-        "outputPath": "F:\\repos\\DCIUserUpload\\DCIUserUpload\\obj\\",
+        "outputPath": "Z:\\Scripts\\didactic-octo-robot\\DCIUserUpload\\DCIUserUpload\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\wes_admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
