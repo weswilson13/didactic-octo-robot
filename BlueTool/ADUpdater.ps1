@@ -261,6 +261,11 @@ $ConsoleFont = New-Object System.Drawing.Font("Lucida Console", 9, [Drawing.Font
 ####################################################
 #region create the controls
 #region configure individual controls
+#region tool tips
+$toolTip = New-Object System.Windows.Forms.ToolTip
+$toolTip.ToolTipIcon = "Info"
+#endregion tool tips
+
 #region menu bar
 $objParams = @{
     Name = "MenuBar"
@@ -293,6 +298,7 @@ $objParams = @{
     }
 }
 $ADPrincipalTextBox = New-Object @objParams
+$toolTip.SetToolTip($ADPrincipalTextBox,"Enter the User Identity or Distinguished Name")
 #endregion
 
 #region Lookup User Button
