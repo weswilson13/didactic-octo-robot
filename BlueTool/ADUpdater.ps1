@@ -231,6 +231,7 @@ function Reset-GroupLists {
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName System.DirectoryServices.AccountManagement
 Add-Type -TypeDefinition @'
 using System.Runtime.InteropServices;
 public class ProcessDPI {
