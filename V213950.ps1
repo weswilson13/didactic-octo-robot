@@ -1,6 +1,6 @@
 try{
-    Import-Module \\raspberrypi4-1\nas01\STIG\Evaluate-STIG\Evaluate-STIG\Modules\Master_Functions
-    Import-Module \\raspberrypi4-1\nas01\STIG\Evaluate-STIG\Evaluate-STIG\Modules\Scan-SqlServer2016Instance_Checks
+    Import-Module \\Optimusprime\Z\STIG\Evaluate-STIG\Evaluate-STIG\Modules\Master_Functions
+    Import-Module \\Optimusprime\Z\STIG\Evaluate-STIG\Evaluate-STIG\Modules\Scan-SqlServer2016Instance_Checks
     Import-Module SqlServer
 
     $attr = @{

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DCIUserUpload")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+524f78492f5d8ffe1303a4c2989ebbb338c2b87c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c42a6b2b6df756d156952e59ff0f0e2d1fc7260c")]
 [assembly: System.Reflection.AssemblyProductAttribute("DCIUserUpload")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DCIUserUpload")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
