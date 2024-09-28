@@ -1,7 +1,4 @@
-﻿#Requires -RunAsAdministrator 
-#Requires -PSEdition Desktop
-
-[cmdletbinding(DefaultParameterSetName = 'All')]
+﻿[cmdletbinding(DefaultParameterSetName = 'All')]
 param(
     [Parameter(Mandatory = $false)]
     [Parameter(ParameterSetName = 'All')]
@@ -186,7 +183,7 @@ foreach ($computer in $ComputerName) {
                 'VMware' { "/S /v `"/qn /L*v ""c:\tools\VmwareToolsUpdate.log"" REBOOT=R ADDLOCAL=ALL REMOVE=Hgfs,VmwTimeProvider`"" }
                 'Npp' { "/S /v `"/qn /L*v c:\tools\NppUpdate.log`"" }
                 'Defender' { "/S /v `"/qn /L*v c:\tools\DefinitionsUpdate.log`"" }
-                'WinSCP' { "/a c:\tools\update.exe /qn /L*v c:\tools\winScpUpdate.log" }
+                'WinSCP' { "/a c:\tools\update.exe /forcecloseapplications /sp- /verysilent /log=c:\tools\winScpUpdate.log" }
                 'Powershell' { "/i c:\tools\update.msi /qn /L*v c:\tools\psupdate.log ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1 ADD_PATH=1 ENABLE_MU=1" }
                 'PuTTY' { "/i c:\tools\update.msi /qn /L*v c:\tools\puttyUpdate.log" }
                 'dotnet' {
@@ -209,11 +206,13 @@ foreach ($computer in $ComputerName) {
             try {
                 if ($computer -notmatch $env:COMPUTERNAME) {
                     if ($Log.IsPresent) { Out-File -InputObject "Executing: Invoke-Command -ComputerName $Computer -ScriptBlock { Start-Process $execPath -ArgumentList $command -Verb RunAs -Wait }" }
-                    Invoke-Command -ComputerName $Computer -ScriptBlock { Start-Process $args[0] -ArgumentList $args[1] -Verb RunAs -Wait } -ArgumentList $execPath, $command
+                    $proc = Invoke-Command -ComputerName $Computer -ScriptBlock { Start-Process $args[0] -ArgumentList $args[1] -Verb RunAs -Wait -PassThru } -ArgumentList $execPath, $command
+                    $proc.ExitCode
                 }
                 else {
                     if ($Log.IsPresent) { Out-File -InputObject "Executing: Start-Process -FilePath $execPath -ArgumentList $command -Verb RunAs -Wait" }
-                    Invoke-Command -ScriptBlock { Start-Process -FilePath $args[0] -ArgumentList $args[1] -Wait } -ArgumentList $execPath, $command
+                    $proc = Invoke-Command -ScriptBlock { Start-Process -FilePath $args[0] -ArgumentList $args[1] -Wait -PassThru } -ArgumentList $execPath, $command
+                    $proc.ExitCode
                 }
 
                 Remove-Item "\\$Computer\c$\Tools\$update" -Verbose
