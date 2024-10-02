@@ -1,0 +1,15 @@
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\faroShuffle.GeneratedMSBuildEditorConfig.editorconfig
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\faroShuffle.AssemblyInfoInputs.cache
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\faroShuffle.AssemblyInfo.cs
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\faroShuffle.csproj.CoreCompileInputs.cache
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\faroShuffle.sourcelink.json
+z:\Scripts\didactic-octo-robot\faroShuffle\bin\Debug\net8.0\faroShuffle.exe
+z:\Scripts\didactic-octo-robot\faroShuffle\bin\Debug\net8.0\faroShuffle.deps.json
+z:\Scripts\didactic-octo-robot\faroShuffle\bin\Debug\net8.0\faroShuffle.runtimeconfig.json
+z:\Scripts\didactic-octo-robot\faroShuffle\bin\Debug\net8.0\faroShuffle.dll
+z:\Scripts\didactic-octo-robot\faroShuffle\bin\Debug\net8.0\faroShuffle.pdb
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\faroShuffle.dll
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\refint\faroShuffle.dll
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\faroShuffle.pdb
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\faroShuffle.genruntimeconfig.cache
+z:\Scripts\didactic-octo-robot\faroShuffle\obj\Debug\net8.0\ref\faroShuffle.dll
