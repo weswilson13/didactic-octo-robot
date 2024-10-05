@@ -28,14 +28,15 @@ $button.AutoSize = $true
 $button.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom
 $button.Dock = 'Bottom'
 $button.Add_Click({
+    $params = @{ComputerName = $computers}
     if ($GetSoftware.IsPresent) {
-        $params = @{
-            Software = $softwareTextBox.Text
-        }
+        $params["Software"] = $softwareTextBox.Text
     }
     $computers = $textbox.Text.Split([string[]]@(',',';',' ',"`r`n"),[System.StringSplitOptions]::RemoveEmptyEntries + [System.StringSplitOptions]::TrimEntries)
     $textBox.Clear()
-    & $ScriptPath -ComputerName $computers @params
+    Write-Host $ScriptPath
+    $params | Out-String | Write-Host
+    & $ScriptPath @params
 })
 
 $defaultText = "Enter one or more computers separated by commas..."
@@ -49,21 +50,34 @@ $textBox.Add_Click({
     }
 })
 
-[System.Collections.Generic.List[string]]$textBoxes = @($textBox)
+[System.Collections.Arraylist]$textBoxes = @($textBox)
+
+$softwareLabel = New-Object System.Windows.Forms.Label
+$softwareLabel.Text = "Software:"
+$softwareLabel.Font = New-Object System.Drawing.Font ("Calibri",12,[System.Drawing.FontStyle]::Regular)
 
 $softwareTextBox = New-Object System.Windows.Forms.TextBox
 $softwareTextBox.Text = [string]::Empty
 $softwareTextbox.Multiline = $false
 $softwareTextbox.Dock = "Fill"
 
-if ($GetSoftware.IsPresent) {$textBoxes.Add($softwareTextBox)}
+# if ($GetSoftware.IsPresent) {$textBoxes.Add($softwareTextBox)}
 
 $textBoxPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$textBoxPanel.ColumnCount = 1
+$textBoxPanel.ColumnCount = 2
 $textBoxPanel.RowCount = 2
 $textBoxPanel.Dock = "Fill"
 $textBoxPanel.AutoSize = $true
-$textBoxPanel.Controls.AddRange($textBoxes)
+$textBoxPanel.Controls.Add($textBox,0,0)
+if ($GetSoftware.IsPresent) {
+    $textBoxPanel.Controls.Add($softwareLabel,0,1)
+    $textBoxPanel.Controls.Add($softwareTextBox,1,1)
+}
+$textBoxPanel.SetColumnSpan($textBox,2)
+# $textBoxPanel.Controls.Add($softwareTextBox)
+
+$textBoxPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 90))) | Out-Null
+$textBoxPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 10))) | Out-Null
 
 $label = New-Object System.Windows.Forms.Label
 $label.Dock = "Fill"
