@@ -28,15 +28,22 @@ $button.AutoSize = $true
 $button.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom
 $button.Dock = 'Bottom'
 $button.Add_Click({
-    $params = @{ComputerName = $computers}
+    if ($computers) { 
+        $arguments = "-ComputerName $computers"
+    }
     if ($GetSoftware.IsPresent) {
-        $params["Software"] = $softwareTextBox.Text
+        $arguments = "$arguments -Software $($softwareTextBox.Text)".Trim()
     }
     $computers = $textbox.Text.Split([string[]]@(',',';',' ',"`r`n"),[System.StringSplitOptions]::RemoveEmptyEntries + [System.StringSplitOptions]::TrimEntries)
     $textBox.Clear()
-    Write-Host $ScriptPath
-    $params | Out-String | Write-Host
-    & $ScriptPath @params
+
+    # $proc = start-process powershell.exe -ArgumentList "-File $ScriptPath $arguments" -Wait -PassThru
+    # $proc.StandardOutput
+    $cmd = "$ScriptPath $arguments"
+    Write-Host $cmd
+    $output = Invoke-Expression $cmd
+    $output | Out-String | write-Host
+    
 })
 
 $defaultText = "Enter one or more computers separated by commas..."
