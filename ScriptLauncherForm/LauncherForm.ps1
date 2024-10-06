@@ -28,13 +28,14 @@ $button.AutoSize = $true
 $button.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom
 $button.Dock = 'Bottom'
 $button.Add_Click({
+    $computers = $textbox.Text.Split([string[]]@(',',';',' ',"`r`n"),[System.StringSplitOptions]::RemoveEmptyEntries + [System.StringSplitOptions]::TrimEntries)
+    
     if ($computers) { 
-        $arguments = "-ComputerName $computers"
+        $arguments = "-ComputerName $(-join $computers, " ")"
     }
     if ($GetSoftware.IsPresent) {
-        $arguments = "$arguments -Software $($softwareTextBox.Text)".Trim()
+        $arguments = -join @($arguments,"-Software $($softwareTextBox.Text)".Trim())," "
     }
-    $computers = $textbox.Text.Split([string[]]@(',',';',' ',"`r`n"),[System.StringSplitOptions]::RemoveEmptyEntries + [System.StringSplitOptions]::TrimEntries)
     $textBox.Clear()
 
     # $proc = start-process powershell.exe -ArgumentList "-File $ScriptPath $arguments" -Wait -PassThru
