@@ -34,7 +34,7 @@ $button.Add_Click({
         $arguments = "-ComputerName $(-join $computers, " ")"
     }
     if ($GetSoftware.IsPresent) {
-        $arguments = -join @($arguments,"-Software $($softwareTextBox.Text)".Trim())," "
+        $arguments = -join @($arguments,"-Software '$($softwareTextBox.Text)'".Trim())," "
     }
     $textBox.Clear()
 
