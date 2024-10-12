@@ -1,0 +1,1 @@
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0Update-WindowsImage.ps1" -DiskLabel WIN11_23H2 -Source "Z:\Microsoft\Windows Installation ISOs\Windows11_23H2_ISO_Files" -Target "Z:\Microsoft\Windows Installation ISOs\Win11_23H2_.iso"
