@@ -47,7 +47,10 @@ function Use-RunAs {
             {   
                 $params = @()
                 foreach ($param in $_psBoundParameters.GetEnumerator()) {
-                    [array]$params += "{0} `"{1}`"" -f $param.Key,$param.Value
+                    switch ($param.Key) {
+                        'UsePowershell' { [array]$params += "{0}" -f $param.Key; break }
+                        default { [array]$params += "{0} `"{1}`"" -f $param.Key,$param.Value }
+                    }
                 }
 
                 $params = ($params -join ' -')
@@ -86,10 +89,10 @@ function Check-PreReqs {
     $_software = Get-ChildItem -Path $32bitPath,$64bitPath | 
         Get-ItemProperty | Where-Object { $_.DisplayName -match $Software }
 
-    return $_software
+    if (!$_software) { Throw "oscdimg.exe was not found. Install the latest Windows ADK and try again." }
+
+    return $true
 }
-$PSBoundParameters | Out-String | Write-Host
-if (!(Check-PreReqs)) { Throw "oscdimg.exe was not found. Install the latest Windows ADK and try again." }
 
 # assign PSBoundParameters to local variable for use in functions
 $_psBoundParameters = $PSBoundParameters
@@ -153,6 +156,10 @@ $message += "Enumerating image..."
     Write-Host $message -ForegroundColor Cyan
     Write-Host "Mounting the Image..." -ForegroundColor Yellow
     $message += "`nMounting the Image..."
+
+    # ensure the file is not Read-Only
+    Set-ItemProperty -Path $wimPath -Name isReadOnly -Value $false
+
     if ($UsePowershell.IsPresent) { Mount-WindowsImage -ImagePath $wimPath -Path $mountDirectory -Index $index }
     else {
         # dism /mount-wim /wimfile:<Full path of the install.wim> /index:<Desired index number> /mountdir:<Full path of the mount folder location>
