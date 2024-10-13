@@ -199,7 +199,7 @@ $message += "Enumerating image..."
     switch ($ans) {
         'Yes' { $persist = @{ Save = $true }; $commit = "commit" }
         'No' { Exit }
-        'Cancel' { $persist = @{ Discard = $true } ; $commit = "discard"}
+        'Cancel' { $persist = @{ Discard = $true } ; $commit = "discard"; $cancel = $true}
     } 
 #endregion apply updates to the image
 
@@ -217,6 +217,8 @@ $message += "Enumerating image..."
     if ($?) { Remove-Item $mountDirectory -Force }
     else { Write-Host "Failed to dismount image" -ForegroundColor Red }
 
+    if ($cancel) { Exit }
+    
     $message += "Done"
     $ans = [System.Windows.Forms.MessageBox]::Show("Finished updating image.`n`nDo you want to create a new ISO?", "Image Updated",`
             [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
