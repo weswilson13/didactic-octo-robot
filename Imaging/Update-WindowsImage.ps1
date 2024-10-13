@@ -56,8 +56,7 @@ function Use-RunAs {
                 $params = ($params -join ' -')
 
                 $arg = "-file `"$($MyInvocation.ScriptName)`" -$params"
-                write-host $arg
-                Pause
+
                 Start-Process "powershell.exe" -Verb Runas -ArgumentList "-NoExit $arg" -ErrorAction 'stop'  
             } 
             catch 
@@ -218,7 +217,7 @@ $message += "Enumerating image..."
     else { Write-Host "Failed to dismount image" -ForegroundColor Red }
 
     if ($cancel) { Exit }
-    
+
     $message += "Done"
     $ans = [System.Windows.Forms.MessageBox]::Show("Finished updating image.`n`nDo you want to create a new ISO?", "Image Updated",`
             [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
