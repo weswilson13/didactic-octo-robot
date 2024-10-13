@@ -70,7 +70,7 @@ function Use-RunAs {
     }  
 } 
 
-function Check-PreReqs {
+function Get-PreReqs {
     <#
         .SYNOPSIS
         Check Installed software to verify the oscdimg command-line tool is installed
@@ -225,33 +225,40 @@ $message += "Enumerating image..."
 #endregion dismount image
 
 #region create ISO
-    Clear-Host
-    Write-Host $message -ForegroundColor Cyan
-    Write-Host "Creating the new ISO..." -ForegroundColor Yellow
-    $message += "`nCreating the new ISO..."
-    $oscdimg = 'C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\x86\Oscdimg\oscdimg.exe'
-    
-    <# OSCDIMG Syntax explaination:
-    OSCDIMG.exe -l<disk_label> [options] -b<path_of_etfsboot.com_file> <path_of_installation_source> <path_of_ISO_to_be_created_with_filename>
+    try {
+        Get-PreReqs
+        Clear-Host
+        Write-Host $message -ForegroundColor Cyan
+        Write-Host "Creating the new ISO..." -ForegroundColor Yellow
+        $message += "`nCreating the new ISO..."
+        $oscdimg = 'C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\x86\Oscdimg\oscdimg.exe'
+        
+        <# OSCDIMG Syntax explaination:
+        OSCDIMG.exe -l<disk_label> [options] -b<path_of_etfsboot.com_file> <path_of_installation_source> <path_of_ISO_to_be_created_with_filename>
 
-    -l is used to set volume label of DVD
-    -m is used to create bigger image file than 700MB
-    -u2 is used to create UDF file system for DVD
-    -b is used to locate boot image of DVD
-    #>
-    $cmd = "-l{0} -m -u2 -b`"{1}\boot\etfsboot.com`" `"{1}`" `"{2}`"" -f $DiskLabel,$Source,$Target
+        -l is used to set volume label of DVD
+        -m is used to create bigger image file than 700MB
+        -u2 is used to create UDF file system for DVD
+        -b is used to locate boot image of DVD
+        #>
+        $cmd = "-l{0} -m -u2 -b`"{1}\boot\etfsboot.com`" `"{1}`" `"{2}`"" -f $DiskLabel,$Source,$Target
 
-    $proc = Start-Process $oscdimg -ArgumentList $cmd -Wait -PassThru
+        $proc = Start-Process $oscdimg -ArgumentList $cmd -Wait -PassThru
 
-    if ($proc.ExitCode -eq 0) {
-        [System.Windows.Forms.MessageBox]::Show("Done creating new ISO.", "Success",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        if ($proc.ExitCode -eq 0) {
+            [System.Windows.Forms.MessageBox]::Show("Done creating new ISO.", "Success",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        }
+        else {
+            [System.Windows.Forms.MessageBox]::Show("Failed to create new ISO", "Error",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+        $message += "Done"
     }
-    else {
-        [System.Windows.Forms.MessageBox]::Show("Failed to create new ISO", "Error",`
-            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    catch {
+        [System.Windows.Forms.MessageBox]::Show($error[0].Exception.Message, "Error",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
-    $message += "Done"
 #endregion create ISO
 
 Clear-Host
