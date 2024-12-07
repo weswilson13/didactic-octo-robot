@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NNTPAccountCreation.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="nnptc-nntp-account-creation">NNPTC NNTP Account Creation</h1>
+<p>NNTP Account Creation is a multiple step process:</p>
+<ol>
+<li>Generate a CSV file with pertinent user information</li>
+<li>Create the Windows Accounts</li>
+<li>Add the users to the required AD groups</li>
+<li>Enable the accounts</li>
+<li>Enforce smart card login</li>
+</ol>
+<p>These steps are completed via 2 separate powershell scripts, one of which is executed on the NNPP network, the other on the NNTP network.</p>
+<h2 id="the-scripts">The Scripts</h2>
+<h3 id="gettscrusers">GetTSCRUsers</h3>
+<p>This &quot;tool&quot; is comprised of multiple scripts/files and is executed on the NNPP network. At a high level, this step queries the NOTEPAD database and generates CSV files which are used on the NNTP network to create the accounts.</p>
+<p>Located at</p>
+<blockquote>
+<p>Z:\Shared\NNPTC\W_drives\ISD\Scripts\NewUserScripts\GetTSCRUsers.lnk</p>
+</blockquote>
+<p>the actual scripts being executed are in the NNTPAccountCreation folder and are discussed below:</p>
+<ul>
+<li><strong>GetTSCRUsers.bat</strong>
+<ul>
+<li>The batch file which initializes the user form</li>
+</ul>
+</li>
+<li><strong>Form.ps1</strong>
+<ul>
+<li>Uses .NET classes to build the User Interface, helping to control program logic</li>
+</ul>
+</li>
+<li><strong>Get-TSCRUsers.ps1</strong>
+<ul>
+<li>Executed when student accounts are needed</li>
+<li>Uses .NET classes to connect to and query the NOTEPAD database</li>
+<li>Generates 2 csv files, one for Active Directory account creation, the other for Seaware account creation
+<ul>
+<li>TSCR_AD.csv</li>
+<li>TSCR_SW.csv</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Get-TSCRInstructors.ps1</strong>
+<ul>
+<li>Executed when staff accounts are needed</li>
+<li>Uses .NET classes to connect to and query the NOTEPAD database</li>
+<li>Generates 2 csv files, one for Active Directory account creation, the other for Seaware account creation
+<ul>
+<li>TSCR_Instructor_AD.csv</li>
+<li>TSCR_Instructor_SW.csv</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="create-nnptcstudentsps1--create-nnptcinstructorsps1">Create-NNPTCStudents.ps1 / Create-NNPTCInstructors.ps1</h3>
+<p>Executed on the NNTP network following CSV generation.</p>
+<p>Located at:</p>
+<blockquote>
+<p>\\ptclw16p-bu01\W_drives\ISD\Scripts</p>
+</blockquote>
+<p>these scripts create the Active directory accounts, add the users to the corresponding AD groups, and have the capability of scheduling account enablement and smart card enforcement.</p>
+<h2 id="csv-generation">CSV Generation</h2>
+<p>CSV generation begins by executing GetTSCRUsers.lnk. A user form will appear, which defaults to expect an NNPTC Class as input. The textbox has an <em>auto completion</em> feature which uses the NOTEPAD database (NP-NNPTC.NP.PrsnlClasses) as the source.</p>
+<p><strong>NOTE: this tool is locally executed; as such, it is running in the context of the calling user and so a successful connection to the database is dependent upon the user having the appropriate permissions.</strong></p>
+<p>Executing the form in this manner will call Get-TSCRUsers.ps1, reading from the database view NP-NNPTC.NP.PrsnlSeawareUpload_V, filtering on the chosen class and storing select data in TSCR_AD.csv and TSCR_SW.csv.</p>
+<p>Alternatively, the user may choose to generate a CSV by entering one or more IDs. The following combinations exist:</p>
+<ul>
+<li>Student by PID</li>
+<li>Student by DoDID</li>
+<li>Instructor by PID</li>
+<li>Instructor by DoDID</li>
+</ul>
+<p>DoD ID is known by most sailors and easily found in the NOTEPAD web application. PID is available to Database Admins and users with additional permissions, as such DoDID may be the best choice for most users running this program for individual account creation.</p>
+<p>Get-TSCRUsers.ps1 will be executed when Student is selected; Get-TSCRInstructors.ps1 will be executed for Instructor.</p>
+<p>At the completion of either script, a couple things happen:</p>
+<ul>
+<li>the CSVs are copied to the NNTP (if the calling user has the appropriate permissions)</li>
+<li>the appropriate mail-merge files containing the NSAR and NNTP User Agreement Forms will open, at which time the user may print and distribute to the account requestors.</li>
+</ul>
+<h2 id="creating-accounts">Creating Accounts</h2>
+<p><strong>! Requires the <em>ActiveDirectory</em> Powershell module !</strong></p>
+<p>Once the corresponding CSV has been created and exported to the NNTP network, the accounts may be created in Active Directory.</p>
+<p>Execute one of the following, as appropriate:</p>
+<blockquote>
+<p><strong>Students:</strong> \\ptclw16p-bu01\w_drives\isd\Scripts\Create-TSCRStudents.ps1<br>
+<strong>Instructors:</strong> \\ptclw16p-bu01\w_drives\isd\Scripts\Create-TSCRInstructors.ps1</p>
+</blockquote>
+<p>The script takes input from the corresponding .csv (TSCR_AD.csv for Students, TSCR_Instructor_AD.csv for staff), looping through each line. If a user does not already exist in Active Directory, a new account is created and memberships added. If the user already exists the account is checked to ensure it has the correct description, naming convention, and temporary password.</p>
+<p>(A student user may have an existing account if they are a rollback from a previous class)</p>
+<p><strong>NOTE: the CSVs are required to be in the Scripts folder</strong></p>
+<h4 id="ad-group-memberships">AD Group Memberships</h4>
+<hr>
+<ul>
+<li>Students
+<ul>
+<li>NNTP.GOV/NNTP Groups/NNPTC/NFAS-Students</li>
+<li>AUKUS</li>
+</ul>
+</li>
+<li>Instructors
+<ul>
+<li>NFAS-Instructors</li>
+<li></li>
+</ul>
+</li>
+</ul>
+<h3 id="enabling-accounts-and-enforcing-smart-card-logon">Enabling Accounts and Enforcing Smart Card Logon</h3>
+<p>Once the accounts are created, the user has the option to schedule account enablement and smart card logon enforcement. This is dependent having the subsequent token issue scheduled.</p>
+<p>If this is desired, the user will enter the date and time of the scheduled token issue. Generally it is done by class section. Separate scheduled tasks will be created on ptclw16p-bu01.</p>
+<p>Unless specified, smart card enforcement will be scheduled to occur 2 hours following the scheduled account enablement task.</p>
+<h2 id="required-database-permissions">Required Database Permissions</h2>
+<p>The user must have <strong>SELECT</strong> permission on the following database objects:</p>
+<ul>
+<li>NP.PRSNL_PEOPLE</li>
+<li>NP.PrsnlOrgAssignments</li>
+<li>Core.Hierarchies</li>
+</ul>
+
+</body>
+</html>

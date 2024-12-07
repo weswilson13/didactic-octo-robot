@@ -17,7 +17,7 @@ These steps are completed via 2 separate powershell scripts, one of which is exe
 This "tool" is comprised of multiple scripts/files and is executed on the NNPP network. At a high level, this step queries the NOTEPAD database and generates CSV files which are used on the NNTP network to create the accounts.
 
 Located at 
-> Z:\Shared\NNPTC\W_drives\ISD\Scripts\NewUserScripts
+> Z:\Shared\NNPTC\W_drives\ISD\Scripts\NewUserScripts\GetTSCRUsers.lnk
 
 the actual scripts being executed are in the NNTPAccountCreation folder and are discussed below:
 * **GetTSCRUsers.bat**
@@ -48,7 +48,9 @@ these scripts create the Active directory accounts, add the users to the corresp
 
 ## CSV Generation
 
-Execute GetTSCRUsers.lnk. A user form will appear, which defaults to expect an NNPTC Class as input. The textbox has an *auto completion* feature which uses the NOTEPAD database (NP-NNPTC.NP.PrsnlClasses) as the source.
+CSV generation begins by executing GetTSCRUsers.lnk. A user form will appear, which defaults to expect an NNPTC Class as input. The textbox has an *auto completion* feature which uses the NOTEPAD database (NP-NNPTC.NP.PrsnlClasses) as the source. 
+
+**NOTE: this tool is locally executed; as such, it is running in the context of the calling user and so a successful connection to the database is dependent upon the user having the appropriate permissions.**
 
 Executing the form in this manner will call Get-TSCRUsers.ps1, reading from the database view NP-NNPTC.NP.PrsnlSeawareUpload_V, filtering on the chosen class and storing select data in TSCR_AD.csv and TSCR_SW.csv.
 
@@ -69,8 +71,40 @@ At the completion of either script, a couple things happen:
 
 ## Creating Accounts
 
-**Requires the *ActiveDirectory* Powershell module**
+**! Requires the *ActiveDirectory* Powershell module !**
 
-the script takes input from the corresponding .csv (TSCR_AD.csv for Students, TSCR_Instructor_AD.csv for staff), looping through each line and creating the account in Active Directory. 
+Once the corresponding CSV has been created and exported to the NNTP network, the accounts may be created in Active Directory.
+
+Execute one of the following, as appropriate:
+> **Students:** \\\ptclw16p-bu01\w_drives\isd\Scripts\Create-TSCRStudents.ps1  
+> **Instructors:** \\\ptclw16p-bu01\w_drives\isd\Scripts\Create-TSCRInstructors.ps1
+
+The script takes input from the corresponding .csv (TSCR_AD.csv for Students, TSCR_Instructor_AD.csv for staff), looping through each line. If a user does not already exist in Active Directory, a new account is created and memberships added. If the user already exists the account is checked to ensure it has the correct description, naming convention, and temporary password.
+
+(A student user may have an existing account if they are a rollback from a previous class)
 
 **NOTE: the CSVs are required to be in the Scripts folder**
+
+#### AD Group Memberships
+***
+* Students
+  * NNTP.GOV/NNTP Groups/NNPTC/NFAS-Students
+  * AUKUS
+* Instructors
+  * NFAS-Instructors
+  * 
+
+### Enabling Accounts and Enforcing Smart Card Logon
+
+Once the accounts are created, the user has the option to schedule account enablement and smart card logon enforcement. This is dependent having the subsequent token issue scheduled.
+
+If this is desired, the user will enter the date and time of the scheduled token issue. Generally it is done by class section. Separate scheduled tasks will be created on ptclw16p-bu01.
+
+Unless specified, smart card enforcement will be scheduled to occur 2 hours following the scheduled account enablement task. 
+
+## Required Database Permissions
+
+The user must have **SELECT** permission on the following database objects:
+* NP.PRSNL_PEOPLE
+* NP.PrsnlOrgAssignments
+* Core.Hierarchies
