@@ -56,7 +56,8 @@ function Use-RunAs {
                 $params = ($params -join ' -')
 
                 $arg = "-file `"$($MyInvocation.ScriptName)`" -$params"
-
+                Write-Host $arg
+                Pause
                 Start-Process "powershell.exe" -Verb Runas -ArgumentList "-NoExit $arg" -ErrorAction 'stop'  
             } 
             catch 
@@ -91,6 +92,10 @@ function Get-PreReqs {
     if (!$_software) { Throw "oscdimg.exe was not found. Install the latest Windows ADK and try again." }
 
     return $true
+}
+
+If (!(Test-Path Z:\)) {
+    New-PSDrive -Name Z -PSProvider FileSystem -Root \\mydomain\dfs\stuff -Scope Script
 }
 
 # assign PSBoundParameters to local variable for use in functions

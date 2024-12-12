@@ -1,0 +1,1 @@
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0Update-WindowsImage.ps1" -DiskLabel WIN10_22H2 -Source "Z:\Microsoft\Windows Installation ISOs\Windows10_22H2_ISO_Files" -Target "Z:\Microsoft\Windows Installation ISOs\Win10_22H2.iso"
