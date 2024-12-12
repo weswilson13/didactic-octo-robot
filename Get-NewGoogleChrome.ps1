@@ -78,14 +78,16 @@ switch ($chrome.Action) { # take appropriate action, write output to console
         try { 
             Invoke-WebRequest @webRequestParams; 
             Write-Host "Downloaded a new version!" -ForegroundColor Green
+
+            # create a messagebox
             $message = "Finished downloading Google Chrome $latestVersion. Append to '$($versionsTxt.Name)'?"
             $ans=[System.Windows.Forms.MessageBox]::Show($message, "Update File?",`
                 [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
             if ($ans -eq 'Yes') { $latestVersion.ToString() | Out-File $versionsTxt -Append}
-            break } 
+            break 
+        } 
         catch { throw $error[0] } 
     }
     'Ignore' { Write-Host "Nothing new to pull down" -ForegroundColor Yellow; break }
     'Error' { Write-Host "Something went wrong." }
 }
-
