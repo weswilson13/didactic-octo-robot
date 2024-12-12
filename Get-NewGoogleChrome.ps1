@@ -3,6 +3,26 @@
 Script to check latest stable release of Google Chrome. If a newer version is available, 
 the enterprise .msi is downloaded, and tracking file may be updated. 
 
+.EXAMPLE
+Use -Verbose to see the values used for CurrentVersion and LatestVersion, as well as the Action determined by the script.
+
+Console output will be similar to:
+
+VERBOSE: Requested HTTP/1.1 GET with 0-byte payload
+VERBOSE: Received HTTP/1.1 68071-byte response of content type application/json
+VERBOSE: 
+Name                           Value
+----                           -----
+CurrentVersion                 131.0.6778.140
+LatestVersion                  131.0.6778.140
+Action                         Ignore
+
+
+Nothing new to pull down
+
+SYNTAX:
+
+.\Get-NewGoogleChrome.ps1 -Verbose
 #>
 
 [CmdletBinding()]
@@ -11,7 +31,7 @@ param()
 # load Forms Namespace to access the Messagebox classes
 Add-Type -AssemblyName System.Windows.Forms
 
-# turn off progress bar for this powershell session - this makes web request download exponentially faster
+# turn off progress bar for *this powershell session* - this makes web request download exponentially faster
 $ProgressPreference = 'SilentlyContinue' 
 # $ProgressPreference = 'Continue' will turn on the progress bar 
 
