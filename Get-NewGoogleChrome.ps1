@@ -35,8 +35,9 @@ Add-Type -AssemblyName System.Windows.Forms
 $ProgressPreference = 'SilentlyContinue' 
 # $ProgressPreference = 'Continue' will turn on the progress bar 
 
-$versionsTxt = ".\versions.txt" # path to a text file containing the latest downloaded versions
+[System.IO.FileInfo]$versionsTxt = ".\versions.txt" # path to a text file containing the latest downloaded versions
 $outputFile = "$env:USERPROFILE\Downloads\googlechromestandaloneenterprise64.msi" # path to downloaded file
+$currentVersion,$latestVersion = '0.0.0.0'
 
 # Get the latest stable Chrome version
 # This URL lists every? Google Chrome version in the stable channel, in a JSON format
@@ -51,7 +52,7 @@ $latestVersion = $versions.versions[0].version # select the first object, which 
 if (!(Test-Path $versionsTxt)) {
     New-Item -Path $versionsTxt -ItemType File
 }
-try { $currentVersion = (Get-Content $versionsTxt).split('\n')[-1] } # [-1] returns the last index in the array
+try { $currentVersion = (Get-Content $versionsTxt).split('\n',[System.StringSplitOptions]::RemoveEmptyEntries)[-1] } # [-1] returns the last index in the array
 catch {}
 
 $chrome = [ordered]@{
@@ -77,7 +78,8 @@ switch ($chrome.Action) { # take appropriate action, write output to console
         try { 
             Invoke-WebRequest @webRequestParams; 
             Write-Host "Downloaded a new version!" -ForegroundColor Green
-            $ans=[System.Windows.Forms.MessageBox]::Show("Append this version to 'versions.txt'?", "Update File?",`
+            $message = "Finished downloading Google Chrome $latestVersion. Append to '$($versionsTxt.Name)'?"
+            $ans=[System.Windows.Forms.MessageBox]::Show($message, "Update File?",`
                 [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question)
             if ($ans -eq 'Yes') { $latestVersion.ToString() | Out-File $versionsTxt -Append}
             break } 
