@@ -1,4 +1,5 @@
-# Cable Components:![alt text](fiber.jpg)
+# Cable Components:
+![alt text](fiber.jpg)
  * outer cable jacket
  * strenth member
     * tensile strength for pulling cable
@@ -10,9 +11,10 @@
  * fiber
    * coating
    - cladding
-   - core 
+   - core
 
-# Cable Types:![alt text](fiber-cable-construction.png)
+# Cable Types:
+![alt text](fiber-cable-construction.png)
  ## Simplex
    * single core, one-way transmission
    * cheap
