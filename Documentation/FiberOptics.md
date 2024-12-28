@@ -4,6 +4,7 @@
  * strenth member
     * tensile strength for pulling cable
  * buffer
+    * provides protection for fiber core
     * tight buffer
       * thermoplastic coating surrounding fiber. Greater flexibility. Used indoors for tighter turns etc.
     * loose buffer
@@ -51,3 +52,24 @@
  - Violet 	(10)
  - Rose 	(11)
  - Aqua 	(12)
+
+ For cables with more than 12 strands of fiber, additional bundles may be used and color coded.
+
+ e.g. - 
+ * 1 bundle in a blue buffer (loose tube) will have 12 colored strands from blue to aqua (identified above). These will be strands 1 - 12.
+ * 1 bundle in an orange buffer (loose tube) will have 12 colored strands from blue to aqua (identified above). These will be strands 13 - 24.
+
+# Transmission Setup
+ * A light source to transmit the signal (LED or Laser)
+   * Lasers are more expensive and can travel greater distances before attenuating and needing amplification. Generally used in WAN connections
+ * A receiver to receive the signal and convert to usable data
+
+# Light Spectrum
+ * Wavelengths of light used are typically either:
+   * 850 nm (multimode fiber)
+   * 1300 nm (multimode or singlemode fiber)
+   * 1550 nm (singlemode fiber only)
+ 
+ * These wavelenghts belong to the Infrared spectrum
+
+ * The larger the wavelength, the smaller the fiber - smaller fiber translates to better performance
