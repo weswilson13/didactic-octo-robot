@@ -21,12 +21,27 @@ param(
     [Parameter(Mandatory=$false)]
     [string]$Driver,
 
+    # Exports printer properties to XML
+    [Parameter(Mandatory=$false)]
+    [switch]$ExportProperties,
+
     # XML file containing printer properties
     [Parameter(Mandatory=$false)]
-    [string]$PrinterPropertiesXML
+    [string]$PrinterPropertiesXML,
+
+    # Set printer properties from XML
+    [Parameter(Mandatory=$false)]
+    [switch]$SetProperties,
+
+    # Take no action
+    [Parameter(Mandatory=$false)]
+    [switch]$WhatIf
 )
 
 begin {
+    function Use-RunAs {
+        # TO DO
+    }
     function New-PrinterConfig {
         Remove-Item $PrinterPropertiesXml -Force
 
@@ -65,6 +80,9 @@ begin {
         $xmlWriter.Flush()
         $xmlWriter.Close()
     }
+    
+    $errorLog = "C:\tools\PrinterUpdateErrors.log"
+
     try {
         if (!$PrinterName) {
             $printers = Get-Printer -ComputerName $PrintServer | Where-Object { $_.DriverName -match $BaseDriverName }
@@ -90,35 +108,87 @@ begin {
         default { "\\$PrintServer\C$\Tools" }
     }
 
-
-    # export printer properties
-    if (!$PrinterPropertiesXML) {
+    if (!$PrinterPropertiesXML) { # if a path in't supplied, set a default path to XML file
         $PrinterPropertiesXML = "$tools\PrinterConfigurations.xml"
     }
     
-    New-PrinterConfig
+    # create a new printer properties XML file
+    if ($ExportProperties.IsPresent) {
+        Write-Host "Exporting printer properties to $PrinterPropertiesXML"
+        New-PrinterConfig
+        Exit
+    }
+
+    if ($SetProperties.IsPresent) {
+        # import stored printer properties
+        if (!(Test-Path $PrinterPropertiesXML)) {
+            Write-Warning "$PrinterPropertiesXML does not exist!"
+        }
+        else {
+            $importedProperties = [xml](Get-Content $PrinterPropertiesXML)
+        }
+    }
 
     $scriptblock = {
-        
-        $printer = $PSItem
-        if (!(Test-Connection $printer.Name -Count 2 -Quiet) -and $false) { 
-            Write-Host "$($printer.Name) is not pinging. Skipping this printer." -ForegroundColor Red; Continue 
+        function Set-PrinterProperties {
+            $_printerData = $_importedProperties.Printers.Printer.Where({$_.Name -eq $printer.Name})
+            $_printerProperties = $_printerData.Properties.Property
+
+            $currentProperties = Get-PrinterProperty -PrinterName $printer.Name -ComputerName $_printServer
+
+            # Set properties
+            foreach ($_property in $_printerProperties) {
+                $_propertyName = $_property.Name
+                $_propertyValue = $_printerProperties.Where( {$_.Name -eq $_propertyName} ).Value
+                $currentPropertyValue = $currentProperties.Where({$_.PropertyName -eq $_propertyName}).Value
+                if ($currentPropertyValue -ne $_propertyValue) {
+                    Write-Host "[INFO]: Setting property '$_propertyName' from '$currentPropertyValue' to '$_propertyValue' on $($printer.Name)" -ForegroundColor Gray
+                    if (!$_whatIf.IsPresent) {
+                        $setPropertyParams = @{
+                            PrinterName = $printer.Name
+                            PropertyName = $_propertyName
+                            Value = $_propertyValue
+                            ComputerName = $_printServer
+                        }
+                        try { Set-PrinterProperty @setPropertyParams }
+                        catch { 
+                            Write-Host "[ERROR]: Failed to set property '$_propertyName'" -ForegroundColor Red
+                            Out-File -InputObject $error[0].Exception.Message -FilePath $_errorLog -Encoding ascii -Append
+                        }
+                    }
+                }
+            }
         }
-        Write-Host $printer
+        $printer = $PSItem
+
+        # check if printer is online
+        if (!(Test-Connection $printer.Name -Count 2 -Quiet) -and $false <#remove this in production#>) { 
+            Write-Host "$($printer.Name) is not pinging. Skipping this printer." -ForegroundColor Red
+            Continue 
+        }
 
         switch ($PSEdition) {
             'Desktop' {
+                $_errorLog = $errorLog
                 $_printServer = $PrintServer
                 $_driver = $Driver
+                $_importedProperties = $importedProperties
+                $_setProperties = $SetProperties
+                $_whatIf = $WhatIf
             }
             'Core' {
+                $_errorLog = $using:errorLog
                 $_printServer = $using:PrintServer
                 $_driver = $using:Driver
+                $_importedProperties = $using:importedProperties
+                $_setProperties = $using:SetProperties
+                $_whatIf = $using:WhatIf
             }
         }
 
-        # enable Mopier Mode
-        # Set-PrinterProperty -PrinterName $printer.Name -PropertyName Config:DeviceIsMopier -Value Installed -Verbose -ComputerName $_printServer
+        # set printer properties from XML file
+        if ($_setProperties.IsPresent -and $_importedProperties) { Set-PrinterProperties }
+        
     }
 
     $params = switch ($PSEdition) {
