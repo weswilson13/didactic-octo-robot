@@ -1,6 +1,6 @@
 function Get-NewID {
 
-    [int]$lastID = Get-Content $versionsTxt | ConvertFrom-Json | Sort-Object -Property ID -Descending | Select-Object -First 1 -ExpandProperty ID
+    [int]$lastID = Get-Content $versionsTxt | ConvertFrom-Json | Sort-Object -Property @{e={[int]$_.ID}} -Descending | Select-Object -First 1 -ExpandProperty ID
 
     return [string]($lastID + 1)
 }
@@ -72,7 +72,7 @@ function Remove-OldVersion {
 }
 function Get-CurrentVersion {
     param(
-        [ValidateSet('Microsoft Edge','Google Chrome','VSCode','Powershell','Git','SSMS','Notepad++','7zip','Windows Terminal','Tortoise Git','WinSCP')]
+        [ValidateSet('Microsoft Edge','Google Chrome','VSCode','Powershell','Git','SSMS','Notepad++','7zip','Windows Terminal','Tortoise Git','VMWare Tools','WinSCP')]
         [string]$ProductName
     )
   
