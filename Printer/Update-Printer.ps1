@@ -43,7 +43,20 @@ begin {
         # TO DO
     }
     function New-PrinterConfig {
-        Remove-Item $PrinterPropertiesXml -Force
+        <#
+            .SYNOPSIS 
+            Create an XML file containing the properties for the specified printers.
+        #>
+        if (Test-Path $PrinterPropertiesXML) { # a config file already exists
+            $message = "A printer properties file already exists at $PrinterPropertiesXML. Do you want to overwrite it?"
+            $ans = [System.Windows.Forms.MessageBox]::Show($message, "Export Printer Properties", `
+                [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Exclamation)
+            
+            if ($ans -eq 'No') { Exit }
+        }
+        Write-Host "[INFO]: Exporting printer properties to $PrinterPropertiesXML" -ForegroundColor Gray
+
+        Remove-Item $PrinterPropertiesXml -Force -ErrorAction SilentlyContinue
 
         $xmlWriter = New-Object System.Xml.XmlTextWriter($PrinterPropertiesXml,$null)
         $xmlWriter.Formatting = 'Indented'
@@ -81,6 +94,8 @@ begin {
         $xmlWriter.Close()
     }
     
+    Add-Type -AssemblyName System.Windows.Forms
+
     $errorLog = "C:\tools\PrinterUpdateErrors.log"
 
     try {
@@ -114,7 +129,6 @@ begin {
     
     # create a new printer properties XML file
     if ($ExportProperties.IsPresent) {
-        Write-Host "Exporting printer properties to $PrinterPropertiesXML"
         New-PrinterConfig
         Exit
     }
