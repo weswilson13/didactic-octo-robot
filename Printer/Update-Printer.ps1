@@ -53,6 +53,9 @@
         - Update the print driver on all printers on the print server (unless specific printer(s) are supplied)
         - Set all printer settings to those found in $PrinterPropertiesXML
 
+    .PARAMETER Test
+    Wait for user acknowledgement before applying each action
+
     .EXAMPLE
     Export all printer settings to default XML path in C:\Tools\PrinterConfiguration.xml
 
