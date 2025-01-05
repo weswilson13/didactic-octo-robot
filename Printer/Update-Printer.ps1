@@ -1,4 +1,45 @@
-[cmdletbinding()]
+<#
+    .SYNOPSIS
+    Manage one or more printers by updating the drivers and exporting/importing settings
+
+    .PARAMETER PrinterName
+
+    .PARAMETER PrintServer
+
+    .PARAMETER ThrottleLimit
+
+    .PARAMETER BaseDriverName
+
+    .PARAMETER Driver
+
+    .PARAMETER ExportProperties
+
+    .PARAMETER Properties
+
+    .PARAMETER PrinterPropertiesXML
+
+    .PARAMETER SetProperties
+    
+    .PARAMETER WhatIf
+
+    .PARAMETER Force
+
+    .EXAMPLE
+    Export all printer settings to default XML path in C:\Tools\PrinterConfiguration.xml
+
+    Update-Printer.ps1 -ExportProperties
+
+    .EXAMPLE 
+    Update printer drivers with latest driver on print server
+
+    .EXAMPLE
+    Update a single printer with a specified driver
+
+    .EXAMPLE
+    Compare/restore printer settings from a stored configuration
+
+#>
+[cmdletbinding(DefaultParameterSetName='Update')]
 param(
     # Printer Name(s)
     [Parameter(Mandatory=$false)]
@@ -14,12 +55,15 @@ param(
 
     # Base driver name of the printer family (i.e - version agnostic)
     [Parameter(Mandatory=$false)]
-    [string]
-    $BaseDriverName = 'HP Universal Printing PCL',
+    [string]$BaseDriverName = 'HP Universal Printing PCL',
 
     # Driver name of driver update
     [Parameter(Mandatory=$false)]
     [string]$Driver,
+
+    # Update print driver
+    [Parameter(Mandatory=$false)]
+    [switch]$UpdateDriver,
 
     # Exports printer properties to XML
     [Parameter(Mandatory=$false, ParameterSetName='Export')]
@@ -234,11 +278,12 @@ begin {
             Continue 
         }
 
-        switch ($PSEdition) {
-            'Desktop' {
+        switch ($PSEdition) { # set variables for use in scriptblock based on powershell version
+            'Desktop' { # can probably get rid of this 
                 $_errorLog = $errorLog
                 $_printServer = $PrintServer
                 $_driver = $Driver
+                $_updateDriver = $UpdateDriver
                 $_importedProperties = $importedProperties
                 $_setProperties = $SetProperties
                 $_whatIf = $WhatIf
@@ -248,6 +293,7 @@ begin {
                 $_errorLog = $using:errorLog
                 $_printServer = $using:PrintServer
                 $_driver = $using:Driver
+                $_updateDriver = $using:UpdateDriver
                 $_importedProperties = $using:importedProperties
                 $_setProperties = $using:SetProperties
                 $_whatIf = $using:WhatIf
@@ -255,9 +301,14 @@ begin {
             }
         }
 
+        # update print driver
+        if ($_updateDriver.IsPresent) {
+            Write-Host "[ACTION]: Updating print driver on $($printer.Name) from '$($printer.DriverName)' to '$_driver'" -ForegroundColor Cyan
+            Set-Printer -Name $printer.Name -DriverName $_driver -ComputerName $_printServer
+        }
+
         # set printer properties from XML file
         if ($_setProperties.IsPresent -and $_importedProperties) { Set-PrinterProperties }
-        
     }
 
     $params = switch ($PSEdition) {
