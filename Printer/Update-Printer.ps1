@@ -171,17 +171,15 @@ begin {
 
             # Set configuration
             $configs = $_printerConfiguration | Get-Member -MemberType Property
-            $configs | out-string | Write-Host
             foreach ($config in $configs) {
                 $_configName = $config.Name
-                $_configValue = $_printerConfiguration.$_configName
-                $_configValue = switch ($_configValue) {
+                $_configValue = switch ($_printerConfiguration.$_configName) {
                     'True' { 1 }
                     'False' { 0 }
                     default { $PSItem }
                 }
                 $currentConfigValue = $currentConfiguration.$_configName
-                if ($currentConfigValue -ne $_configValue -or $true) {
+                if ($currentConfigValue -ne $_configValue) {
                     Write-Host "[INFO]: Setting property '$_configName' from '$currentConfigValue' to '$_configValue' on $($printer.Name)" -ForegroundColor Gray
                     if (!$_whatIf.IsPresent) {
                         $setConfigurationParams = @{
@@ -189,7 +187,6 @@ begin {
                             $($_configName) = $_configValue
                             ComputerName = $_printServer
                         }
-                        $setConfigurationParams | Out-String | Write-Host
                         try { Set-PrintConfiguration @setConfigurationParams }
                         catch { 
                             Write-Host "[ERROR]: Failed to set config '$_configName'" -ForegroundColor Red
