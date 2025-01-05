@@ -67,13 +67,16 @@ begin {
         $xmlWriter.Indentation = 1
         $XmlWriter.IndentChar = "`t"
         $xmlWriter.WriteStartDocument()
-        $xmlWriter.WriteComment('Printer Properties')                                   # <!-- Printer Properties -->
-        $xmlWriter.WriteStartElement('Printers')                                        # <Printers>
+        $xmlWriter.WriteComment("Printer Settings [$(Get-Date -Format 'MM\\dd\\yyyy')]") # <!-- Printer Properties -->
+        $xmlWriter.WriteStartElement('Printers')                                         # <Printers>
         foreach ($printer in $printers) {
             $printParams = @{
                 PrinterName = $printer.Name
                 ComputerName = $PrintServer
             }
+            
+            $printerConfig = Get-PrintConfiguration @printParams
+            
             if ($Properties) {
                 $printParams.Add("PropertyName", $Properties)
             }
@@ -82,13 +85,19 @@ begin {
             $xmlWriter.WriteStartElement('Printer')                                     #   <Printer>
                 $xmlWriter.WriteAttributeString('Name', $printer.Name)
                 $xmlWriter.WriteAttributeString('DriverName', $printer.DriverName)
-            
+
+                $xmlWriter.WriteStartElement('Configuration')                              #     <Configuration>
+                    $xmlWriter.WriteAttributeString('Collate', $printerConfig.Collate)
+                    $xmlWriter.WriteAttributeString('Color', $printerConfig.Color)
+                    $xmlWriter.WriteAttributeString('DuplexingMode', $printerConfig.DuplexingMode)
+                $xmlWriter.WriteEndElement()
+                    
                 $xmlWriter.WriteStartElement('Properties')                              #     <Properties>
                     foreach ($property in $printerProperties) {
                         $xmlWriter.WriteStartElement('Property')                        #       <Property>
-                        $xmlWriter.WriteElementString('Name', $property.PropertyName)   #         <Name>PropertyName</Name>
-                        $xmlWriter.WriteElementString('Type', $property.Type)           #         <Type>Type</Type>
-                        $xmlWriter.WriteElementString('Value', $property.Value)         #         <Value>Value</Value>
+                        $xmlWriter.WriteAttributeString('Name', $property.PropertyName)   #         <Name>PropertyName</Name>
+                        $xmlWriter.WriteAttributeString('Type', $property.Type)           #         <Type>Type</Type>
+                        $xmlWriter.WriteAttributeString('Value', $property.Value)         #         <Value>Value</Value>
                         $xmlWriter.WriteEndElement()                                    #       </Property>
                     }
                 $xmlWriter.WriteEndElement()                                            #     </Properties>
@@ -154,9 +163,41 @@ begin {
     $scriptblock = {
         function Set-PrinterProperties {
             $_printerData = $_importedProperties.Printers.Printer.Where({$_.Name -eq $printer.Name})
+            $_printerConfiguration = $_printerData.Configuration
             $_printerProperties = $_printerData.Properties.Property
 
+            $currentConfiguration = Get-PrintConfiguration -PrinterName $printer.Name -ComputerName $_printServer
             $currentProperties = Get-PrinterProperty -PrinterName $printer.Name -ComputerName $_printServer
+
+            # Set configuration
+            $configs = $_printerConfiguration | Get-Member -MemberType Property
+            $configs | out-string | Write-Host
+            foreach ($config in $configs) {
+                $_configName = $config.Name
+                $_configValue = $_printerConfiguration.$_configName
+                $_configValue = switch ($_configValue) {
+                    'True' { 1 }
+                    'False' { 0 }
+                    default { $PSItem }
+                }
+                $currentConfigValue = $currentConfiguration.$_configName
+                if ($currentConfigValue -ne $_configValue -or $true) {
+                    Write-Host "[INFO]: Setting property '$_configName' from '$currentConfigValue' to '$_configValue' on $($printer.Name)" -ForegroundColor Gray
+                    if (!$_whatIf.IsPresent) {
+                        $setConfigurationParams = @{
+                            PrinterName = $printer.Name
+                            $($_configName) = $_configValue
+                            ComputerName = $_printServer
+                        }
+                        $setConfigurationParams | Out-String | Write-Host
+                        try { Set-PrintConfiguration @setConfigurationParams }
+                        catch { 
+                            Write-Host "[ERROR]: Failed to set config '$_configName'" -ForegroundColor Red
+                            Out-File -InputObject $error[0].Exception.Message -FilePath $_errorLog -Encoding ascii -Append
+                        }
+                    }
+                }
+            }
 
             # Set properties
             foreach ($_property in $_printerProperties) {
