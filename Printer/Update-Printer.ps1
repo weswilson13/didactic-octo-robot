@@ -82,61 +82,48 @@
     Update-Printer.ps1 -ImportSettings
 
 #>
-[cmdletbinding(DefaultParameterSetName='All')]
+[cmdletbinding(DefaultParameterSetName='ExportSettings')]
 param(
     # Printer Name(s)
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
-    [Parameter(Mandatory=$false, ParameterSetName='Export')]
+    [Parameter(Mandatory=$false)]
     [string[]]$PrinterName,
 
     # Print Server
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
-    [Parameter(Mandatory=$false, ParameterSetName='Export')]
+    [Parameter(Mandatory=$false)]
     [string]$PrintServer = 'PS01',
 
     # Max number of parallel threads (PS7 only)
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
-    [Parameter(Mandatory=$false, ParameterSetName='Export')]
+    [Parameter(Mandatory=$false)]
     [byte]$ThrottleLimit=10,
 
     # Base driver name of the printer family (i.e - version agnostic)
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
-    [Parameter(Mandatory=$false, ParameterSetName='Export')]
+    [Parameter(Mandatory=$false)]
     [string]$BaseDriverName = 'HP Universal Printing PCL',
 
     # Driver name of driver update
-    # [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [string]$DriverName,
 
     # Processor name of processor update
-    # [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [string]$ProcessorName='hpcpp310',
 
     # Update print driver
-    # [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [switch]$UpdateDriver,
 
     # Update print processor
-    # [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [switch]$UpdateProcessor,
 
     # Exports printer properties to XML
-    # [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false, ParameterSetName='Export')]
+    [Parameter(Mandatory=$true, ParameterSetName='ExportSettings')]
     [switch]$ExportSettings,
 
     # Specific properties to export
-    # [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false, ParameterSetName='Export')]
-    [Parameter(Mandatory=$false, ParameterSetName='Import')]
+    [Parameter(Mandatory=$false, ParameterSetName='ExportSettings')]
+    [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
+    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [ValidateScript({ 
         if ($_.StartsWith("Config")) { 
             return $true 
@@ -148,33 +135,31 @@ param(
     [string[]]$Properties,
 
     # Specific configurations to export
-    # [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false, ParameterSetName='Import')]
+    [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
+    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [ValidateSet('Collate','Color','DuplexingMode')]
     [string[]]$Configurations,
 
     # XML file containing printer properties
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false)]
     [string]$PrinterPropertiesXML,
 
     # Set printer properties from XML
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false, ParameterSetName='Import')]
-    # [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
+    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [switch]$ImportSettings,
 
     # Take no action
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
-    # [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false)]
     [switch]$WhatIf,
 
     # Force all actions
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
-    # [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false)]
     [switch]$Force,
 
     # Step through actions
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false)]
     [switch]$Test
 )
 begin {
@@ -251,6 +236,32 @@ begin {
 
     $errorLog = "C:\tools\PrinterUpdateErrors.log"
 
+    $tools = switch ($env:COMPUTERNAME) {
+        $PrintServer { 'C:\Tools' }
+        default { "\\$PrintServer\C$\Tools" }
+    }
+
+    if (!$PrinterPropertiesXML) { # if a path isn't supplied, set a default path to XML file
+        $PrinterPropertiesXML = "$tools\PrinterConfigurations.xml"
+    }
+
+    switch ($PSBoundParameters.Keys) {
+        'PrinterName' { Write-Host "[INIT]: Targeting $($PrinterName -join ', ')" -ForegroundColor Yellow }
+        'PrintServer' { Write-Host "[INIT]: Running against $PrintServer" -ForegroundColor Yellow }
+        'BaseDriverName' { Write-Host "[INIT]: Filtering by $BaseDriverName" -ForegroundColor Yellow }
+        'ImportSettings' { Write-Host "[INIT]: Importing settings from $PrinterPropertiesXML" -ForegroundColor Yellow }
+        'ExportSettings' { Write-Host "[INIT]: Exporting current printer settings to $PrinterPropertiesXML" -ForegroundColor Yellow }
+        'UpdateDriver' { switch ($DriverName) {
+            {[string]::IsNullOrWhiteSpace($PSItem)} { Write-Host "[INIT]: Updating print driver to latest on $PrintServer" -ForegroundColor Yellow; break }
+            default { Write-Host "[INIT]: Updating print driver to $DriverName" -ForegroundColor Yellow }
+        } }
+        'UpdateProcessor' { Write-Host "[INIT]: Updating print processor to $ProcessorName" -ForegroundColor Yellow }
+        'Force' { Write-Host "[INIT]: Forcing execution of all actions" -ForegroundColor Yellow }
+        'Test' { Write-Host "[INIT]: User acknowledgement will be needed before performing actions" -ForegroundColor Yellow }
+    }
+    Write-Host ""
+    Pause
+
     if ($UpdateDriver.IsPresent -or $Force.IsPresent) {
         if (!$DriverName) { # get the latest driver from the print server that matches $BaseDriverName
             try { $DriverName = (Get-PrinterDriver -Name "$BaseDriverName*" -ComputerName $PrintServer).Name | Sort-Object -Descending | Select-Object -First 1 }
@@ -270,15 +281,6 @@ begin {
     }
     catch {
         throw "Failed to get printer(s) from Print Server"
-    }
-
-    $tools = switch ($env:COMPUTERNAME) {
-        $PrintServer { 'C:\Tools' }
-        default { "\\$PrintServer\C$\Tools" }
-    }
-
-    if (!$PrinterPropertiesXML) { # if a path isn't supplied, set a default path to XML file
-        $PrinterPropertiesXML = "$tools\PrinterConfigurations.xml"
     }
     
     # create a new printer properties XML file
