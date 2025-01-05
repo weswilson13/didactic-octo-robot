@@ -22,8 +22,12 @@ param(
     [string]$Driver,
 
     # Exports printer properties to XML
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false, ParameterSetName='Export')]
     [switch]$ExportProperties,
+
+    # Specific properties to export
+    [Parameter(Mandatory=$false, ParameterSetName='Export')]
+    [string[]]$Properties,
 
     # XML file containing printer properties
     [Parameter(Mandatory=$false)]
@@ -56,7 +60,7 @@ begin {
         }
         Write-Host "[INFO]: Exporting printer properties to $PrinterPropertiesXML" -ForegroundColor Gray
 
-        Remove-Item $PrinterPropertiesXml -Force -ErrorAction SilentlyContinue
+        # Remove-Item $PrinterPropertiesXml -Force -ErrorAction SilentlyContinue
 
         $xmlWriter = New-Object System.Xml.XmlTextWriter($PrinterPropertiesXml,$null)
         $xmlWriter.Formatting = 'Indented'
@@ -69,6 +73,9 @@ begin {
             $printParams = @{
                 PrinterName = $printer.Name
                 ComputerName = $PrintServer
+            }
+            if ($Properties) {
+                $printParams.Add("PropertyName", $Properties)
             }
             $printerProperties = Get-PrinterProperty @printParams
 
@@ -111,12 +118,13 @@ begin {
     }
 
     if (!$Driver) {
-        try { (Get-PrinterDriver -Name $BaseDriverName*).Name | Sort-Object -Descending | Select-Object -First 1 }
+        try { $Driver = (Get-PrinterDriver -Name "$BaseDriverName*" -ComputerName $PrintServer).Name | Sort-Object -Descending | Select-Object -First 1 }
         catch { throw "Failed to get latest driver from Print Server" }
     }
     else {
         
     }
+    Write-Host "[INFO]: '$Driver' is the latest driver on the Print Server."
 
     $tools = switch ($env:COMPUTERNAME) {
         $PrintServer { 'C:\Tools' }
