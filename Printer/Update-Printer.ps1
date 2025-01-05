@@ -168,7 +168,11 @@ param(
     # Force all actions
     [Parameter(Mandatory=$false,ParameterSetName='All')]
     # [Parameter(Mandatory=$false,ParameterSetName='Update')]
-    [switch]$Force
+    [switch]$Force,
+
+    # Step through actions
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [switch]$Test
 )
 begin {
     function Use-RunAs {
@@ -320,6 +324,7 @@ begin {
                 $currentConfigValue = $currentConfiguration.$_configName
                 if ($currentConfigValue -ne $_configValue -or $Force.IsPresent) {
                     Write-Host "[ACTION]: Setting property '$_configName' from '$currentConfigValue' to '$_configValue' on $($printer.Name)" -ForegroundColor Cyan
+                    if ($Test.IsPresent) { Pause }
                     if (!$WhatIf.IsPresent) {
                         $setConfigurationParams = @{
                             PrinterName = $printer.Name
@@ -349,6 +354,7 @@ begin {
 
                 if ($currentPropertyValue -ne $_propertyValue -or $Force.IsPresent) { # if the properties changed, reset them to the stored value
                     Write-Host "[ACTION]: Setting property '$_propertyName' from '$currentPropertyValue' to '$_propertyValue' on $($printer.Name)" -ForegroundColor Cyan
+                    if ($Test.IsPresent) { Pause }
                     if (!$WhatIf.IsPresent) {
                         $setPropertyParams = @{
                             PrinterName = $printer.Name
@@ -388,6 +394,7 @@ begin {
             $ImportSettings = $using:ImportSettings
             $WhatIf = $using:WhatIf
             $Force = $using:Force
+            $Test = $using:Test
         }
 
         # update print driver
@@ -395,7 +402,8 @@ begin {
             if ($printer.DriverName -ne $DriverName) {
                 Write-Host ""
                 Write-Host "[ACTION]: Updating print driver on $($printer.Name) from '$($printer.DriverName)' to '$DriverName'" -ForegroundColor Cyan
-                if (!$WhatIf.IsPresent) {
+                if (!$WhatIf.IsPresent) { # If -WhatIf is not used, perform the driver update
+                    if ($Test.IsPresent) { Pause }
                     try { Set-Printer -Name $printer.Name -DriverName $DriverName -ComputerName $PrintServer }
                     catch { 
                         Write-Host "[ERROR]: Failed to update print driver" -ForegroundColor Red
@@ -413,7 +421,8 @@ begin {
             if ($printer.PrintProcessor -ne $ProcessorName) {
                 Write-Host ""
                 Write-Host "[ACTION]: Updating print processor on $($printer.Name) from '$($printer.PrintProcessor)' to '$ProcessorName'" -ForegroundColor Cyan
-                if (!$WhatIf.IsPresent) {
+                if ($Test.IsPresent) { Pause }
+                if (!$WhatIf.IsPresent) { # If -WhatIf is not used, perform the processor update
                     try { Set-Printer -Name $printer.Name -PrintProcessor $ProcessorName -ComputerName $PrintServer }
                     catch { 
                         Write-Host "[ERROR]: Failed to update print processor" -ForegroundColor Red
