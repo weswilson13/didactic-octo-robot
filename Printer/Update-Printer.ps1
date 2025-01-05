@@ -41,7 +41,7 @@
     .PARAMETER PrinterPropertiesXML
     Filepath to the properties XML file
 
-    .PARAMETER SetProperties
+    .PARAMETER ImportSettings
     Compares current printer settings to the stored settings, and updates the printer to mirror the previous configuration
     
     .PARAMETER WhatIf
@@ -76,7 +76,7 @@
     .EXAMPLE
     Compare/restore printer settings from a stored configuration
 
-    Update-Printer.ps1 -SetProperties
+    Update-Printer.ps1 -ImportSettings
 
 #>
 [cmdletbinding(DefaultParameterSetName='All')]
@@ -158,7 +158,7 @@ param(
     [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false, ParameterSetName='Import')]
     # [Parameter(Mandatory=$false,ParameterSetName='Update')]
-    [switch]$SetProperties,
+    [switch]$ImportSettings,
 
     # Take no action
     [Parameter(Mandatory=$false,ParameterSetName='All')]
@@ -244,14 +244,14 @@ begin {
 
     $errorLog = "C:\tools\PrinterUpdateErrors.log"
 
-    if (!$Driver) { # get the latest driver from the print server that matches $BaseDriverName
-        try { $Driver = (Get-PrinterDriver -Name "$BaseDriverName*" -ComputerName $PrintServer).Name | Sort-Object -Descending | Select-Object -First 1 }
-        catch { throw "Failed to get latest driver from Print Server" }
-    }
-    else {
+    if ($UpdateDriver.IsPresent -or $Force.IsPresent) {
+        if (!$DriverName) { # get the latest driver from the print server that matches $BaseDriverName
+            try { $DriverName = (Get-PrinterDriver -Name "$BaseDriverName*" -ComputerName $PrintServer).Name | Sort-Object -Descending | Select-Object -First 1 }
+            catch { throw "Failed to get latest driver from Print Server" }
+        }
         
+        Write-Host "[INFO]: '$DriverName' is the latest driver on the Print Server."
     }
-    Write-Host "[INFO]: '$Driver' is the latest driver on the Print Server."
 
     try { # get printers to evaluate
         if (!$PrinterName) {
@@ -280,7 +280,7 @@ begin {
         if (!$Force.IsPresent) { Exit }
     }
 
-    # if ($SetProperties.IsPresent -or $Force.IsPresent) {
+    # if ($ImportSettings.IsPresent -or $Force.IsPresent) {
         # import stored printer properties
         if (!(Test-Path $PrinterPropertiesXML)) {
             Write-Warning "$PrinterPropertiesXML does not exist!"
@@ -334,7 +334,7 @@ begin {
                     }
                 }
                 else {
-                    Write-Host "[INFO]: $_configName is unchanged on $($printer.Name)" -ForegroundColor Gray
+                    Write-Host "[INFO]: '$_configName' is unchanged on $($printer.Name)" -ForegroundColor Gray
                 }
             }
 
@@ -364,7 +364,7 @@ begin {
                     }
                 }
                 else {
-                    Write-Host "[INFO]: $_propertyName is unchanged on $($printer.Name)" -ForegroundColor Gray
+                    Write-Host "[INFO]: '$_propertyName' is unchanged on $($printer.Name)" -ForegroundColor Gray
                 }
             }
         }
@@ -380,23 +380,23 @@ begin {
        if ($PSEdition -eq 'Core') { # parallel process block requires 'using' predecessor to access variables outside of scriptblock
             $errorLog = $using:errorLog
             $PrintServer = $using:PrintServer
-            $Driver = $using:DriverName
+            $DriverName = $using:DriverName
             $ProcessorName = $using:ProcessorName
             $UpdateDriver = $using:UpdateDriver
             $UpdateProcessor = $using:UpdateProcessor
             $importedProperties = $using:importedProperties
-            $SetProperties = $using:SetProperties
+            $ImportSettings = $using:ImportSettings
             $WhatIf = $using:WhatIf
             $Force = $using:Force
         }
 
         # update print driver
         if ($UpdateDriver.IsPresent -or $Force.IsPresent) {
-            if ($printer.DriverName -ne $Driver) {
+            if ($printer.DriverName -ne $DriverName) {
                 Write-Host ""
-                Write-Host "[ACTION]: Updating print driver on $($printer.Name) from '$($printer.DriverName)' to '$Driver'" -ForegroundColor Cyan
+                Write-Host "[ACTION]: Updating print driver on $($printer.Name) from '$($printer.DriverName)' to '$DriverName'" -ForegroundColor Cyan
                 if (!$WhatIf.IsPresent) {
-                    try { Set-Printer -Name $printer.Name -DriverName $Driver -ComputerName $PrintServer }
+                    try { Set-Printer -Name $printer.Name -DriverName $DriverName -ComputerName $PrintServer }
                     catch { 
                         Write-Host "[ERROR]: Failed to update print driver" -ForegroundColor Red
                         Out-File -InputObject $error[0].Exception.Message -FilePath $errorLog -Encoding ascii -Append
@@ -427,7 +427,7 @@ begin {
         }
 
         # set printer properties from XML file
-        if (($SetProperties.IsPresent -or $Force.IsPresent) -and $importedProperties) { Set-PrinterProperties }
+        if (($ImportSettings.IsPresent -or $Force.IsPresent) -and $importedProperties) { Set-PrinterProperties }
     }
 
     $params = switch ($PSEdition) {
