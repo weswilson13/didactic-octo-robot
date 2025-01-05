@@ -17,6 +17,15 @@
     .PARAMETER Driver
     Specific driver name to update printers with 
 
+    .PARAMETER UpdateDriver
+    Executes driver update code
+
+    .PARAMETER Processor
+    Processor name to update printers with
+
+    .PARAMETER UpdateProcessor
+    Executes processor update code
+
     .PARAMETER ExportProperties
     Export printer settings (properties and configurations) to an XML file
 
