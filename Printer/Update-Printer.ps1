@@ -1,28 +1,42 @@
 <#
     .SYNOPSIS
     Manage one or more printers by updating the drivers and exporting/importing settings
-
+    
     .PARAMETER PrinterName
+    Specific printer(s) to target
 
     .PARAMETER PrintServer
+    Name of the computer hosting the printing objects to target
 
     .PARAMETER ThrottleLimit
+    Maxmimum number of parallel threads to run simultaneously (Powershell7 only)
 
     .PARAMETER BaseDriverName
+    The driver family to target. Used to filter 
 
     .PARAMETER Driver
+    Specific driver name to update printers with 
 
     .PARAMETER ExportProperties
+    Export printer settings (properties and configurations) to an XML file
 
     .PARAMETER Properties
+    Specific properties to export
 
     .PARAMETER PrinterPropertiesXML
+    Filepath to the properties XML file
 
     .PARAMETER SetProperties
+    Compares current printer settings to the stored settings, and updates the printer to mirror the previous configuration
     
     .PARAMETER WhatIf
+    Will provide console indication without performing any action on printers
 
     .PARAMETER Force
+    Force all aspects of the script to run:
+        - Export all printer settings, for all printers on the print server
+        - Update the print driver on all printers on the print server (unless specific printer(s) are supplied)
+        - Set all printer settings to those found in $PrinterPropertiesXML
 
     .EXAMPLE
     Export all printer settings to default XML path in C:\Tools\PrinterConfiguration.xml
@@ -32,11 +46,17 @@
     .EXAMPLE 
     Update printer drivers with latest driver on print server
 
+    Update-Printer.ps1 -UpdateDriver
+
     .EXAMPLE
     Update a single printer with a specified driver
 
+    Update-Printer.ps1 -PrinterName 'printer1' -Driver 'HP Universal Printing PCL 6 (v7.3.0)'
+
     .EXAMPLE
     Compare/restore printer settings from a stored configuration
+
+    Update-Printer.ps1 -SetProperties
 
 #>
 [cmdletbinding(DefaultParameterSetName='Update')]
@@ -102,7 +122,8 @@ begin {
         if (Test-Path $PrinterPropertiesXML) { # a config file already exists
             $message = "A printer properties file already exists at $PrinterPropertiesXML. Do you want to overwrite it?"
             $ans = [System.Windows.Forms.MessageBox]::Show($message, "Export Printer Properties", `
-                [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Exclamation)
+                [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Exclamation, `
+                [System.Windows.Forms.MessageBoxDefaultButton]::Button1,[System.Windows.Forms.MessageBoxOptions]::ServiceNotification)
             
             if ($ans -eq 'No') { Exit }
         }
@@ -162,7 +183,16 @@ begin {
 
     $errorLog = "C:\tools\PrinterUpdateErrors.log"
 
-    try {
+    if (!$Driver) { # get the latest driver from the print server that matches $BaseDriverName
+        try { $Driver = (Get-PrinterDriver -Name "$BaseDriverName*" -ComputerName $PrintServer).Name | Sort-Object -Descending | Select-Object -First 1 }
+        catch { throw "Failed to get latest driver from Print Server" }
+    }
+    else {
+        
+    }
+    Write-Host "[INFO]: '$Driver' is the latest driver on the Print Server."
+
+    try { # get printers to evaluate
         if (!$PrinterName) {
             $printers = Get-Printer -ComputerName $PrintServer | Where-Object { $_.DriverName -match $BaseDriverName }
         }
@@ -174,31 +204,22 @@ begin {
         throw "Failed to get printer(s) from Print Server"
     }
 
-    if (!$Driver) {
-        try { $Driver = (Get-PrinterDriver -Name "$BaseDriverName*" -ComputerName $PrintServer).Name | Sort-Object -Descending | Select-Object -First 1 }
-        catch { throw "Failed to get latest driver from Print Server" }
-    }
-    else {
-        
-    }
-    Write-Host "[INFO]: '$Driver' is the latest driver on the Print Server."
-
     $tools = switch ($env:COMPUTERNAME) {
         $PrintServer { 'C:\Tools' }
         default { "\\$PrintServer\C$\Tools" }
     }
 
-    if (!$PrinterPropertiesXML) { # if a path in't supplied, set a default path to XML file
+    if (!$PrinterPropertiesXML) { # if a path isn't supplied, set a default path to XML file
         $PrinterPropertiesXML = "$tools\PrinterConfigurations.xml"
     }
     
     # create a new printer properties XML file
-    if ($ExportProperties.IsPresent) {
+    if ($ExportProperties.IsPresent -or $Force.IsPresent) {
         New-PrinterConfig
-        Exit
+        if (!$Force.IsPresent) { Exit }
     }
 
-    if ($SetProperties.IsPresent) {
+    if ($SetProperties.IsPresent -or $Force.IsPresent) {
         # import stored printer properties
         if (!(Test-Path $PrinterPropertiesXML)) {
             Write-Warning "$PrinterPropertiesXML does not exist!"
@@ -210,15 +231,17 @@ begin {
 
     $scriptblock = {
         function Set-PrinterProperties {
-            $_printerData = $_importedProperties.Printers.Printer.Where({$_.Name -eq $printer.Name})
+            $_printerData = $importedProperties.Printers.Printer.Where({$_.Name -eq $printer.Name})
             $_printerConfiguration = $_printerData.Configuration
             $_printerProperties = $_printerData.Properties.Property
 
-            $currentConfiguration = Get-PrintConfiguration -PrinterName $printer.Name -ComputerName $_printServer
-            $currentProperties = Get-PrinterProperty -PrinterName $printer.Name -ComputerName $_printServer
+            $currentConfiguration = Get-PrintConfiguration -PrinterName $printer.Name -ComputerName $PrintServer
+            $currentProperties = Get-PrinterProperty -PrinterName $printer.Name -ComputerName $PrintServer
 
             # Set configuration
-            Write-Host "[INFO]: Evaluating Printer Configuration" -ForegroundColor Blue -BackgroundColor White
+            Write-Host "" -BackgroundColor White
+            Write-Host "[INFO]: Evaluating Printer Configuration on $($printer.Name)" -ForegroundColor Blue -BackgroundColor White
+            Write-Host "" -BackgroundColor White
             $configs = $_printerConfiguration | Get-Member -MemberType Property
             foreach ($config in $configs) {
                 $_configName = $config.Name
@@ -228,48 +251,51 @@ begin {
                     default { $PSItem }
                 }
                 $currentConfigValue = $currentConfiguration.$_configName
-                if ($currentConfigValue -ne $_configValue -or $_force.IsPresent) {
+                if ($currentConfigValue -ne $_configValue -or $Force.IsPresent) {
                     Write-Host "[ACTION]: Setting property '$_configName' from '$currentConfigValue' to '$_configValue' on $($printer.Name)" -ForegroundColor Cyan
-                    if (!$_whatIf.IsPresent) {
+                    if (!$WhatIf.IsPresent) {
                         $setConfigurationParams = @{
                             PrinterName = $printer.Name
                             $($_configName) = $_configValue
-                            ComputerName = $_printServer
+                            ComputerName = $PrintServer
                         }
                         try { Set-PrintConfiguration @setConfigurationParams }
                         catch { 
                             Write-Host "[ERROR]: Failed to set config '$_configName'" -ForegroundColor Red
-                            Out-File -InputObject $error[0].Exception.Message -FilePath $_errorLog -Encoding ascii -Append
+                            Out-File -InputObject $error[0].Exception.Message -FilePath $errorLog -Encoding ascii -Append
                         }
                     }
                 }
             }
 
             # Set properties
-            Write-Host "[INFO]: Evaluating Printer Properties" -ForegroundColor Blue -BackgroundColor White
+            Write-Host "" -BackgroundColor White
+            Write-Host "[INFO]: Evaluating Printer Properties on $($printer.Name)" -ForegroundColor Blue -BackgroundColor White
+            Write-Host "" -BackgroundColor White
             foreach ($_property in $_printerProperties) {
                 $_propertyName = $_property.Name
                 $_propertyValue = $_printerProperties.Where( {$_.Name -eq $_propertyName} ).Value
                 $currentPropertyValue = $currentProperties.Where({$_.PropertyName -eq $_propertyName}).Value
 
-                if ($currentPropertyValue -ne $_propertyValue -or $_force.IsPresent) { # if the properties changed, reset them to the stored value
+                if ($currentPropertyValue -ne $_propertyValue -or $Force.IsPresent) { # if the properties changed, reset them to the stored value
                     Write-Host "[ACTION]: Setting property '$_propertyName' from '$currentPropertyValue' to '$_propertyValue' on $($printer.Name)" -ForegroundColor Cyan
-                    if (!$_whatIf.IsPresent) {
+                    if (!$WhatIf.IsPresent) {
                         $setPropertyParams = @{
                             PrinterName = $printer.Name
                             PropertyName = $_propertyName
                             Value = $_propertyValue
-                            ComputerName = $_printServer
+                            ComputerName = $PrintServer
                         }
                         try { Set-PrinterProperty @setPropertyParams }
                         catch { 
                             Write-Host "[ERROR]: Failed to set property '$_propertyName'" -ForegroundColor Red
-                            Out-File -InputObject $error[0].Exception.Message -FilePath $_errorLog -Encoding ascii -Append
+                            Out-File -InputObject $error[0].Exception.Message -FilePath $errorLog -Encoding ascii -Append
                         }
                     }
                 }
             }
         }
+        
         $printer = $PSItem
 
         # check if printer is online
@@ -278,37 +304,37 @@ begin {
             Continue 
         }
 
-        switch ($PSEdition) { # set variables for use in scriptblock based on powershell version
-            'Desktop' { # can probably get rid of this 
-                $_errorLog = $errorLog
-                $_printServer = $PrintServer
-                $_driver = $Driver
-                $_updateDriver = $UpdateDriver
-                $_importedProperties = $importedProperties
-                $_setProperties = $SetProperties
-                $_whatIf = $WhatIf
-                $_force = $Force
-            }
-            'Core' {
-                $_errorLog = $using:errorLog
-                $_printServer = $using:PrintServer
-                $_driver = $using:Driver
-                $_updateDriver = $using:UpdateDriver
-                $_importedProperties = $using:importedProperties
-                $_setProperties = $using:SetProperties
-                $_whatIf = $using:WhatIf
-                $_force = $using:Force
-            }
+       if ($PSEdition -eq 'Core') { # set variables for use in scriptblock based on powershell version
+            $errorLog = $using:errorLog
+            $PrintServer = $using:PrintServer
+            $Driver = $using:Driver
+            $UpdateDriver = $using:UpdateDriver
+            $importedProperties = $using:importedProperties
+            $SetProperties = $using:SetProperties
+            $WhatIf = $using:WhatIf
+            $Force = $using:Force
         }
 
         # update print driver
-        if ($_updateDriver.IsPresent) {
-            Write-Host "[ACTION]: Updating print driver on $($printer.Name) from '$($printer.DriverName)' to '$_driver'" -ForegroundColor Cyan
-            Set-Printer -Name $printer.Name -DriverName $_driver -ComputerName $_printServer
+        if ($UpdateDriver.IsPresent -or $Force.IsPresent) {
+            if ($printer.DriverName -ne $Driver) {
+                Write-Host ""
+                Write-Host "[ACTION]: Updating print driver on $($printer.Name) from '$($printer.DriverName)' to '$Driver'" -ForegroundColor Cyan
+                if (!$WhatIf.IsPresent) {
+                    try { Set-Printer -Name $printer.Name -DriverName $Driver -ComputerName $PrintServer }
+                    catch { 
+                        Write-Host "[ERROR]: Failed to update print driver" -ForegroundColor Red
+                        Out-File -InputObject $error[0].Exception.Message -FilePath $errorLog -Encoding ascii -Append
+                    }
+                }
+            }
+            else {
+                Write-Host "[INFO]: Print driver on $($printer.Name) is already up to date" -ForegroundColor Gray 
+            }
         }
 
         # set printer properties from XML file
-        if ($_setProperties.IsPresent -and $_importedProperties) { Set-PrinterProperties }
+        if (($SetProperties.IsPresent -or $Force.IsPresent) -and $importedProperties) { Set-PrinterProperties }
     }
 
     $params = switch ($PSEdition) {
@@ -322,5 +348,5 @@ process {
 }
 
 end {
-    
+    Write-Host "Finished" -ForegroundColor Blue
 }
