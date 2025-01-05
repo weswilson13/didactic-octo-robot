@@ -17,23 +17,26 @@
     .PARAMETER BaseDriverName
     The driver family to target. Used to filter 
 
-    .PARAMETER Driver
+    .PARAMETER DriverName
     Specific driver name to update printers with 
 
     .PARAMETER UpdateDriver
     Executes driver update code
 
-    .PARAMETER Processor
+    .PARAMETER ProcessorName
     Processor name to update printers with
 
     .PARAMETER UpdateProcessor
     Executes processor update code
 
-    .PARAMETER ExportProperties
+    .PARAMETER ExportSettings
     Export printer settings (properties and configurations) to an XML file
 
     .PARAMETER Properties
     Specific properties to export
+
+    .PARAMETER Configurations
+    Specific configurations to export
 
     .PARAMETER PrinterPropertiesXML
     Filepath to the properties XML file
@@ -53,7 +56,7 @@
     .EXAMPLE
     Export all printer settings to default XML path in C:\Tools\PrinterConfiguration.xml
 
-    Update-Printer.ps1 -ExportProperties
+    Update-Printer.ps1 -ExportSettings
 
     .EXAMPLE 
     Update printer drivers with latest driver on print server
@@ -80,49 +83,72 @@
 param(
     # Printer Name(s)
     [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Export')]
     [string[]]$PrinterName,
 
     # Print Server
     [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Export')]
     [string]$PrintServer = 'PS01',
 
     # Max number of parallel threads (PS7 only)
     [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Export')]
     [byte]$ThrottleLimit=10,
 
     # Base driver name of the printer family (i.e - version agnostic)
     [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Export')]
     [string]$BaseDriverName = 'HP Universal Printing PCL',
 
     # Driver name of driver update
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    # [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [string]$DriverName,
 
     # Processor name of processor update
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    # [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [string]$ProcessorName='hpcpp310',
 
     # Update print driver
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    # [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [switch]$UpdateDriver,
 
     # Update print processor
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    # [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [switch]$UpdateProcessor,
 
     # Exports printer properties to XML
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    # [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false, ParameterSetName='Export')]
-    [switch]$ExportProperties,
+    [switch]$ExportSettings,
 
     # Specific properties to export
-    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    # [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false, ParameterSetName='Export')]
+    [Parameter(Mandatory=$false, ParameterSetName='Import')]
+    [ValidateScript({ 
+        if ($_.StartsWith("Config")) { 
+            return $true 
+        }
+        else {
+            throw "The supplied value '$_' does not match the format 'Config:<property>'" 
+        } 
+    })]
     [string[]]$Properties,
+
+    # Specific configurations to export
+    # [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false, ParameterSetName='Import')]
+    [ValidateSet('Collate','Color','DuplexingMode')]
+    [string[]]$Configurations,
 
     # XML file containing printer properties
     [Parameter(Mandatory=$false,ParameterSetName='All')]
@@ -130,15 +156,18 @@ param(
 
     # Set printer properties from XML
     [Parameter(Mandatory=$false,ParameterSetName='All')]
-    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='Import')]
+    # [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [switch]$SetProperties,
 
     # Take no action
     [Parameter(Mandatory=$false,ParameterSetName='All')]
+    # [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [switch]$WhatIf,
 
-    # Force settings update
+    # Force all actions
     [Parameter(Mandatory=$false,ParameterSetName='All')]
+    # [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [switch]$Force
 )
 begin {
@@ -246,7 +275,7 @@ begin {
     }
     
     # create a new printer properties XML file
-    if ($ExportProperties.IsPresent -or $Force.IsPresent) {
+    if ($ExportSettings.IsPresent -or $Force.IsPresent) {
         New-PrinterConfig
         if (!$Force.IsPresent) { Exit }
     }
@@ -266,15 +295,21 @@ begin {
             $_printerData = $importedProperties.Printers.Printer.Where({$_.Name -eq $printer.Name})
             $_printerConfiguration = $_printerData.Configuration
             $_printerProperties = $_printerData.Properties.Property
+            if ($Properties) { # filter out only the properties supplied
+                $_printerProperties = $_printerProperties.Where({ $_.Name -in $Properties })
+            }
 
             $currentConfiguration = Get-PrintConfiguration -PrinterName $printer.Name -ComputerName $PrintServer
             $currentProperties = Get-PrinterProperty -PrinterName $printer.Name -ComputerName $PrintServer
 
             # Set configuration
             Write-Host "" -BackgroundColor White
-            Write-Host "[INFO]: Evaluating Printer Configuration on $($printer.Name)" -ForegroundColor Blue -BackgroundColor White
+            Write-Host "[INFO]: Evaluating Printer Configuration on $($printer.Name)" -ForegroundColor DarkBlue -BackgroundColor White
             Write-Host "" -BackgroundColor White
             $configs = $_printerConfiguration | Get-Member -MemberType Property
+            if ($Configurations) { # filter out only the configurations supplied
+                $configs = $configs.Where({ $_.Name -in $Configurations })
+            }
             foreach ($config in $configs) {
                 $_configName = $config.Name
                 $_configValue = switch ($_printerConfiguration.$_configName) { # Collate and Color configs are bool types
@@ -305,7 +340,7 @@ begin {
 
             # Set properties
             Write-Host "" -BackgroundColor White
-            Write-Host "[INFO]: Evaluating Printer Properties on $($printer.Name)" -ForegroundColor Blue -BackgroundColor White
+            Write-Host "[INFO]: Evaluating Printer Properties on $($printer.Name)" -ForegroundColor DarkBlue -BackgroundColor White
             Write-Host "" -BackgroundColor White
             foreach ($_property in $_printerProperties) {
                 $_propertyName = $_property.Name
