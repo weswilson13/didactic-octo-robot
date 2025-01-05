@@ -39,7 +39,11 @@ param(
 
     # Take no action
     [Parameter(Mandatory=$false)]
-    [switch]$WhatIf
+    [switch]$WhatIf,
+
+    # Force settings update
+    [Parameter(Mandatory=$false)]
+    [switch]$Force
 )
 
 begin {
@@ -170,17 +174,18 @@ begin {
             $currentProperties = Get-PrinterProperty -PrinterName $printer.Name -ComputerName $_printServer
 
             # Set configuration
+            Write-Host "[INFO]: Evaluating Printer Configuration" -ForegroundColor Blue -BackgroundColor White
             $configs = $_printerConfiguration | Get-Member -MemberType Property
             foreach ($config in $configs) {
                 $_configName = $config.Name
-                $_configValue = switch ($_printerConfiguration.$_configName) {
+                $_configValue = switch ($_printerConfiguration.$_configName) { # Collate and Color configs are bool types
                     'True' { 1 }
                     'False' { 0 }
                     default { $PSItem }
                 }
                 $currentConfigValue = $currentConfiguration.$_configName
-                if ($currentConfigValue -ne $_configValue) {
-                    Write-Host "[INFO]: Setting property '$_configName' from '$currentConfigValue' to '$_configValue' on $($printer.Name)" -ForegroundColor Gray
+                if ($currentConfigValue -ne $_configValue -or $_force.IsPresent) {
+                    Write-Host "[ACTION]: Setting property '$_configName' from '$currentConfigValue' to '$_configValue' on $($printer.Name)" -ForegroundColor Cyan
                     if (!$_whatIf.IsPresent) {
                         $setConfigurationParams = @{
                             PrinterName = $printer.Name
@@ -197,12 +202,14 @@ begin {
             }
 
             # Set properties
+            Write-Host "[INFO]: Evaluating Printer Properties" -ForegroundColor Blue -BackgroundColor White
             foreach ($_property in $_printerProperties) {
                 $_propertyName = $_property.Name
                 $_propertyValue = $_printerProperties.Where( {$_.Name -eq $_propertyName} ).Value
                 $currentPropertyValue = $currentProperties.Where({$_.PropertyName -eq $_propertyName}).Value
-                if ($currentPropertyValue -ne $_propertyValue) {
-                    Write-Host "[INFO]: Setting property '$_propertyName' from '$currentPropertyValue' to '$_propertyValue' on $($printer.Name)" -ForegroundColor Gray
+
+                if ($currentPropertyValue -ne $_propertyValue -or $_force.IsPresent) { # if the properties changed, reset them to the stored value
+                    Write-Host "[ACTION]: Setting property '$_propertyName' from '$currentPropertyValue' to '$_propertyValue' on $($printer.Name)" -ForegroundColor Cyan
                     if (!$_whatIf.IsPresent) {
                         $setPropertyParams = @{
                             PrinterName = $printer.Name
@@ -235,6 +242,7 @@ begin {
                 $_importedProperties = $importedProperties
                 $_setProperties = $SetProperties
                 $_whatIf = $WhatIf
+                $_force = $Force
             }
             'Core' {
                 $_errorLog = $using:errorLog
@@ -243,6 +251,7 @@ begin {
                 $_importedProperties = $using:importedProperties
                 $_setProperties = $using:SetProperties
                 $_whatIf = $using:WhatIf
+                $_force = $using:Force
             }
         }
 
