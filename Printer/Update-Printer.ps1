@@ -1,6 +1,9 @@
 <#
     .SYNOPSIS
-    Manage one or more printers by updating the drivers and exporting/importing settings
+    Manage one or more printers by updating the driver, processor, and exporting/importing settings
+
+    .DESCRIPTION
+    Can 
     
     .PARAMETER PrinterName
     Specific printer(s) to target
@@ -63,70 +66,81 @@
     Update-Printer.ps1 -PrinterName 'printer1' -Driver 'HP Universal Printing PCL 6 (v7.3.0)'
 
     .EXAMPLE
+    Update print driver with the latest on the server and update the print processor
+
+    Update-Printer.ps1 -UpdateDriver -UpdateProcessor -ProcessorName hpcpp310
+
+    .EXAMPLE
     Compare/restore printer settings from a stored configuration
 
     Update-Printer.ps1 -SetProperties
 
 #>
-[cmdletbinding(DefaultParameterSetName='Update')]
+[cmdletbinding(DefaultParameterSetName='All')]
 param(
     # Printer Name(s)
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [string[]]$PrinterName,
 
     # Print Server
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [string]$PrintServer = 'PS01',
 
     # Max number of parallel threads (PS7 only)
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [byte]$ThrottleLimit=10,
 
     # Base driver name of the printer family (i.e - version agnostic)
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [string]$BaseDriverName = 'HP Universal Printing PCL',
 
     # Driver name of driver update
-    [Parameter(Mandatory=$false)]
-    [string]$Driver,
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [string]$DriverName,
 
     # Processor name of processor update
-    [Parameter(Mandatory=$false)]
-    [string]$Processor='hpcpp310',
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
+    [string]$ProcessorName='hpcpp310',
 
     # Update print driver
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [switch]$UpdateDriver,
 
     # Update print processor
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [switch]$UpdateProcessor,
 
     # Exports printer properties to XML
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false, ParameterSetName='Export')]
     [switch]$ExportProperties,
 
     # Specific properties to export
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [Parameter(Mandatory=$false, ParameterSetName='Export')]
     [string[]]$Properties,
 
     # XML file containing printer properties
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [string]$PrinterPropertiesXML,
 
     # Set printer properties from XML
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
+    [Parameter(Mandatory=$false,ParameterSetName='Update')]
     [switch]$SetProperties,
 
     # Take no action
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [switch]$WhatIf,
 
     # Force settings update
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false,ParameterSetName='All')]
     [switch]$Force
 )
-
 begin {
     function Use-RunAs {
         # TO DO
@@ -328,11 +342,11 @@ begin {
             Continue 
         }
 
-       if ($PSEdition -eq 'Core') { # set variables for use in scriptblock based on powershell version
+       if ($PSEdition -eq 'Core') { # parallel process block requires 'using' predecessor to access variables outside of scriptblock
             $errorLog = $using:errorLog
             $PrintServer = $using:PrintServer
-            $Driver = $using:Driver
-            $Processor = $using:Processor
+            $Driver = $using:DriverName
+            $ProcessorName = $using:ProcessorName
             $UpdateDriver = $using:UpdateDriver
             $UpdateProcessor = $using:UpdateProcessor
             $importedProperties = $using:importedProperties
@@ -360,12 +374,12 @@ begin {
         }
 
         # update print processor
-        if (($UpdateProcessor.IsPresent -or $Force.IsPresent) -and $Processor) {
-            if ($printer.PrintProcessor -ne $Processor) {
+        if (($UpdateProcessor.IsPresent -or $Force.IsPresent) -and $ProcessorName) {
+            if ($printer.PrintProcessor -ne $ProcessorName) {
                 Write-Host ""
-                Write-Host "[ACTION]: Updating print processor on $($printer.Name) from '$($printer.PrintProcessor)' to '$Processor'" -ForegroundColor Cyan
+                Write-Host "[ACTION]: Updating print processor on $($printer.Name) from '$($printer.PrintProcessor)' to '$ProcessorName'" -ForegroundColor Cyan
                 if (!$WhatIf.IsPresent) {
-                    try { Set-Printer -Name $printer.Name -PrintProcessor $Processor -ComputerName $PrintServer }
+                    try { Set-Printer -Name $printer.Name -PrintProcessor $ProcessorName -ComputerName $PrintServer }
                     catch { 
                         Write-Host "[ERROR]: Failed to update print processor" -ForegroundColor Red
                         Out-File -InputObject $error[0].Exception.Message -FilePath $errorLog -Encoding ascii -Append
