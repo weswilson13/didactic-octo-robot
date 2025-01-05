@@ -81,9 +81,17 @@ param(
     [Parameter(Mandatory=$false)]
     [string]$Driver,
 
+    # Processor name of processor update
+    [Parameter(Mandatory=$false)]
+    [string]$Processor='hpcpp310',
+
     # Update print driver
     [Parameter(Mandatory=$false)]
     [switch]$UpdateDriver,
+
+    # Update print processor
+    [Parameter(Mandatory=$false)]
+    [switch]$UpdateProcessor,
 
     # Exports printer properties to XML
     [Parameter(Mandatory=$false, ParameterSetName='Export')]
@@ -154,6 +162,7 @@ begin {
             $xmlWriter.WriteStartElement('Printer')                                     #   <Printer>
                 $xmlWriter.WriteAttributeString('Name', $printer.Name)
                 $xmlWriter.WriteAttributeString('DriverName', $printer.DriverName)
+                $xmlWriter.WriteAttributeString('PrintProcessor', $printer.PrintProcessor)
 
                 $xmlWriter.WriteStartElement('Configuration')                              #     <Configuration>
                     $xmlWriter.WriteAttributeString('Collate', $printerConfig.Collate)
@@ -219,7 +228,7 @@ begin {
         if (!$Force.IsPresent) { Exit }
     }
 
-    if ($SetProperties.IsPresent -or $Force.IsPresent) {
+    # if ($SetProperties.IsPresent -or $Force.IsPresent) {
         # import stored printer properties
         if (!(Test-Path $PrinterPropertiesXML)) {
             Write-Warning "$PrinterPropertiesXML does not exist!"
@@ -227,7 +236,7 @@ begin {
         else {
             $importedProperties = [xml](Get-Content $PrinterPropertiesXML)
         }
-    }
+    # }
 
     $scriptblock = {
         function Set-PrinterProperties {
@@ -266,6 +275,9 @@ begin {
                         }
                     }
                 }
+                else {
+                    Write-Host "[INFO]: $_configName is unchanged on $($printer.Name)" -ForegroundColor Gray
+                }
             }
 
             # Set properties
@@ -293,6 +305,9 @@ begin {
                         }
                     }
                 }
+                else {
+                    Write-Host "[INFO]: $_propertyName is unchanged on $($printer.Name)" -ForegroundColor Gray
+                }
             }
         }
         
@@ -308,7 +323,9 @@ begin {
             $errorLog = $using:errorLog
             $PrintServer = $using:PrintServer
             $Driver = $using:Driver
+            $Processor = $using:Processor
             $UpdateDriver = $using:UpdateDriver
+            $UpdateProcessor = $using:UpdateProcessor
             $importedProperties = $using:importedProperties
             $SetProperties = $using:SetProperties
             $WhatIf = $using:WhatIf
@@ -330,6 +347,24 @@ begin {
             }
             else {
                 Write-Host "[INFO]: Print driver on $($printer.Name) is already up to date" -ForegroundColor Gray 
+            }
+        }
+
+        # update print processor
+        if (($UpdateProcessor.IsPresent -or $Force.IsPresent) -and $Processor) {
+            if ($printer.PrintProcessor -ne $Processor) {
+                Write-Host ""
+                Write-Host "[ACTION]: Updating print processor on $($printer.Name) from '$($printer.PrintProcessor)' to '$Processor'" -ForegroundColor Cyan
+                if (!$WhatIf.IsPresent) {
+                    try { Set-Printer -Name $printer.Name -PrintProcessor $Processor -ComputerName $PrintServer }
+                    catch { 
+                        Write-Host "[ERROR]: Failed to update print processor" -ForegroundColor Red
+                        Out-File -InputObject $error[0].Exception.Message -FilePath $errorLog -Encoding ascii -Append
+                    }
+                }
+            }
+            else {
+                Write-Host "[INFO]: Print processor on $($printer.Name) is already up to date" -ForegroundColor Gray 
             }
         }
 
