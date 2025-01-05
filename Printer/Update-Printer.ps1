@@ -101,19 +101,19 @@ param(
     [string]$BaseDriverName = 'HP Universal Printing PCL',
 
     # Driver name of driver update
-    [Parameter(Mandatory=$false, ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
     [string]$DriverName,
 
     # Processor name of processor update
-    [Parameter(Mandatory=$false, ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
     [string]$ProcessorName='hpcpp310',
 
     # Update print driver
-    [Parameter(Mandatory=$false, ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
     [switch]$UpdateDriver,
 
     # Update print processor
-    [Parameter(Mandatory=$false, ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
     [switch]$UpdateProcessor,
 
     # Exports printer properties to XML
@@ -121,9 +121,8 @@ param(
     [switch]$ExportSettings,
 
     # Specific properties to export
-    [Parameter(Mandatory=$false, ParameterSetName='ExportSettings')]
     [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
-    [Parameter(Mandatory=$false, ParameterSetName='Update')]
+    [Parameter(Mandatory=$false, ParameterSetName='ExportSettings')]
     [ValidateScript({ 
         if ($_.StartsWith("Config")) { 
             return $true 
@@ -136,7 +135,6 @@ param(
 
     # Specific configurations to export
     [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
-    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [ValidateSet('Collate','Color','DuplexingMode')]
     [string[]]$Configurations,
 
@@ -145,9 +143,7 @@ param(
     [string]$PrinterPropertiesXML,
 
     # Set printer properties from XML
-    [Parameter(Mandatory=$false)]
     [Parameter(Mandatory=$false, ParameterSetName='ImportSettings')]
-    [Parameter(Mandatory=$false, ParameterSetName='Update')]
     [switch]$ImportSettings,
 
     # Take no action
