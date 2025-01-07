@@ -203,6 +203,7 @@ begin {
                 $xmlWriter.WriteAttributeString('Name', $printer.Name)
                 $xmlWriter.WriteAttributeString('DriverName', $printer.DriverName)
                 $xmlWriter.WriteAttributeString('PrintProcessor', $printer.PrintProcessor)
+                $xmlWriter.WriteAttributeString('Published', $printer.Published)
 
                 $xmlWriter.WriteStartElement('Configuration')                              #     <Configuration>
                     $xmlWriter.WriteAttributeString('Collate', $printerConfig.Collate)
@@ -213,7 +214,7 @@ begin {
                 $xmlWriter.WriteStartElement('Properties')                              #     <Properties>
                     foreach ($property in $printerProperties) {
                         $xmlWriter.WriteStartElement('Property')                        #       <Property>
-                        $xmlWriter.WriteAttributeString('Name', $property.PropertyName)   #         <Name>PropertyName</Name>
+                        $xmlWriter.WriteAttributeString('PropertyName', $property.PropertyName)   #         <Name>PropertyName</Name>
                         $xmlWriter.WriteAttributeString('Type', $property.Type)           #         <Type>Type</Type>
                         $xmlWriter.WriteAttributeString('Value', $property.Value)         #         <Value>Value</Value>
                         $xmlWriter.WriteEndElement()                                    #       </Property>
