@@ -70,7 +70,11 @@ Printer configuration and properties can be exported to an XML file. This export
 
 The intent is that this would be done with the printers at their final configuration. This export can be used to verify settings following driver and firmware updates, or read into powershell and manipulated as desired.
 
-Currently, the export creates a single XML file with all printers. Future updates may include functionality to specify individual files for each printer.
+When exporting, the default method is to export individual XML files for each printer. 
+
+When running on the **local machine**, the user will be presented with a message box acknowledging the export method. The file(s) will be saved corresponding to the value of `$PrinterPropertiesXML`. If individual files are to be exported, a folder called *PrinterSettings* will be created in the parent directory of the file specified by `$PrinterPropertiesXML` with each XML filename set to the printer name. If the file to be exported already exists, the user will be prompted before overwriting. 
+
+When the script is executed **remotely** (e.g. - PSRemoting), user prompts are bypassed and the default action is taken. The default action is to export indiviual XML files and to overwrite any existing files.  
 
 ```powershell
 # Export all configurations and all properties for all printers on the print server
