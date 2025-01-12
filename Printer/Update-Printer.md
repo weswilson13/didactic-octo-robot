@@ -1,4 +1,4 @@
-# NNPTC HP Printer Management Script - Update-Printer.ps1
+# ![NNPTC](NNPTC_Logo.JPG) NNPTC Printer Management Script - *Update-Printer.ps1*
 
 *Author: Wes Wilson*  
 *Last Updated: 1/6/2025*
