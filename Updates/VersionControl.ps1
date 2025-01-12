@@ -28,7 +28,7 @@ function Add-NewVersion {
 
     [ordered]@{ID=$id;Product=$ProductName;APIVersion=$latestVersion.ToString();FileVersion=$fileVersion.ToString()} | 
         ConvertTo-Json -Compress |
-        Out-File $versionsTxt -Append -Encoding ascii
+        Out-File $versionsTxt.FullName -Append -Encoding ascii
 }
 function Remove-OldVersion {
     param(
@@ -49,7 +49,7 @@ function Remove-OldVersion {
             
             Write-Verbose "Removing old versions of $product"
             $versionsToRemove = $content | Where-Object { $_.Product -eq $product } | 
-            Sort-Object -Property @{e={[int]$_.ID}} -Descending | 
+                Sort-Object -Property @{e={[int]$_.ID}} -Descending | 
                 Select-Object -ExpandProperty ID -Skip 1
             
             Write-Verbose "Found the following line ID's to remove: $($versionsToRemove | Out-String)"
