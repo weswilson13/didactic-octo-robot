@@ -5,17 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Security Events</title>
     <style>
-        div.header {
+        /* div.header {
             position: relative;
             top: 0; 
             left: 0; 
             right: 0;
+        } */
+        header {
+            background-color: crimson;
+            color: white;
+            padding: 0px /*1em*/;
+            text-align: center;
+            width: 100%;
         }
         
         body {
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             /* height: 100vh; */
             margin: 0;
         }
@@ -26,8 +34,10 @@
             gap: 20px;
         }
 
-        .table#GroupChanges {
-            display: flex;
+        .table-container#GroupChanges {
+            display: grid;
+            grid-template-columns: repeat(1, auto);
+            gap: 20px;
             width: 100%;
         }
         /* .table {
@@ -40,9 +50,9 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <header>
         <h1>Windows Security Log Quick Reference</h1>
-    </div>
+    </header>
     <div class="table-container">
         <table class="table">
             <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="4">User Account Changes</th>
@@ -109,7 +119,10 @@
             <tr><td>0x20</td><td>Frequently logged by computer accounts</td></tr>
             <tr><td>0x25</td><td>Workstation's clock too far out of sync with the DC's</td></tr>
         </table>
-        <table class="table" id="GroupChanges">
+    </div>
+    <br>
+    <div class="table-container" id="GroupChanges">
+        <table class="table">
             <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2" rowspan="2">Group Changes</th>
             <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="1" rowspan="2">Created</th>
             <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="1" rowspan="2">Changed</th>

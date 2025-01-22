@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Logs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1em;
+            text-align: center;
+            width: 100%;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            /* padding: 10px; */
+            width: 100%;
+        }
+
+        .grid-item {
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            /* padding: 20px; */
+            text-align: left;
+        }
+
+        td {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Windows Security Log Quick Reference</h1>
+    </header>
+    <div class="grid-container">
+        <div class="grid-item">
+            <table class="table">
+                <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="4">User Account
+                    Changes</th>
+                <tr>
+                    <td>4720</td>
+                    <td>Created</td>
+                    <td>4722</td>
+                    <td>Enabled</td>
+                </tr>
+                <tr>
+                    <td>4723</td>
+                    <td colspan="3">User changed own password</td>
+                </tr>
+                <tr>
+                    <td>4724</td>
+                    <td colspan="3">Priveleged User changed this user's password</td>
+                </tr>
+                <tr>
+                    <td>4725</td>
+                    <td>Disabled</td>
+                    <td>4726</td>
+                    <td>Deleted</td>
+                </tr>
+                <tr>
+                    <td>4738</td>
+                    <td>Changed</td>
+                    <td>4740</td>
+                    <td>Locked Out</td>
+                </tr>
+                <tr>
+                    <td>4767</td>
+                    <td>Unlocked</td>
+                    <td>4781</td>
+                    <td>Name Change</td>
+                </tr>
+            </table>
+        </div>
+        <div class="grid-item">
+            <table class="table">
+                <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Logon Types</th>
+                <tr>
+                    <td>2</td>
+                    <td>Interactive</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Network (i.e. mapped drive)</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Batch (i.e. scheduled task)</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Service (service startup)</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Unlock (i.e. unattended workstation with password protected screen saver)</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Network Cleartext (Most often indicates a logon to IIS with "basic authentication")</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>Remote Desktop</td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td>Logon with cached credentials</td>
+                </tr>
+            </table>
+        </div>
+        <div class="grid-item">
+            <table class="table">
+                <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Logon Failure
+                    Codes</th>
+                <tr>
+                    <td>0xC0000064</td>
+                    <td>User name does not exist</td>
+                </tr>
+                <tr>
+                    <td>0xC000006A</td>
+                    <td>User name is correct but the password is wrong</td>
+                </tr>
+                <tr>
+                    <td>0xC0000234</td>
+                    <td>User is currently locked out</td>
+                </tr>
+                <tr>
+                    <td>0xC0000072</td>
+                    <td>Account is currently disabled</td>
+                </tr>
+                <tr>
+                    <td>0xC000006F</td>
+                    <td>User tried to logon outside their day of week or time of day restrictions</td>
+                </tr>
+                <tr>
+                    <td>0xC0000070</td>
+                    <td>Workstation restriction</td>
+                </tr>
+                <tr>
+                    <td>0xC00000193</td>
+                    <td>Account expiration</td>
+                </tr>
+                <tr>
+                    <td>0xC0000071</td>
+                    <td>Expired password</td>
+                </tr>
+                <tr>
+                    <td>0xC0000133</td>
+                    <td>Clocks between DC and other computer are too far out of sync</td>
+                </tr>
+                <tr>
+                    <td>0xC0000224</td>
+                    <td>User is required to change password at next logon</td>
+                </tr>
+                <tr>
+                    <td>0xC0000225</td>
+                    <td>Evidently a bug in Windows and not a risk</td>
+                </tr>
+                <tr>
+                    <td>0xC000015B</td>
+                    <td>The user has not been granted the requested logon type (aka logon right) at this machine</td>
+                </tr>
+            </table>
+        </div>
+        <div class="grid-item">
+            <table class="table">
+                <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="3">Domain
+                    Controller Authentication Events</th>
+                <tr>
+                    <td>4768</td>
+                    <td colspan="2">A Kerberos authentication ticket (TGT) was requested</td>
+                </tr>
+                <tr>
+                    <td>4771</td>
+                    <td>Kerberos pre-authentication failed</td>
+                    <td rowspan="2">See Kerberos failure codes</td>
+                </tr>
+                <tr>
+                    <td>4820</td>
+                    <td>A Kerberos TGT was denied because the device does not meet the access control restrictions</td>
+                </tr>
+            </table>
+        </div>
+        <div class="grid-item">
+            <table class="table">
+                <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="3">Logon Session
+                    Events</th>
+                <tr>
+                    <td>4624</td>
+                    <td>Successful logon</td>
+                    <td rowspan="2">Correlate by Logon ID</td>
+                </tr>
+                <tr>
+                    <td>4647</td>
+                    <td>User initiated logoff</td>
+                </tr>
+                <tr>
+                    <td>4625</td>
+                    <td colspan="2">Logon failure (See logon failure codes)</td>
+                </tr>
+                <tr>
+                    <td>4778</td>
+                    <td colspan="2">Remote desktop session reconnected</td>
+                </tr>
+                <tr>
+                    <td>4779</td>
+                    <td colspan="2">Remote desktop session disconnected</td>
+                </tr>
+                <tr>
+                    <td>4800</td>
+                    <td colspan="2">Workstation locked</td>
+                </tr>
+                <tr>
+                    <td>4801</td>
+                    <td colspan="2">Workstation unlocked</td>
+                </tr>
+                <tr>
+                    <td>4802</td>
+                    <td colspan="2">Screen saver invoked</td>
+                </tr>
+                <tr>
+                    <td>4803</td>
+                    <td colspan="2">Screen saver dismissed</td>
+                </tr>
+            </table>
+        </div>
+        <div class="grid-item">
+            <table class="table">
+                <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Kerberos Failure
+                    Codes</th>
+                <tr>
+                    <td>0x6</td>
+                    <td>Bad user name</td>
+                </tr>
+                <tr>
+                    <td>0x7</td>
+                    <td>New computer account?</td>
+                </tr>
+                <tr>
+                    <td>0x9</td>
+                    <td>Administrator should reset password</td>
+                </tr>
+                <tr>
+                    <td>0xC</td>
+                    <td>Workstation restriction</td>
+                </tr>
+                <tr>
+                    <td>0x12</td>
+                    <td>Account disabled/expired/locked out or logon hours restriction</td>
+                </tr>
+                <tr>
+                    <td>0x17</td>
+                    <td>The user's password has expired</td>
+                </tr>
+                <tr>
+                    <td>0x18</td>
+                    <td>Bad password</td>
+                </tr>
+                <tr>
+                    <td>0x20</td>
+                    <td>Frequently logged by computer accounts</td>
+                </tr>
+                <tr>
+                    <td>0x25</td>
+                    <td>Workstation's clock too far out of sync with the DC's</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
