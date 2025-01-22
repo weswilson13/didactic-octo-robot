@@ -64,6 +64,12 @@
             <tr><td>4767</td><td>Unlocked</td><td>4781</td><td>Name Change</td></tr>
         </table>
         <table class="table">
+            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="3">Domain Controller Authentication Events</th>
+            <tr><td>4768</td><td colspan="2">A Kerberos authentication ticket (TGT) was requested</td></tr>
+            <tr><td>4771</td><td>Kerberos pre-authentication failed</td><td rowspan="2">See Kerberos failure codes</td></tr>
+            <tr><td>4820</td><td>A Kerberos TGT was denied because the device does not meet the access control restrictions</td></tr>
+        </table>
+        <table class="table">
             <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Logon Types</th>
             <tr><td>2</td><td>Interactive</td></tr>
             <tr><td>3</td><td>Network (i.e. mapped drive)</td></tr>
@@ -73,6 +79,18 @@
             <tr><td>8</td><td>Network Cleartext (Most often indicates a logon to IIS with "basic authentication")</td></tr>
             <tr><td>10</td><td>Remote Desktop</td></tr>
             <tr><td>11</td><td>Logon with cached credentials</td></tr>
+        </table>
+        <table class="table">
+            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="3">Logon Session Events</th>
+            <tr><td>4624</td><td>Successful logon</td><td rowspan="2">Correlate by Logon ID</td></tr>
+            <tr><td>4647</td><td>User initiated logoff</td></tr>
+            <tr><td>4625</td><td colspan="2">Logon failure (See logon failure codes)</td></tr>
+            <tr><td>4778</td><td colspan="2">Remote desktop session reconnected</td></tr>
+            <tr><td>4779</td><td colspan="2">Remote desktop session disconnected</td></tr>
+            <tr><td>4800</td><td colspan="2">Workstation locked</td></tr>
+            <tr><td>4801</td><td colspan="2">Workstation unlocked</td></tr>
+            <tr><td>4802</td><td colspan="2">Screen saver invoked</td></tr>
+            <tr><td>4803</td><td colspan="2">Screen saver dismissed</td></tr>
         </table>
         <table class="table">
             <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Logon Failure Codes</th>
@@ -88,24 +106,6 @@
             <tr><td>0xC0000224</td><td>User is required to change password at next logon</td></tr>
             <tr><td>0xC0000225</td><td>Evidently a bug in Windows and not a risk</td></tr>
             <tr><td>0xC000015B</td><td>The user has not been granted the requested logon type (aka logon right) at this machine</td></tr>
-        </table>
-        <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="3">Domain Controller Authentication Events</th>
-            <tr><td>4768</td><td colspan="2">A Kerberos authentication ticket (TGT) was requested</td></tr>
-            <tr><td>4771</td><td>Kerberos pre-authentication failed</td><td rowspan="2">See Kerberos failure codes</td></tr>
-            <tr><td>4820</td><td>A Kerberos TGT was denied because the device does not meet the access control restrictions</td></tr>
-        </table>
-        <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="3">Logon Session Events</th>
-            <tr><td>4624</td><td>Successful logon</td><td rowspan="2">Correlate by Logon ID</td></tr>
-            <tr><td>4647</td><td>User initiated logoff</td></tr>
-            <tr><td>4625</td><td colspan="2">Logon failure (See logon failure codes)</td></tr>
-            <tr><td>4778</td><td colspan="2">Remote desktop session reconnected</td></tr>
-            <tr><td>4779</td><td colspan="2">Remote desktop session disconnected</td></tr>
-            <tr><td>4800</td><td colspan="2">Workstation locked</td></tr>
-            <tr><td>4801</td><td colspan="2">Workstation unlocked</td></tr>
-            <tr><td>4802</td><td colspan="2">Screen saver invoked</td></tr>
-            <tr><td>4803</td><td colspan="2">Screen saver dismissed</td></tr>
         </table>
         <table class="table">
             <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Kerberos Failure Codes</th>
