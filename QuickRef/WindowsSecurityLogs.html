@@ -5,21 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Security Events</title>
     <style>
-        /* div.header {
-            position: relative;
-            top: 0;
-            left: 0;
-            right: 0;
-        } */
         header {
             background-color: crimson;
             color: white;
-            padding: 0px /*1em*/;
+            padding: 0px;
             text-align: center;
+			border: 1px solid white;
             width: 95%;
         }
 
         body {
+			font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -41,18 +37,19 @@
             gap: 20px;
             /* width: 100%; */
         }
-        /* .table {
-            border: 1px solid #000;
-        } */
 
         table, th, td {
             border: 1px solid black;
         }
 
         th {
-            height: 30px;
-            /* padding: 5px; */
+            height: 40px;
+			font-size: 20px;
         }
+		
+		td.eventId {
+			width: 100px;
+		}
     </style>
 </head>
 <body>
@@ -61,22 +58,22 @@
     </header>
     <div class="table-container">
         <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="4">User Account Changes</th>
-            <tr><td>4720</td><td>Created</td><td>4722</td><td>Enabled</td></tr>
-            <tr><td>4723</td><td colspan="3">User changed own password</td></tr>
-            <tr><td>4724</td><td colspan="3">Priveleged User changed this user's password</td></tr>
-            <tr><td>4725</td><td>Disabled</td><td>4726</td><td>Deleted</td></tr>
-            <tr><td>4738</td><td>Changed</td><td>4740</td><td>Locked Out</td></tr>
-            <tr><td>4767</td><td>Unlocked</td><td>4781</td><td>Name Change</td></tr>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="4">User Account Changes</th>
+            <tr><td class="eventId">4720</td><td>Created</td><td class="eventId">4722</td><td>Enabled</td></tr>
+            <tr><td class="eventId">4723</td><td colspan="3">User changed own password</td></tr>
+            <tr><td class="eventId">4724</td><td colspan="3">Priveleged User changed this user's password</td></tr>
+            <tr><td class="eventId">4725</td><td>Disabled</td><td class="eventId">4726</td><td>Deleted</td></tr>
+            <tr><td class="eventId">4738</td><td>Changed</td><td class="eventId">4740</td><td>Locked Out</td></tr>
+            <tr><td class="eventId">4767</td><td>Unlocked</td><td class="eventId">4781</td><td>Name Change</td></tr>
         </table>
         <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="3">Domain Controller Authentication Events</th>
-            <tr><td>4768</td><td colspan="2">A Kerberos authentication ticket (TGT) was requested</td></tr>
-            <tr><td>4771</td><td>Kerberos pre-authentication failed</td><td rowspan="2">See Kerberos failure codes</td></tr>
-            <tr><td>4820</td><td>A Kerberos TGT was denied because the device does not meet the access control restrictions</td></tr>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="3">Domain Controller Authentication Events</th>
+            <tr><td class="eventId">4768</td><td colspan="2">A Kerberos authentication ticket (TGT) was requested</td></tr>
+            <tr><td class="eventId">4771</td><td>Kerberos pre-authentication failed</td><td rowspan="2">See Kerberos failure codes</td></tr>
+            <tr><td class="eventId">4820</td><td>A Kerberos TGT was denied because the device does not meet the access control restrictions</td></tr>
         </table>
         <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Logon Types</th>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="2">Logon Types</th>
             <tr><td>2</td><td>Interactive</td></tr>
             <tr><td>3</td><td>Network (i.e. mapped drive)</td></tr>
             <tr><td>4</td><td>Batch (i.e. scheduled task)</td></tr>
@@ -87,19 +84,19 @@
             <tr><td>11</td><td>Logon with cached credentials</td></tr>
         </table>
         <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="3">Logon Session Events</th>
-            <tr><td>4624</td><td>Successful logon</td><td rowspan="2">Correlate by Logon ID</td></tr>
-            <tr><td>4647</td><td>User initiated logoff</td></tr>
-            <tr><td>4625</td><td colspan="2">Logon failure (See logon failure codes)</td></tr>
-            <tr><td>4778</td><td colspan="2">Remote desktop session reconnected</td></tr>
-            <tr><td>4779</td><td colspan="2">Remote desktop session disconnected</td></tr>
-            <tr><td>4800</td><td colspan="2">Workstation locked</td></tr>
-            <tr><td>4801</td><td colspan="2">Workstation unlocked</td></tr>
-            <tr><td>4802</td><td colspan="2">Screen saver invoked</td></tr>
-            <tr><td>4803</td><td colspan="2">Screen saver dismissed</td></tr>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="3">Logon Session Events</th>
+            <tr><td class="eventId">4624</td><td>Successful logon</td><td rowspan="2">Correlate by Logon ID</td></tr>
+            <tr><td class="eventId">4647</td><td>User initiated logoff</td></tr>
+            <tr><td class="eventId">4625</td><td colspan="2">Logon failure (See logon failure codes)</td></tr>
+            <tr><td class="eventId">4778</td><td colspan="2">Remote desktop session reconnected</td></tr>
+            <tr><td class="eventId">4779</td><td colspan="2">Remote desktop session disconnected</td></tr>
+            <tr><td class="eventId">4800</td><td colspan="2">Workstation locked</td></tr>
+            <tr><td class="eventId">4801</td><td colspan="2">Workstation unlocked</td></tr>
+            <tr><td class="eventId">4802</td><td colspan="2">Screen saver invoked</td></tr>
+            <tr><td class="eventId">4803</td><td colspan="2">Screen saver dismissed</td></tr>
         </table>
         <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Logon Failure Codes</th>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="2">Logon Failure Codes</th>
             <tr><td>0xC0000064</td><td>User name does not exist</td></tr>
             <tr><td>0xC000006A</td><td>User name is correct but the password is wrong</td></tr>
             <tr><td>0xC0000234</td><td>User is currently locked out</td></tr>
@@ -114,7 +111,7 @@
             <tr><td>0xC000015B</td><td>The user has not been granted the requested logon type (aka logon right) at this machine</td></tr>
         </table>
         <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Kerberos Failure Codes</th>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="2">Kerberos Failure Codes</th>
             <tr><td>0x6</td><td>Bad user name</td></tr>
             <tr><td>0x7</td><td>New computer account?</td></tr>
             <tr><td>0x9</td><td>Administrator should reset password</td></tr>
@@ -129,14 +126,14 @@
     <br>
     <div class="table-container" id="GroupChanges">
         <table class="table">
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2" rowspan="2">Group Changes</th>
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="1" rowspan="2">Created</th>
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="1" rowspan="2">Changed</th>
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="1" rowspan="2">Deleted</th>
-            <th style="background-color: darkblue; color:aliceblue; font-size: medium;" colspan="2">Member
+            <th style="background-color: darkblue; color:aliceblue;" colspan="2" rowspan="2">Group Changes</th>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="1" rowspan="2">Created</th>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="1" rowspan="2">Changed</th>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="1" rowspan="2">Deleted</th>
+            <th style="background-color: darkblue; color:aliceblue;" colspan="2">Member
                 <tr>
-                    <th style="background-color: darkblue; color:aliceblue; font-size: medium;">Added</th>
-                    <th style="background-color: darkblue; color:aliceblue; font-size: medium;">Removed</th>
+                    <th style="background-color: darkblue; color:aliceblue;">Added</th>
+                    <th style="background-color: darkblue; color:aliceblue;">Removed</th>
                 </tr>
             </th>
             <tr><td rowspan="3">Security</td><td>Local</td><td>4731</td><td>4735</td><td>4734</td><td>4732</td><td>4733</td></tr>
