@@ -37,7 +37,7 @@
     .EXAMPLE
     Import an encryption package. Create the encrypted XML containing the key in the current users profile.
 
-    Create-EncryptedSecret.ps1 -Import C:\tools\EncryptedKey.txt -Path $env:USERPROFILE\EncryptionKey.xml
+    Create-EncryptedSecret.ps1 -Import C:\tools\EncryptedKey -Path $env:USERPROFILE\EncryptionKey.xml
 #>
 
 [CmdletBinding()]
@@ -86,8 +86,8 @@ $secureString = ConvertTo-SecureString -String $byteArrayString -AsPlainText -Fo
 if ($Export) { # export the byte string to an encrypted file
     $pathInfo = [System.IO.FileInfo]$Path
     $pathFullName = $pathInfo.FullName
-    $extension = $pathInfo.Extension 
-    $exportPath = $pathFullName.Replace($extension,".txt")
+    $extension = $pathInfo.Extension
+    $exportPath = $pathFullName.Replace($extension,"")
     $exportSecureKey = Read-Host "Enter a password to encrypt the exported key. Passwords must be 8, 12, or 16 characters." -AsSecureString
     ConvertFrom-SecureString -SecureString $secureString -SecureKey $exportSecureKey | Out-File $exportPath
 }
@@ -98,8 +98,8 @@ return @{IV = $aes.IV; Key = $aes.key; ByteString = $byteArrayString}
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB5r9byeFvl7VXR
-# r4eFpqjLLW7m8VkbXgs8AzjzTyaf0KCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCkWkD/GsdFe3oP
+# AA8722V3kyAhIIw4OEcOpcxt/vJJJKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -222,28 +222,28 @@ return @{IV = $aes.IV; Key = $aes.key; ByteString = $byteArrayString}
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQgdUBffbnWEzCxiKIFmAZLKT20fe5/kI0lokSRBzK714owDQYJKoZIhvcN
-# AQEBBQAEggEAgCHcScbcViu6j/eg5U5Qa4fOI9q+jMkTYeBF4CktP91ds9LMsgmg
-# rILJGcQ2Ig0214ROJtPwy8qisBhI3uUMDw5bz47zFNa1vRNpjsI/6Z7kB/YMN6Ws
-# xeiUHC/7cc1HZXsG3fUSYyC1Go+LsLZyCuSCvbcEy0OZ7KY1JhFmBqJ/rUXv8I8F
-# mN/H9amDEwIER0t/2ocrYNg5vhM1Wk8T1joBwIIefA1IlHYhwdT1sp7lEVTWzQ33
-# ghlyBsruCiRyuoaJRYSgLiXdFw7LJ71WfqRMrjrPUAWyXKLysdTu4jD4Z4K+wZJk
-# URb2kVViYgk7BRBUSB/YBMrXw1BpS+Q9uKGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQg075L7EDD/WYStB3I2PPfpcyYH1iILWujoRVtZ6GKb1AwDQYJKoZIhvcN
+# AQEBBQAEggEATLmkdkjNWdl0Q7vEJpH2sE072yLIMHwUsDmkUlH+hAgCJ7nkn19v
+# DMlhQaXTf8eyHsI7ch7kuQTnKQmKApNob+JZv+QW6c6zJ09k1jqixYwUroNbWuzs
+# D3iK4YRmvMdg+3+XL6cqFHOGJOTnAwiHNn1k1SAhk9oquf51cS1s0tEUI0Jxtyxt
+# pQ87JXY8DPV+c3PTkRW5T9BPUX25cBHr/TgYCsj/q7hS3aayFcIOxBoTHwaj9Ngz
+# 5wRPwMNKvm+o2C8vEX9mUdT6aBd3kNoBz/S+YDh01wlbuclkE6Ah/oYKC0Hqqrke
+# v+o/SlVHH9/uIRWYZ4ZYwmuG55a2EUpybKGCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjMxMjU0MTNaMC8GCSqGSIb3DQEJBDEiBCBCu0LuApp2KRwR1s5lWL4FjD68QDnL
-# 2UDMbMe3czxYHjANBgkqhkiG9w0BAQEFAASCAgB9mWQ5q+eszkpQdPJDD1oQeH0P
-# m0XC5S17yye0H6XMnnvCa6CujV9O4N/gEYK5qSojC8z7SEufGhMmNIhzlHrgD6uh
-# 4I6PjVsIEUrWkQPHTcXJnbqZ+leUufO+cvdkPLdRgCIj1wrCKQkQlmitg0vhajRo
-# DIVoq63CgaZifE7/h3klsU83auA2Wd8zN8owyRrAQY6W2OyHju1Y5oTbSH1B19eM
-# akc8HJpIbiBRILpLc9XEh/JU5e20pQBNIF0Vg6IklMKdO3sq4zY0H0aXmKJCSFzm
-# cHLdRzVzBqD6bACqoQqeunfFRdrDXkTQWDOsokSnYMXqSseMSRs4kLLR/qg7fHtn
-# GCsGBlSfQJRc+Dd8oFlURqmhQ1zNsAU3PjoBp+zahK8on40tTqPhmTXsebVtuV1E
-# 4YpF9rr0EzYopOnJeXxviQ6gPzSuEs+vDEGr0m6w33RPxHJYC8bXinT3lgeKf2Tx
-# OtjBjUo8+jAlD8Mfb0Sih6dlPsg5PrHxw4XaH4iM2GIwDW4TYwOzU1qVe7yFW2hd
-# ZF2oFi6tvKBXzgOR1Nl2+RsN0j04i19N5VBWFKUGMDgODvFA/dQeT5GHAiWR7SuI
-# HLYt9SbAxaV+FQ+gCNd/wEXmTHaPaAl9ijiit6FYcq5iYzQ7hgl2dqv+CwEqvUlh
-# 1LCXsa0eJJCt7CRIzg==
+# MjMxNDM2MDVaMC8GCSqGSIb3DQEJBDEiBCBDGEpmFXAYJGm72gVzOts9cYK3yvJm
+# K/RQg6Ljg7Dg+zANBgkqhkiG9w0BAQEFAASCAgBt4OB4FsTY/ajca9S9U4Ft2f9h
+# V8sdTGkCxCpqEjwvy63/lKvCSTFaLDnMu5QUOVkCZMsilgFCP8j83oF/Z9u90guF
+# mV+htea7eyaIfpSXAUHhF5Tnk7gW1uVBduGDNa6p0CJhXuY9fzNW9JjG4mpDUUhf
+# G35MHthnT45uNZb/BORI+a6WU/WpQp6jMDtYTixfpscvelwwK1K67Bk4RU172WAa
+# XbxHzx/Xyyw1JECa8N6CjosGlLJAbtQU7BX3SMgg+i8Dsqcvu3ySC5z975PdMKWO
+# WWxNGGV9R9LiDqQDbQo0aNoHP3dhiblmRIdnvF4V81Mtp109tOJgk7o4RQ1p0opR
+# 0yn5nCTTicjbMwO+z143CARejo2AQLhH9IxaEcYLnZn0aMEOXDtma8BRSyQrTxfG
+# 7i06dzILWeUvBgvBpB0wUj3Qq99pAQcYu1x9VWb8V+r08NAVrOwZ0x67iXi0S5h3
+# bmAPWbVvS1CzMn8NTMrNCardl5uAcdjF8ilgPUum5EqfW7fau8lQCM7EN43449xr
+# ob/DYOodjx9QR3lH3HI8nSIXlKJhqhVPqWwKcU/7PJvi0j51NyGRvencDrIp9+aZ
+# xRwzfGG3wRBbCx9P0ciGSC+pAYIPXkSIHigoXrMtNQiG+BEbvZyrFu3IIfAopEUe
+# Drxo9xR4dpwmY2393w==
 # SIG # End signature block
