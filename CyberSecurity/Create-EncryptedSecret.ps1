@@ -6,40 +6,64 @@
 
 [CmdletBinding()]
 param(
-    # Secure string
-    [Parameter(Mandatory=$true)]
-    [string]$Password,
+    # Create a new secret key
+    [Parameter(Mandatory=$false)]
+    [switch]$Create,
+
+    # Exports a secret key
+    [Parameter(Mandatory=$false)]
+    [switch]$Export,
+
+    # Exports a secret key
+    [Parameter(Mandatory=$false)]
+    [System.IO.FileInfo]$Import,
 
     # Output path
     [Parameter(Mandatory=$true)]
     [string]$Path
 )
-   
-# generate a random salt 
-$length = 32 # bytes (256 bit key)
-$salt = New-Object byte[] $length
-$rng = [System.Security.Cryptography.RNGCryptoServiceProvider]::Create()
-$rng.GetBytes($salt)
 
-$iterations = 1000
-$rfc = [System.Security.Cryptography.Rfc2898DeriveBytes]::new($Password,$salt,$iterations)
-$key = $rfc.GetBytes(32)
+if ($create.IsPresent -and $Import) { # cannot create and import a key
+    throw
+}
 
-# generate a random initialization vector 
-$length = 16
-$iv = New-Object byte[] $length
-$rng.GetBytes($iv)
+if ($Create.IsPresent) { # create a new cryptographic key and IV
+    
+    $aes = [System.Security.Cryptography.Aes]::Create()
+    $aes.GenerateIV()
+    $aes.GenerateKey()
 
-$byteArrayString = ($iv + $key) -join ','
+    $byteArrayString = ($aes.IV + $aes.Key) -join ','
+}
+elseif ($Import) { # import an encrypted byte string
+    $content = Get-Content $Import.FullName -raw
+    $exportSecureKey = Read-Host "Enter the password to decrypt the imported key" -AsSecureString
+    $encryptedSecureKey = ConvertTo-SecureString -String $content -SecureKey $exportSecureKey
+    $byteArrayString = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(`
+    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($encryptedSecureKey))
+}
+
+# create an encrypted XML file to store the key. Uses DPAPI. Only retrievable by specific user on specific machine.
 $secureString = ConvertTo-SecureString -String $byteArrayString -AsPlainText -Force
 [pscredential]::new("EncryptionKeyandIV", $secureString) | Export-Clixml $Path
 
-return @{IV = $iv; Key = $key; ByteString = $byteArrayString}
+if ($Export) { # export the byte string to an encrypted file
+    $pathInfo = [System.IO.FileInfo]$Path
+    $pathFullName = $pathInfo.FullName
+    $extension = $pathInfo.Extension 
+    $exportPath = $pathFullName.Replace($extension,".txt")
+    $exportSecureKey = Read-Host "Enter a password to encrypt the exported key" -AsSecureString
+    ConvertFrom-SecureString -SecureString $secureString -SecureKey $exportSecureKey | Out-File $exportPath
+}
+
+return @{IV = $aes.IV; Key = $aes.key; ByteString = $byteArrayString}
+
+
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCGzuvyyFi6ml1e
-# q6iO4ZLvVlMxqOq834bM8xDN2NRkZKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB5r9byeFvl7VXR
+# r4eFpqjLLW7m8VkbXgs8AzjzTyaf0KCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -162,28 +186,28 @@ return @{IV = $iv; Key = $key; ByteString = $byteArrayString}
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQgGmkbFIIGcfO/kgnKDJBy04QDkiWbeX2uOd5I8JmJXLwwDQYJKoZIhvcN
-# AQEBBQAEggEAX6PDul/g5i88/sDdWGBk0WZDuUTW7WCMFjR3QSVo3nb2NwZ8bE5I
-# +Cc/wZDkm4m6Lfni/0NGd46NuvURgILfZESP7gqfQoajPRpI4rTcfaRqaalzg36X
-# KfKeaEjf6FliYaGflJLwZ+Ezv1WaIt70KMBonoU29ZRYFJIZuaBdi71KR+HMl8AZ
-# f0bnpX5x1G662uAMchDlDQnzUn9csi1cIGyKn1TKmePAzxzmjkzcvvx0kZZaUcPc
-# ykAxdb8VT3RzMG8H57NUQt9cC4mS2VHXkHnbHxPL6Wd5BJ/QjFkglwXdy2NC+jNk
-# 3zy+E2ICRDe+8KgVRIfUUMllj0fYqwEvDaGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQgdUBffbnWEzCxiKIFmAZLKT20fe5/kI0lokSRBzK714owDQYJKoZIhvcN
+# AQEBBQAEggEAgCHcScbcViu6j/eg5U5Qa4fOI9q+jMkTYeBF4CktP91ds9LMsgmg
+# rILJGcQ2Ig0214ROJtPwy8qisBhI3uUMDw5bz47zFNa1vRNpjsI/6Z7kB/YMN6Ws
+# xeiUHC/7cc1HZXsG3fUSYyC1Go+LsLZyCuSCvbcEy0OZ7KY1JhFmBqJ/rUXv8I8F
+# mN/H9amDEwIER0t/2ocrYNg5vhM1Wk8T1joBwIIefA1IlHYhwdT1sp7lEVTWzQ33
+# ghlyBsruCiRyuoaJRYSgLiXdFw7LJ71WfqRMrjrPUAWyXKLysdTu4jD4Z4K+wZJk
+# URb2kVViYgk7BRBUSB/YBMrXw1BpS+Q9uKGCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjMwMzI4MjhaMC8GCSqGSIb3DQEJBDEiBCBShXSlM18Y3kTkfNrVxALKkCNXqFmF
-# Re9N+4pzCIJgSTANBgkqhkiG9w0BAQEFAASCAgC9MfABlgcnmnf70ZUePMCtFovF
-# aJfPtozACbs6R19MAJJ28J2xhiqWd8nzbG0NJPY6yDwgI3GDbBJQ6ylAJ+M7SdCD
-# 312XB4BhjsK5iQ/r898au1piApRv8hRdXFQAbsAH9mWhNZJmUEl8goviOx14bMHK
-# rwCefQ6B8CYjzHDVCe+VhJNcl//j/w/BiWaatQF3p4Xn8GWX147YepDSMDeYYB9g
-# pOnj7Ufq4aRoPN3mq9OfjU4CvIhKUiu/SXhHgRIAZqqI8Oc/pg/86cEw23CgjQQ8
-# MA/133WkJZTB/RehN4uprrdvG/oKLa1whebmEweloq17RxaH0nIe+wUwn2i3ObKE
-# DYKwJyP6CzjxyPd6OFQyhC+fvLwbJO6dnUMpIbEvmp/k2C2rliTEbhLGqrJjft1s
-# p/g1pPqZygLEyeHfcKvhjSMSipXFuIf5twKZWNcFJtR1J2wop/T9WkIh2fj+uqPu
-# zX41h1LGzy3zUw7ehDNW/8S7yioTBQkeh81HHZ5NpPufVhJzfP/pFpJqXPTvKm4R
-# HgxGkCLqGPXyMw+9QJx9PB8XyDvvds5iNeS6pHHUEVEg0usubWQhE49tl91WG58t
-# lRgxBI+V/zQBMiYF8N1t2YjwWwxvjaAElttsxtI+CtEW1XQZz7DIvxuiZJfaPJPC
-# ZtFLS9xPKK9NUSBPMw==
+# MjMxMjU0MTNaMC8GCSqGSIb3DQEJBDEiBCBCu0LuApp2KRwR1s5lWL4FjD68QDnL
+# 2UDMbMe3czxYHjANBgkqhkiG9w0BAQEFAASCAgB9mWQ5q+eszkpQdPJDD1oQeH0P
+# m0XC5S17yye0H6XMnnvCa6CujV9O4N/gEYK5qSojC8z7SEufGhMmNIhzlHrgD6uh
+# 4I6PjVsIEUrWkQPHTcXJnbqZ+leUufO+cvdkPLdRgCIj1wrCKQkQlmitg0vhajRo
+# DIVoq63CgaZifE7/h3klsU83auA2Wd8zN8owyRrAQY6W2OyHju1Y5oTbSH1B19eM
+# akc8HJpIbiBRILpLc9XEh/JU5e20pQBNIF0Vg6IklMKdO3sq4zY0H0aXmKJCSFzm
+# cHLdRzVzBqD6bACqoQqeunfFRdrDXkTQWDOsokSnYMXqSseMSRs4kLLR/qg7fHtn
+# GCsGBlSfQJRc+Dd8oFlURqmhQ1zNsAU3PjoBp+zahK8on40tTqPhmTXsebVtuV1E
+# 4YpF9rr0EzYopOnJeXxviQ6gPzSuEs+vDEGr0m6w33RPxHJYC8bXinT3lgeKf2Tx
+# OtjBjUo8+jAlD8Mfb0Sih6dlPsg5PrHxw4XaH4iM2GIwDW4TYwOzU1qVe7yFW2hd
+# ZF2oFi6tvKBXzgOR1Nl2+RsN0j04i19N5VBWFKUGMDgODvFA/dQeT5GHAiWR7SuI
+# HLYt9SbAxaV+FQ+gCNd/wEXmTHaPaAl9ijiit6FYcq5iYzQ7hgl2dqv+CwEqvUlh
+# 1LCXsa0eJJCt7CRIzg==
 # SIG # End signature block
