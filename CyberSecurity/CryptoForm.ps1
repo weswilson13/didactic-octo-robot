@@ -253,6 +253,22 @@ function buttonExportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
     # clean up
     $sw.Close()
 }
+function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
+    $sr = [System.IO.StreamReader]::new($pubKeyFile)
+    $_cspp.KeyContainerName = $keyName
+    $_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($_cspp)
+
+    $keytxt = $sr.ReadToEnd()
+    $_rsa.FromXmlString($keytxt)
+    $_rsa.PersistKeyInCsp = $true
+
+    if ($_rsa.PublicOnly) {
+        $label1.Text = "Key: $($_cspp.KeyContainerName) - Public Only"
+    }
+    else { 
+        "Key: $($_cspp.KeyContainerName) - Full Key Pair" 
+    }
+}
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
