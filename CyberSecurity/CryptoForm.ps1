@@ -219,6 +219,10 @@ function buttonEncryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
     }
 }
 function buttonDecryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
+    <#
+        .SYNOPSIS
+        Click event handler for the Decrypt File button
+    #>
     if ($_rsa -eq $null) {
         [System.Windows.Forms.MessageBox]::Show("Key not set.")
     }
@@ -234,6 +238,20 @@ function buttonDecryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
             }
         }
     }
+}
+function buttonExportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
+    <#
+        .SYNOPSIS
+        Click event handler for the Export Public Key button (buttonExportPublicKey_Click)
+    #>
+
+    # Save the public key created by the RSA to a file. Caution, persisting the key to a file is a security risk.
+    [System.IO.Directory]::CreateDirectory($encrFolder)
+    $sw = [System.IO.StreamWriter]::new($pubKeyFile, $false)
+    $sw.Write($_rsa.ToXmlString($false))
+
+    # clean up
+    $sw.Close()
 }
 
 Add-Type -AssemblyName System.Windows.Forms
