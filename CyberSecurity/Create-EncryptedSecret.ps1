@@ -1,7 +1,43 @@
 <#
     .SYNOPSIS
-    Takes a clear text password and creates an encrypted byte array for use in encryption and decryption operations.
+    Creates or Imports an encrypted byte array for use in encryption and decryption operations.
 
+    .DESCRIPTION
+    The AES SYMMETRIC algorithm requires the same Key and Initialization Vector (IV) be used for encryption and subsequent
+    decryption of data. This script allows creation of new encryption packages (key and IV) that can be saved to the local 
+    machine and/or exported for later import onto another device. The encryption package is saved to the local machine 
+    utilizing the Windows Data Protection API (DPAPI). This ensures the encryption key can only be retrieved by the current 
+    user on the current machine.  
+
+    When the encryption package is exported, it is saved in a file using the AES encryption standard. The user is asked
+    for a password that will seed the key for this encryption. This password must be either 8, 12, or 16 characters long
+    as it will be converted to an encryption key corresponding to 128, 192, or 256 bits, respectively. THIS PASSWORD MUST 
+    BE REMEMBERED AS IT IS REQUIRED TO DECRYPT THE ENCRYPTED KEY.
+
+    Access the encrypted XML content using Import-CliXml, the SecureString containing the encryption package is under the 
+    Password element. 
+    
+    .PARAMETER Create
+    Create a new encryption package (key and IV), save to an encrypted XML file
+
+    .PARAMETER Export
+    Exports the encryption package to an encrypted file. Use when the encryption package will be installed on additional machines.
+
+    .PARAMETER Import
+    Import an encryption package
+
+    .PARAMETER Path
+    Path where the encrypted XML should be created
+
+    .EXAMPLE
+    Create a new encryption package and encrypted export in the current users profile. Name the files EncryptionKey.
+
+    Create-EncryptedSecret.ps1 -Create -Export -Path $env:USERPROFILE\EncryptionKey.xml 
+
+    .EXAMPLE
+    Import an encryption package. Create the encrypted XML containing the key in the current users profile.
+
+    Create-EncryptedSecret.ps1 -Import C:\tools\EncryptedKey.txt -Path $env:USERPROFILE\EncryptionKey.xml
 #>
 
 [CmdletBinding()]
@@ -52,7 +88,7 @@ if ($Export) { # export the byte string to an encrypted file
     $pathFullName = $pathInfo.FullName
     $extension = $pathInfo.Extension 
     $exportPath = $pathFullName.Replace($extension,".txt")
-    $exportSecureKey = Read-Host "Enter a password to encrypt the exported key" -AsSecureString
+    $exportSecureKey = Read-Host "Enter a password to encrypt the exported key. Passwords must be 8, 12, or 16 characters." -AsSecureString
     ConvertFrom-SecureString -SecureString $secureString -SecureKey $exportSecureKey | Out-File $exportPath
 }
 
