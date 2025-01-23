@@ -85,6 +85,97 @@ function EncryptFile {
     $outStreamEncrypted.Close()
     $outFs.Close()
 }
+function DecryptFile {
+    <#
+        .DESCRIPTION
+        The Decrypt method does the following:
+
+        1. Creates an Aes symmetric algorithm to decrypt the content.
+        2. Reads the first eight bytes of the FileStream of the encrypted package into byte arrays to obtain the lengths of the encrypted key and the IV.
+        3. Extracts the key and IV from the encryption package into byte arrays.
+        4. Creates an RSACryptoServiceProvider object to decrypt the Aes key.
+        5. Uses a CryptoStream object to read and decrypt the cipher text section of the FileStream encryption package, in blocks of bytes, into the FileStream object for the decrypted file. When this is finished, the decryption is completed.
+    #>
+
+    [CmdletBinding()]
+    param(
+        [System.IO.FileInfo]$File
+    )
+
+    # Create instance of Aes for symmetric decryption of the data.
+    $aes = [System.Security.Cryptography.Aes]::Create()
+
+    # Create byte arrays to get the length of the encrypted key and IV.
+    # These values were stored as 4 bytes each at the beginning of the encrypted package.
+    [byte[]] $lenK = New-Object byte[] 4
+    [byte[]] $lenIV = New-Object byte[] 4
+
+    # Construct the file name for the decrypted file.
+    $outFile = [System.IO.Path]::ChangeExtension($File.FullName.Replace("Encrypt", "Decrypt"), ".txt")
+
+    # Use FileStream objects to read the encrypted file (inFs) and save the decrypted file (outFs).
+    $inFs = [System.IO.FileStream]::new($File.FullName, [System.IO.FileMode]::Open)
+
+    $inFs.Seek(0, [System.IO.SeekOrigin]::Begin)
+    $inFs.Read($lenK, 0, 3)
+    $inFs.Seek(4, [System.IO.SeekOrigin]::Begin)
+    $inFs.Read($lenIV, 0, 3)
+
+    # Convert the lengths to integer values.
+    $lenK = [System.BitConverter]::ToInt32($lenK, 0)
+    $lenIV = [System.BitConverter]::ToInt32($lenIV, 0)
+
+    # Determine the start position of the cipher text (startC) and its length(lenC).
+    $startC = $lenK + $lenIV + 8;
+    $lenC = [int]$inFs.Length - $startC
+
+    # Create the byte arrays for the encrypted Aes key, the IV, and the cipher text.
+    [byte[]] $keyEncrypted = New-Object byte[] $lenK
+    [byte[]] $iv = New-Object byte[] $lenIV
+
+    # Extract the key and IV starting from index 8 after the length values.
+    $inFs.Seek(8, [System.IO.SeekOrigin]::Begin)
+    $inFs.Read($keyEncrypted, 0, $lenK)
+    $inFs.Seek(8 + $lenK, [System.IO.SeekOrigin]::Begin)
+    $inFs.Read($iv, 0, $lenIV)
+
+    [System.IO.Directory]::CreateDirectory($decrFolder)
+
+    # Use RSACryptoServiceProvider to decrypt the AES key.
+    [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $false)
+
+    # Decrypt the key.
+    $transform = $aes.CreateDecryptor($keyDecrypted, $iv);
+
+    # Decrypt the cipher text from from the FileSteam of the encrypted file (inFs) into the FileStream 
+    # for the decrypted file (outFs).
+    $outFs = [System.IO.FileStream]::new($outFile, [System.IO.FileMode]::Create)
+
+    $count = 0
+    $offset = 0
+
+    # blockSizeBytes can be any arbitrary size.
+    $blockSizeBytes = $aes.BlockSize / 8
+    [byte[]]$data = New-Object byte[] $blockSizeBytes
+
+    # By decrypting a chunk a time, you can save memory and accommodate large files.
+
+    # Start at the beginning of the cipher text.
+    $inFs.Seek($startC, [System.IO.SeekOrigin]::Begin);
+    $outStreamDecrypted = [System.Security.Cryptography.CryptoStream]::new($outFs, $transform, [System.Security.Cryptography.CryptoStreamMode]::Write)
+    do {
+        $count = $inFs.Read($data, 0, $blockSizeBytes)
+        $offset += $count
+        $outStreamDecrypted.Write($data, 0, $count)
+    } while ($count -gt 0)
+
+    $outStreamDecrypted.FlushFinalBlock()
+
+    # clean up
+    $inFs.Close()
+    $outStreamDecrypted.Close()
+    $outFs.Close()
+}
 
 # Event Handlers
 function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
