@@ -243,6 +243,13 @@ function buttonExportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
     <#
         .SYNOPSIS
         Click event handler for the Export Public Key button (buttonExportPublicKey_Click)
+
+        .DESCRIPTION
+        Saves the key created by the Create Keys button to a file. It exports only the public parameters.
+
+        This task simulates the scenario of Alice giving Bob her public key so that he can encrypt files for her. 
+        He and others who have that public key will not be able to decrypt them because they do not have the full 
+        key pair with private parameters.
     #>
 
     # Save the public key created by the RSA to a file. Caution, persisting the key to a file is a security risk.
@@ -254,12 +261,44 @@ function buttonExportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
     $sw.Close()
 }
 function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
+    <#
+        .SYNOPSIS
+        Click event handler for the Import Public Key button (buttonImportPublicKey_Click)
+
+        .DESCRIPTION
+        Loads the key with only public parameters, as created by the Export Public Key button, and sets it as the key container name.
+
+        This task simulates the scenario of Bob loading Alice's key with only public parameters so he can encrypt files for her.
+    #>
+    
     $sr = [System.IO.StreamReader]::new($pubKeyFile)
     $_cspp.KeyContainerName = $keyName
     $_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($_cspp)
 
     $keytxt = $sr.ReadToEnd()
     $_rsa.FromXmlString($keytxt)
+    $_rsa.PersistKeyInCsp = $true
+
+    if ($_rsa.PublicOnly) {
+        $label1.Text = "Key: $($_cspp.KeyContainerName) - Public Only"
+    }
+    else { 
+        "Key: $($_cspp.KeyContainerName) - Full Key Pair" 
+    }
+}
+function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
+    <#
+        .SYNOPSIS
+        Click event handler for the Get Private Key button (buttonGetPrivateKey_Click)
+
+        .DESCRIPTION
+        Sets the key container name to the name of the key created by using the Create Keys button. 
+        The key container will contain the full key pair with private parameters.
+
+        This task simulates the scenario of Alice using her private key to decrypt files encrypted by Bob.
+    #>
+    $_cspp.KeyContainerName = $keyName
+    $_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($_cspp)
     $_rsa.PersistKeyInCsp = $true
 
     if ($_rsa.PublicOnly) {
