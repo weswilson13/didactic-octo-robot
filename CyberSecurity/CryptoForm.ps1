@@ -359,13 +359,13 @@ $AppSettings=[System.Configuration.ConfigurationManager]::AppSettings
 #endregion buttonEncryptFile
 
 #region buttonDecryptFile
-    $buttonEncryptFile = New-Object System.Windows.Forms.Button
-    $buttonEncryptFile.Name = "buttonDecryptFile"
-    $buttonEncryptFile.Text = "Decrypt File"
-    $buttonEncryptFile.AutoSize = $true
-    # $buttonEncryptFile.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom
-    # $buttonEncryptFile.Dock = 'Bottom'
-    $buttonEncryptFile.Add_Click({buttonDecryptFile_Click})
+    $buttonDecryptFile = New-Object System.Windows.Forms.Button
+    $buttonDecryptFile.Name = "buttonDecryptFile"
+    $buttonDecryptFile.Text = "Decrypt File"
+    $buttonDecryptFile.AutoSize = $true
+    # $buttonDecryptFile.Anchor = [System.Windows.Forms.AnchorStyles]::Bottom
+    # $buttonDecryptFile.Dock = 'Bottom'
+    $buttonDecryptFile.Add_Click({buttonDecryptFile_Click})
 #endregion buttonDecryptFile
 
 #region buttonCreateAsmKeys
@@ -409,41 +409,39 @@ $AppSettings=[System.Configuration.ConfigurationManager]::AppSettings
 #endregion buttonGetPrivateKey
 
 #region label1
-    $label = New-Object System.Windows.Forms.Label
+    $label1 = New-Object System.Windows.Forms.Label
     # $label.Dock = "Fill"
-    $label.Text = "Key Not Set"
-    $label.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Bold)
-    $label.AutoSize = $true
+    $label1.Text = "Key Not Set"
+    $label1.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Bold)
+    $label1.AutoSize = $true
 #endregion label1
 
 
-$defaultText = "Enter one or more DoD IDs separated by commas..."
-$textBox = New-Object System.Windows.Forms.TextBox
-$textBox.Text = $defaultText
-$textbox.Multiline = $true
-$textbox.Dock = "Fill"
-$textBox.Add_Click({
-    if ($this.Text -eq $defaultText) {
-        $this.ResetText()
-    }
-})
-
-
-
 $tableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel.RowCount = 3
-$tableLayoutPanel.ColumnCount = 1
-$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 5))) | Out-Null
-$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 85))) | Out-Null
-$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 10))) | Out-Null
+$tableLayoutPanel.RowCount = 4
+$tableLayoutPanel.ColumnCount = 2
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 25))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 25))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 25))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 25))) | Out-Null
+
+$tableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 50))) | Out-Null
+$tableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 50))) | Out-Null
+
 $tableLayoutPanel.Dock = "Fill"
 # $tableLayoutPanel.CellBorderStyle = "outset"
-$tableLayoutPanel.Controls.Add($label,0,0)
-$tableLayoutPanel.Controls.Add($textBox,0,1)
-$tableLayoutPanel.Controls.Add($button,0,2)
+$tableLayoutPanel.Controls.Add($buttonEncryptFile,0,0)
+$tableLayoutPanel.Controls.Add($buttonDecryptFile,1,0)
+$tableLayoutPanel.Controls.Add($buttonImportPublicKey,0,1)
+$tableLayoutPanel.Controls.Add($buttonExportPublicKey,1,1)
+$tableLayoutPanel.Controls.Add($buttonCreateAsmKeys,0,2)
+$tableLayoutPanel.Controls.Add($buttonGetPrivateKey,1,2)
+$tableLayoutPanel.Controls.Add($label1)
+$tableLayoutPanel.SetColumnSpan($label1,2)
+
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "Enter DoD IDs"
+$form.Text = "Crypto Tool"
 $form.ClientSize = New-Object System.Drawing.Size(400,400)
 $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 $form.Add_FormClosed({
