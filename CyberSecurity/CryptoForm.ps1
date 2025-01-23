@@ -201,25 +201,41 @@ function buttonEncryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
         .SYNOPSIS
         Click event handler for the Encrypt File button (buttonEncryptFile_Click)
     #>
-    if ($_rsa -eq $null)
-    {
-        [System.Windows.Forms.MessageBox]::Show("Key not set.");
-    }
-    else
-    {
+    if ($_rsa -eq $null) {
+        [System.Windows.Forms.MessageBox]::Show("Key not set.")
+    } 
+    else {
         # Display a dialog box to select a file to encrypt.
         $_encryptOpenFileDialog = [System.Windows.Forms.OpenFileDialog]::new()
         $_encryptOpenFileDialog.InitialDirectory = $srcFolder
         if ($_encryptOpenFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK)
         {
-            $fName = $_encryptOpenFileDialog.FileName;
+            $fName = $_encryptOpenFileDialog.FileName
             if (![string]::IsNullOrWhiteSpace($fName)) { # Pass the file name without the path.
                 $fileInfo = [System.IO.FileInfo]$fName
-                EncryptFile($fileInfo.Name);
+                EncryptFile($fileInfo)
             }
         }
     }
 }
+function buttonDecryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
+    if ($_rsa -eq $null) {
+        [System.Windows.Forms.MessageBox]::Show("Key not set.")
+    }
+    else {
+        # Display a dialog box to select the encrypted file.
+        $_decryptOpenFileDialog = [System.Windows.Forms.OpenFileDialog]::new()
+        $_decryptOpenFileDialog.InitialDirectory = $encrFolder
+        if ($_decryptOpenFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $fName = $_decryptOpenFileDialog.FileName
+            if (![string]::IsNullOrWhiteSpace($fName)) {
+                $fileInfo = [System.IO.FileInfo]$fName
+                DecryptFile($fileInfo)
+            }
+        }
+    }
+}
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Configuration
