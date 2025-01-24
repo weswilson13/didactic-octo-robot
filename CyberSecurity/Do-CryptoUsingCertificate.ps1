@@ -180,7 +180,7 @@ function DecryptFile {
     $outFs.Close()
 }
 
-$cert = Get-ChildItem Cert:\CurrentUser\My | ? {$_.FriendlyName -eq 'Scripting'}
+# $cert = Get-ChildItem Cert:\CurrentUser\My | ? {$_.FriendlyName -eq 'Scripting'}
 # EncryptFile -File Z:\Scripts\ScheduledTasks\Get-Updates.ps1 -Cert $cert
 
-DecryptFile -File C:\Tools\Encrypt\Get-Updates.enc -Cert $cert
+# DecryptFile -File C:\Tools\Encrypt\Get-Updates.enc -Cert $cert
