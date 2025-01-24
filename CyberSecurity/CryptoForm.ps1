@@ -122,11 +122,11 @@ function DecryptFile {
     $inFs.Read($lenIV, 0, 3)
 
     # Convert the lengths to integer values.
-    $lenK = [System.BitConverter]::ToInt32($lenK, 0)
-    $lenIV = [System.BitConverter]::ToInt32($lenIV, 0)
+    [int]$lenK = [System.BitConverter]::ToInt32($lenK, 0)
+    [int]$lenIV = [System.BitConverter]::ToInt32($lenIV, 0)
 
     # Determine the start position of the cipher text (startC) and its length(lenC).
-    $startC = $lenK + $lenIV + 8;
+    [int]$startC = $lenK + $lenIV + 8
     $lenC = [int]$inFs.Length - $startC
 
     # Create the byte arrays for the encrypted Aes key, the IV, and the cipher text.
@@ -305,7 +305,7 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
         $label1.Text = "Key: $($_cspp.KeyContainerName) - Public Only"
     }
     else { 
-        "Key: $($_cspp.KeyContainerName) - Full Key Pair" 
+         $label1.Text = "Key: $($_cspp.KeyContainerName) - Full Key Pair" 
     }
 }
 
@@ -334,7 +334,7 @@ $AppSettings=[System.Configuration.ConfigurationManager]::AppSettings
 
     # Declare CspParameters and RsaCryptoServiceProvider objects with global scope of your Form class.
     $_cspp = [System.Security.Cryptography.CspParameters]::new()
-    [System.Security.Cryptography.RSACryptoServiceProvider]$_rsa = $null
+    $_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new()
 
     # Public key file
     $pubKeyFile = "$encrFolder\rsaPublicKey.txt";
