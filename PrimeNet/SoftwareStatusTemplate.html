@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Transfer Status</title>
+    <style>
+        header {
+            background-color: crimson;
+            color: white;
+            padding: 0px;
+            text-align: center;
+			border: 1px solid white;
+            width: 50%;
+        }
+
+        body {
+			font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 0;
+            /* width: 95%; */
+        }
+
+        .table-container {
+            display: grid;
+            grid-template-columns: repeat(1, auto);
+            gap: 20px;
+            width: 50%
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th {
+            height: 40px;
+			font-size: 20px;
+			background-color: darkblue;
+			color:aliceblue;
+		}
+		
+		td.App {
+			width: 20%;
+		}
+		
+		td.Version {
+			width: 40%
+		}
+		
+		td.Printer {
+			width: 20%
+		}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Software Upload Status  [[date]]</h1>
+    </header>
+    <div class="table-container">
+        <table class="table">
+			<th colspan="3">Applications
+				<tr><th>Software Title</th><th>Latest Version</th><th>Download Link</th></tr>
+			</th>
+            <tr><td class="App">Adobe</td><td id="adobe" class="Version">[adobe]</td><td><a href="https://helpx.adobe.com/acrobat/kb/install-updates-reader-acrobat.html" target="_blank">Adobe Reader Update</a><br><a href="https://www.adobe.com/devnet-docs/acrobatetk/tools/ReleaseNotesDC/index.html" target="_blank">Release Notes</a></td></tr>
+            <tr><td class="App">Google Chrome</td><td id="chrome" class="Version">[chrome]</td><td><a href="https://chromeenterprise.google/download/#windows-tab" target="_blank"> Google Chrome Enterprise Download</a></td></tr>
+            <tr><td class="App">Microsoft Edge</td><td id="edge" class="Version">[edge]</td><td><a href="https://www.microsoft.com/en-us/edge/business/download?form=MA13FJ" target="_blank">Edge Enterprise Download</a></td></tr>
+			<tr><td class="App">Mozilla Firefox</td><td id="firefox" class="Version">[firefox]</td><td><a href="https://www.mozilla.org/en-US/firefox/all/#product-desktop-release" target="_blank">Mozilla Firefox Updates</a></td></tr>
+            <tr><td class="App">Powershell</td><td id="powershell" class="Version">[powershell]</td><td><a href="https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4&viewFallbackFrom=powershell-7.2#msi" target="_blank">Powershell 7 Updates</a></td></tr>
+			<tr><td class="App">VMWare Tools</td><td id="vmware-tools" class="Version">[vmware_tools]</td><td></td></tr>
+			<tr><td class="App">VMWare ESXi</td><td class="Version">[vmware_esxi]</td><td><a href="https://knowledge.broadcom.com/external/article?legacyId=2143832" target="_blank">VMWare ESXi Updates</a></td></tr>
+			<tr><td class="App">VMWare Horizon 8</td><td id="vmware-horizon" class="Version">[vmware_horizon]</td><td></td></tr>
+			<tr><td class="App">VMWare vCenter</td><td id="vmware-vcenter" class="Version">[vmware_vcenter]</td><td><a href="https://knowledge.broadcom.com/external/article?legacyId=2143838" target="_blank">VMWare vCenter Server Updates</a></td></tr>
+			<tr><td class="App">VMWare vSAN</td><td id="vmware-vsan" class="Version">[vmware_vsan]</td><td><a href="https://knowledge.broadcom.com/external/article?legacyId=2145116" target="_blank">VMWare vSAN Updates</a></td></tr>
+			<tr><td class="App">Visual Studio Code</td><td id="vscode" class="Version">[vscode]</td><td><a href="https://code.visualstudio.com/download#" target="_blank">VS Code Download</a></td></tr>
+			<tr><td class="App">Windows Terminal</td><td id="terminal" class="Version">[terminal]</td><td><a href="https://github.com/microsoft/terminal/releases" target="_blank">Windows Terminal Releases</a></td></tr>
+			<tr><td class="App">Windows Defender</td><td id="defender" class="Version">[defender]</td><td><a href="https://www.microsoft.com/en-us/wdsi/defenderupdates" target="_blank">Defender Updates</a></td></tr>
+        </table>
+		
+		<table class="table">
+            <th colspan="2">Printer Firmware  [[printer-date]]
+				<tr><th>Model</th><th>Firmware</th></tr>
+			</th>
+            <tr><td class="Printer">M506</td><td class="firmware">[M506]</td></tr>
+            <tr><td class="Printer">M551</td><td class="firmware">[M551]</td></tr>
+            <tr><td class="Printer">M577</td><td class="firmware">[M577]</td></tr>
+            <tr><td class="Printer">M578</td><td class="firmware">[M578]</td></tr>
+            <tr><td class="Printer">M609</td><td class="firmware">[M609]</td></tr>
+            <tr><td class="Printer">M612</td><td class="firmware">[M612]</td></tr>
+            <tr><td class="Printer">M652</td><td class="firmware">[M652]</td></tr>
+            <tr><td class="Printer">M776</td><td class="firmware">[M776]</td></tr>
+            <tr><td class="Printer">M578</td><td class="firmware">[M578]</td></tr>
+            <tr><td class="Printer">5700</td><td class="firmware">[5700]</td></tr>
+            <tr><td class="Printer">6800</td><td class="firmware">[6800]</td></tr>
+            <tr><td class="Printer">8500</td><td class="firmware">[8500]</td></tr>
+		</table>
+    </div>
+	<script> 
+	</script>
+</body>
+</html>
