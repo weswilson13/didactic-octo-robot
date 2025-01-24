@@ -333,9 +333,8 @@ $AppSettings=[System.Configuration.ConfigurationManager]::AppSettings
     $decrFolder = $AppSettings["DecryptFolder"]
 
     # Declare CspParameters and RsaCryptoServiceProvider objects with global scope of your Form class.
-    New-Variable -Name _cspp -Value ([System.Security.Cryptography.CspParameters]::new()) -Option ReadOnly -Scope Global -Force
-    [System.Security.Cryptography.RSACryptoServiceProvider]$global:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
-    $script:_rsa.PersistKeyInCsp = $true
+    New-Variable -Name _cspp -Value ([System.Security.Cryptography.CspParameters]::new()) -Option ReadOnly -Scope Script -Force
+    [System.Security.Cryptography.RSACryptoServiceProvider]$script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
     
     # Public key file
     $pubKeyFile = "$encrFolder\rsaPublicKey.txt"
@@ -456,8 +455,8 @@ $form.ShowDialog()
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBBgMhF2598pDEz
-# jGAdGq04ra5Zm07YXllkcOsNDXFRPKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDx9pJrHbrPbtY8
+# 1vufnBfi54+IQrnio2USxpx7QVtcVKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -580,28 +579,28 @@ $form.ShowDialog()
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQglf62NyftcH3nt9WRQQtFtGTFwhy97m9zRpyBxVu4yo8wDQYJKoZIhvcN
-# AQEBBQAEggEAQ7I0EVwi/djz5Ll6e6IsjuYERn2c1iL5pzB2aD4UkIhQOor3wZip
-# 9X39fx04Jdr+Ro7WhaMm9IA2OIEVZCMhyD9S2ocqQY4QS9nrJSW0VLISIYhTJ9GC
-# z7GRDEyAWQWJnF7uKEMg6uab1Ijt1e/54UDusidJ5QJf3ZgMlfY7mMIxHuSl0Vcf
-# fh47ti6KD833J7cAeVDzXU47U1d9PV/1qTBTbv2XOdobXOdLd5AkFNXQYKiFKDDs
-# rewsFAU17Qn6YAG5ZdYi/74XbPhYm7gO63IETnzVcDSEdpOrRAUNLXNjGks+yRy1
-# c0EC8D28mhT0fyVElH4FmTuxRsIB2gFiraGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQghNVmaDAe4MktHCzxxRtsvGc2i1w2VHqcLVUeTAe1gB0wDQYJKoZIhvcN
+# AQEBBQAEggEAV6z/q0GkJ2wEDQPuyWnqyS/JygOoelOO18su9F4+TIkrSrLi0Jpt
+# swDyR11vUvc7B+ZMXBdWBB0WdBZN8tHLvlRfOQX3RHIok3j3oOyP1Utl7fPQLnSQ
+# Hbp3w4QWBG5/TQiyD1KuTYlGQILR7k/2EJY80jEiJzR9aJzFp+tMc1D6cgwMU21F
+# NPgIZaaKBKtl9GMpKFNoQ1PKujkfviOcl/FVvivldxGf8uwxLuYvA991BFHRX6Oa
+# cgGpqWagTJLUwvMIprTBKBja5J5Ep3HuqEPZNck6+ZWZqAvBSZpil7pfpLt9SBIt
+# z5k6EM2j+2frwvwZ0JULHhp35aKoDEhSkqGCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjQxOTQ2MDRaMC8GCSqGSIb3DQEJBDEiBCDOd1+g3njCyrtWu3FYpZC3WecjhbaU
-# +1ohLaX8qmjTgzANBgkqhkiG9w0BAQEFAASCAgC8iBLgR/DV0RuBj8vi+ax3KHM6
-# mkglb+ILOSF5B0s9eDg9VHG40HgjR7K/+FpjbsgpHluXHWW9El3scSJdKL0G2o0e
-# lujf06Yo8g08wBr7+z+qFc8+tWK3KSaD37fSsq8X7210qlFLSTvuj7YOAQzorn8e
-# gvfoDXIi6d4YiHwKa+yBEcqlUd8Sxd3Xpd0YFSJym9jCSosVIH5YhckF0qTNyGi2
-# ppTIW0nYkDxFzyLS0cFoKKTzxMmpZkLsxZ4fYSThS7SHWKjW5gDMZltBwhgG8KZf
-# sk7wVlnAJvSxwq5QQxBc2lqeD0aZ7LniikPcg7YCxZ7m9WcfAc2UT+d0/S0K4Wzl
-# DVC0QiRhMpt5imar0sMKgP1LjzNRrCBUdAQCmiYutKAjDqAsU9e4IIlUvXzULtF8
-# LzsqIrmwGijVHHavONuTwv/0AELeY64Mdwkrgy9ZF4cKV2mfXZH6RxQbe4utIWUi
-# MLN/KGgOK/OVnjjm9ANNONdASmk/d2aBlTFuI/NLVJ13QJrB8XYoFE+PdChkziA4
-# z5zcyUSgVNuivplSIQXYKf40owOQrZ3Wi6kyBtFgOvRkvYbHfDPsTJ6XXim9hjCd
-# r52sLkCarQ/+2PvA5I5KH14lXDwm6bkW2Jt5HGKA2C948CQreelFZJT+w5yS8Z31
-# 49pYkb7kQtPumtt5wg==
+# MjQyMDIzMTNaMC8GCSqGSIb3DQEJBDEiBCBxBT9ZSsLP3fj855LrlEV01O2c9aP2
+# 9zQpoQHGZBl19zANBgkqhkiG9w0BAQEFAASCAgA2+CGtVMUnEnVH2lng0wUC4TLw
+# MSDN8XhV0+rrygaAy+LLBzRQsidokRw57YDzWC7qM+MxxfBJG+PzKZrWGHDnU+c0
+# 3f3xSCB/sqByjb/sqMGPG8+rLmDCqvHrjDjeV9UGgSY8QPZ3MoHJ8o277ghyuFtm
+# G/mVm3Uo3OYHH4ad2Z8AFifeICSDkyt9COOAYavWmqKKxm7n52UuPiXhSQo2bwKS
+# YOc4tuD9RebDaiinmhqbh0i3Gdryp0rKwm7W2sULk/J4WfzBjtOLroEgoMAV73tR
+# p83IzpQH7y09B6qOh1lJZ/vlf/RbJeza0jF7SU/I/g29B7TNQr/cOyKaALiBi6Yg
+# H4+233CWgi2E6boODrgFl78xa7iycUvuvDgQqaPDMbWjFCMR1e3BXMuK/jk1Nd54
+# MaTyW6q62sIyYTobR4BW5dMj7AZXOkHOvtsEk4QHHN4ZWWSU24tmMubde/9vND+t
+# t3IbcNZQ+Rk2WcZ7m4FI7kNXUAPicAwE2ZiWagWyhn/EfH0AHgKbsxS0qIFBTxA7
+# EuOqb9bNFv3LoH7hnXM2ap38w0gWJb56pblWkEPwhwYtLb7PxHcvKv4gmVWY04Oj
+# ovzsbGsQEodIB+YnZodWWNMOyer0sV+VOfAiT1Q97tpKgqi4UfKMw0iyYe8+GG+d
+# 2pKk6kGeBUu/jez33g==
 # SIG # End signature block
