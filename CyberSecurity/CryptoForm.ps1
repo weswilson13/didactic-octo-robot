@@ -183,6 +183,8 @@ function Get-CspKeyContainer {
         [string]$KeyContainerName
     )
 
+    $keyContainerExists = $false
+
     # check user crypto keys for a container with the specified name
     $certUtil = certutil -user -key $KeyContainerName
 
@@ -190,14 +192,11 @@ function Get-CspKeyContainer {
         $keyContainerExists = $true 
         [int]$keyNameIndex = $certUtil.Trim().IndexOf($KeyContainerName)
         $uniqueKeyId = $certUtil[$keyNameIndex + 1].Trim()
-
-        return @{
-            KeyExists = $keyContainerExists
-            UniqueKeyID = $uniqueKeyId
-        }
     }
-    else {
-        throw "A key container does not exist with the Container Name '$KeyContainerName'"
+
+    return @{
+        Exists = $keyContainerExists
+        UniqueKeyID = $uniqueKeyId
     }
 }
 
@@ -207,6 +206,12 @@ function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
         .SYNOPSIS
         Click event handler for the Create Keys button (buttonCreateAsmKeys_Click)
     #>
+    
+    # check for a container with the supplied key container name
+    $keyContainer = Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
+    if ($keyContainer.Exists) {
+        [System.Windows.Forms.MessageBox]::Show("A key container with the specified name already exists. The existing keys will be retrieved.")
+    }
 
     # Stores a key pair in the key container.
     $script:_cspp.KeyContainerName = $textBoxKeyname.Text
@@ -309,7 +314,10 @@ function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
     #>
     
     # check for a container with the supplied key container name
-    Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
+    $keyContainer = Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
+    if (!$keyContainer.Exists) {
+        [System.Windows.Forms.MessageBox]::Show("A key container will be created with the name '$($textBoxKeyname.Text)'")
+    }
 
     $filebrowser = [System.Windows.Forms.OpenFileDialog]::new()
     $filebrowser.InitialDirectory = $encrFolder
@@ -355,7 +363,10 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
     #>
 
     # check for a container with the supplied key container name
-    Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
+    $keyContainer = Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
+    if (!$keyContainer.Exists) {
+        throw "A key container does not exist with the Container Name '$($textBoxKeyname.Text)'"
+    }
 
     $script:_cspp.KeyContainerName = $textBoxKeyname.Text
     $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
@@ -368,7 +379,6 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
          $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair" 
     }
 }
-
 function Get-AppSettings {
     param ()
     Add-Type -AssemblyName System.Windows.Forms
