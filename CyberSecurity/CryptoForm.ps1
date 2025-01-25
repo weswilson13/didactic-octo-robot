@@ -224,6 +224,9 @@ function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
     else {
         $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair"
     }
+
+    [System.Windows.Forms.MessageBox]::Show("RSA Keys successfully created and stored in key container $($textBoxKeyName.Text)", "Create RSA Keys",`
+        [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
 }
 function buttonEncryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
     <#
@@ -294,7 +297,10 @@ function buttonExportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
             $sw.Write($script:_rsa.ToXmlString($false))
         }
         catch {
-            throw "An error occurred writing public key"
+            [System.Windows.Forms.MessageBox]::Show("An error occurred writing public key", "Export Public Key",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            
+            return
         }
         finally {
             # clean up
@@ -340,7 +346,10 @@ function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
             }
         }
         catch {
-            throw "An error occurred importing public key"
+            [System.Windows.Forms.MessageBox]::Show("An error occurred writing public key", "Export Public Key",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            
+            return
         }
         finally {
             # clean up
@@ -365,7 +374,11 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
     # check for a container with the supplied key container name
     $keyContainer = Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
     if (!$keyContainer.Exists) {
-        throw "A key container does not exist with the Container Name '$($textBoxKeyname.Text)'"
+        $message = "A key container does not exist with the Container Name '$($textBoxKeyname.Text)'"
+        [System.Windows.Forms.MessageBox]::Show($message, "Get Private Key",`
+            [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        
+        return
     }
 
     $script:_cspp.KeyContainerName = $textBoxKeyname.Text
@@ -401,7 +414,7 @@ function Get-AppSettings {
 }
 #endregion functions
 
-#region    DECLARE GLOBAL OBJECTS
+#region    DECLARE GLOBAL OBJECTS AND DEFAULT VALUES
 
     # Path variables for source, encryption, and decryption folders.
     $AppSettings = (Get-AppSettings).AppSettings
@@ -413,17 +426,15 @@ function Get-AppSettings {
     New-Variable -Name _cspp -Value ([System.Security.Cryptography.CspParameters]::new()) -Option ReadOnly -Scope Script -Force
     [System.Security.Cryptography.RSACryptoServiceProvider]$script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
     
-    # Public key file
+    # default public key file
     $pubKeyFile = "rsaPublicKey.txt"
 
-    # Key container name for private/public key value pair.
+    # Default key container name for private/public key value pair.
     $keyName = "Key01"
 
-#endregion DECLARE GLOBAL OBJECTS
+#endregion DECLARE GLOBAL OBJECTS AND DEFAULT VALUES
 
-<#
-### controls
-#>
+#region form controls
 
 #region labelKeyName
     $labelKeyName = New-Object System.Windows.Forms.Label
@@ -508,7 +519,9 @@ function Get-AppSettings {
     $label1.AutoSize = $true
 #endregion label1
 
+#endregion form controls
 
+#region table layout
 $tableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel.RowCount = 5
 $tableLayoutPanel.ColumnCount = 2
@@ -533,7 +546,7 @@ $tableLayoutPanel.Controls.Add($buttonCreateAsmKeys,0,3)
 $tableLayoutPanel.Controls.Add($buttonGetPrivateKey,1,3)
 $tableLayoutPanel.Controls.Add($label1,0,4)
 $tableLayoutPanel.SetColumnSpan($label1,2)
-
+#endregion table layout
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Crypto Tool"
