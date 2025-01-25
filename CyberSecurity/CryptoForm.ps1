@@ -219,10 +219,10 @@ function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
     $script:_rsa.PersistKeyInCsp = $true
 
     if ($script:_rsa.PublicOnly) {
-        $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
+        $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
     }
     else {
-        $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair"
+        $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair"
     }
 
     [System.Windows.Forms.MessageBox]::Show("RSA Keys successfully created and stored in key container $($textBoxKeyName.Text)", "Create RSA Keys",`
@@ -339,10 +339,10 @@ function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
             $script:_rsa.PersistKeyInCsp = $true
 
             if ($script:_rsa.PublicOnly) {
-                $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
+                $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
             }
             else { 
-                $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair" 
+                $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair" 
             }
         }
         catch {
@@ -386,11 +386,27 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
     $script:_rsa.PersistKeyInCsp = $true
 
     if ($script:_rsa.PublicOnly) {
-        $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
+        $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
     }
     else { 
-         $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair" 
+         $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair" 
     }
+}
+function comboBoxKeySource_SelectionChangeCommitted([psobject]$sender, [System.EventArgs]$e) {
+    Write-host $this.selecteditem
+    switch ($this.SelectedItem) {
+        'Key Container' { 
+            $comboBoxCertStore.Visible = $false
+            $textBoxKeyname.Visible = $true
+            $label.Text = $PSItem
+        }
+        'Certificate Store' {
+            $comboBoxCertStore.Visible = $true
+            $textBoxKeyname.Visible = $false
+            $label.Text = $PSItem
+        }
+    }
+
 }
 function Get-AppSettings {
     param ()
@@ -436,12 +452,26 @@ function Get-AppSettings {
 
 #region form controls
 
-#region labelKeyName
-    $labelKeyName = New-Object System.Windows.Forms.Label
-    $labelKeyName.Text = "Key Container Name"
-    $labelKeyName.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Regular)
-    $labelKeyName.AutoSize = $true
-#endregion labelKeyName
+#region labelKeySource
+    $labelKeySource = New-Object System.Windows.Forms.Label
+    $labelKeySource.Text = "Key Source"
+    $labelKeySource.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Regular)
+    $labelKeySource.AutoSize = $true
+#endregion labelKeySource
+
+#region comboBoxKeySource
+    $comboBoxKeySource = [System.Windows.Forms.ComboBox]::new()
+    $comboBoxKeySource.SelectedText = 'Key Container'
+    $comboBoxKeySource.Items.AddRange(@('Key Container','Certificate Store'))
+    $comboBoxKeySource.Add_SelectionChangeCommitted({comboBoxKeySource_SelectionChangeCommitted})
+#endregion comboBoxKeySource
+
+#region label
+    $label = New-Object System.Windows.Forms.Label
+    $label.Text = "Key Container Name"
+    $label.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Regular)
+    $label.AutoSize = $true
+#endregion label
 
 #region textBoxKeyName
     $textBoxKeyname = New-Object System.Windows.Forms.TextBox
@@ -450,6 +480,15 @@ function Get-AppSettings {
     $textBoxKeyname.Dock = 'Fill'
     # $textBoxKeyname.AutoSize = $true
 #endregion textBoxKeyName
+
+#region comboBoxKeySource
+$stores = Get-ChildItem Cert:\CurrentUser, Cert:\LocalMachine | ForEach-Object { "$($_.Location)\$($_.Name)" }
+    $comboBoxCertStore = [System.Windows.Forms.ComboBox]::new()
+    $comboBoxCertStore.SelectedText = 'CurrentUser\My'
+    $comboBoxCertStore.Items.AddRange($stores)
+    $comboBoxCertStore.Visible = $false
+    $comboBoxCertStore.Add_SelectionChangeCommitted({comboBoxKeySource_SelectionChangeCommitted})
+#endregion comboBoxKeySource
 
 #region buttonEncryptFile
     $buttonEncryptFile = New-Object System.Windows.Forms.Button
@@ -512,19 +551,20 @@ function Get-AppSettings {
 #endregion buttonGetPrivateKey
 
 #region label1
-    $label1 = New-Object System.Windows.Forms.Label
+    $labelKeyStatus = New-Object System.Windows.Forms.Label
     # $label.Dock = "Fill"
-    $label1.Text = "Key Not Set"
-    $label1.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Bold)
-    $label1.AutoSize = $true
+    $labelKeyStatus.Text = "Key Not Set"
+    $labelKeyStatus.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Bold)
+    $labelKeyStatus.AutoSize = $true
 #endregion label1
 
 #endregion form controls
 
 #region table layout
 $tableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel.RowCount = 5
+$tableLayoutPanel.RowCount = 6
 $tableLayoutPanel.ColumnCount = 2
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
@@ -536,16 +576,19 @@ $tableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle(
 
 $tableLayoutPanel.Dock = "Fill"
 # $tableLayoutPanel.CellBorderStyle = "outset"
-$tableLayoutPanel.Controls.Add($labelKeyName,0,0)
-$tableLayoutPanel.Controls.Add($textBoxKeyname,1,0)
-$tableLayoutPanel.Controls.Add($buttonEncryptFile,0,1)
-$tableLayoutPanel.Controls.Add($buttonDecryptFile,1,1)
-$tableLayoutPanel.Controls.Add($buttonImportPublicKey,0,2)
-$tableLayoutPanel.Controls.Add($buttonExportPublicKey,1,2)
-$tableLayoutPanel.Controls.Add($buttonCreateAsmKeys,0,3)
-$tableLayoutPanel.Controls.Add($buttonGetPrivateKey,1,3)
-$tableLayoutPanel.Controls.Add($label1,0,4)
-$tableLayoutPanel.SetColumnSpan($label1,2)
+$tableLayoutPanel.Controls.Add($labelKeySource,0,0)
+$tableLayoutPanel.Controls.Add($comboBoxKeySource,1,0)
+$tableLayoutPanel.Controls.Add($label,0,1)
+$tableLayoutPanel.Controls.Add($textBoxKeyname,1,1)
+$tableLayoutPanel.Controls.Add($comboBoxCertStore,1,1)
+$tableLayoutPanel.Controls.Add($buttonEncryptFile,0,2)
+$tableLayoutPanel.Controls.Add($buttonDecryptFile,1,2)
+$tableLayoutPanel.Controls.Add($buttonImportPublicKey,0,3)
+$tableLayoutPanel.Controls.Add($buttonExportPublicKey,1,3)
+$tableLayoutPanel.Controls.Add($buttonCreateAsmKeys,0,4)
+$tableLayoutPanel.Controls.Add($buttonGetPrivateKey,1,4)
+$tableLayoutPanel.Controls.Add($labelKeyStatus,0,5)
+$tableLayoutPanel.SetColumnSpan($labelKeyStatus,2)
 #endregion table layout
 
 $form = New-Object System.Windows.Forms.Form
