@@ -199,6 +199,44 @@ function Get-CspKeyContainer {
         UniqueKeyID = $uniqueKeyId
     }
 }
+function Get-DropdownWidth {
+    param (
+        [string[]]$Text,
+        [System.Drawing.Font]$Font
+    )
+    Write-Host $Font
+
+    $maxWidth, $temp = 0
+    foreach ($obj in $Text) {
+        $temp = [System.Windows.Forms.TextRenderer]::MeasureText($obj.ToString(), $Font).Width
+        if ($temp -gt $maxWidth) {
+            $maxWidth = $temp
+        }
+    }
+
+    Write-Host "Max Width: $([System.Math]::Max($maxWidth,300))"
+    return [System.Math]::Max($maxWidth,300)
+}
+function Get-AppSettings {
+    param ()
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+    Add-Type -AssemblyName System.Configuration
+    
+    # Set this to the full path of your App.config
+    $configPath = "$PSScriptRoot\App.config"
+    
+    [System.AppDomain]::CurrentDomain.SetData("APP_CONFIG_FILE", $configPath)
+    [Configuration.ConfigurationManager].GetField("s_initState", "NonPublic, Static").SetValue($null, 0)
+    [Configuration.ConfigurationManager].GetField("s_configSystem", "NonPublic, Static").SetValue($null, $null)
+    ([Configuration.ConfigurationManager].Assembly.GetTypes() | 
+        Where-Object {$_.FullName -eq "System.Configuration.ClientConfigPaths"})[0].GetField("s_current", "NonPublic, Static").SetValue($null, $null)
+    
+    return @{
+        AppSettings = [System.Configuration.ConfigurationManager]::AppSettings
+        ConnectionStrings = [System.Configuration.ConfigurationManager]::ConnectionStrings
+    }
+}
 
 # Event Handlers
 function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
@@ -399,34 +437,27 @@ function comboBoxKeySource_SelectionChangeCommitted([psobject]$sender, [System.E
             $comboBoxCertStore.Visible = $false
             $textBoxKeyname.Visible = $true
             $label.Text = $PSItem
+            $labelCertificate.Visible = $false
+            $comboBoxCertificate.Visible = $false
         }
         'Certificate Store' {
             $comboBoxCertStore.Visible = $true
             $textBoxKeyname.Visible = $false
             $label.Text = $PSItem
+            $labelCertificate.Visible = $true
+            $comboBoxCertificate.Visible = $true
         }
     }
 
 }
-function Get-AppSettings {
-    param ()
-    Add-Type -AssemblyName System.Windows.Forms
-    Add-Type -AssemblyName System.Drawing
-    Add-Type -AssemblyName System.Configuration
-    
-    # Set this to the full path of your App.config
-    $configPath = "$PSScriptRoot\App.config"
-    
-    [System.AppDomain]::CurrentDomain.SetData("APP_CONFIG_FILE", $configPath)
-    [Configuration.ConfigurationManager].GetField("s_initState", "NonPublic, Static").SetValue($null, 0)
-    [Configuration.ConfigurationManager].GetField("s_configSystem", "NonPublic, Static").SetValue($null, $null)
-    ([Configuration.ConfigurationManager].Assembly.GetTypes() | 
-        Where-Object {$_.FullName -eq "System.Configuration.ClientConfigPaths"})[0].GetField("s_current", "NonPublic, Static").SetValue($null, $null)
-    
-    return @{
-        AppSettings = [System.Configuration.ConfigurationManager]::AppSettings
-        ConnectionStrings = [System.Configuration.ConfigurationManager]::ConnectionStrings
-    }
+function comboBoxCertStore_SelectionChangeCommitted([psobject]$sender, [System.EventArgs]$e) {
+    Write-Host $this.SelectedItem
+
+    # update comboBoxCertificate list items
+    $certs = Get-ChildItem "cert:\$($this.SelectedItem)"
+    $comboBoxCertificate.Items.Clear()
+    $comboBoxCertificate.Items.AddRange($certs.Thumbprint)
+    $comboBoxCertificate.DropDownWidth = Get-DropdownWidth -Text $certs.Thumbprint -Font $this.Font
 }
 #endregion functions
 
@@ -481,14 +512,36 @@ function Get-AppSettings {
     # $textBoxKeyname.AutoSize = $true
 #endregion textBoxKeyName
 
-#region comboBoxKeySource
-$stores = Get-ChildItem Cert:\CurrentUser, Cert:\LocalMachine | ForEach-Object { "$($_.Location)\$($_.Name)" }
+#region comboBoxCertStore
+    $stores = Get-ChildItem Cert:\CurrentUser, Cert:\LocalMachine | ForEach-Object { "$($_.Location)\$($_.Name)" }
     $comboBoxCertStore = [System.Windows.Forms.ComboBox]::new()
     $comboBoxCertStore.SelectedText = 'CurrentUser\My'
     $comboBoxCertStore.Items.AddRange($stores)
     $comboBoxCertStore.Visible = $false
-    $comboBoxCertStore.Add_SelectionChangeCommitted({comboBoxKeySource_SelectionChangeCommitted})
-#endregion comboBoxKeySource
+    $comboBoxCertStore.DropDownWidth = Get-DropdownWidth -Text $stores -Font $comboBoxCertStore.Font
+    $comboBoxCertStore.Add_SelectionChangeCommitted({comboBoxCertStore_SelectionChangeCommitted})
+#endregion comboBoxCertStore
+
+#region labelCertificate
+    $labelCertificate = New-Object System.Windows.Forms.Label
+    $labelCertificate.Text = "Thumbprint"
+    $labelCertificate.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Regular)
+    # $labelCertificate.AutoSize = $true
+    $labelCertificate.Dock = 'Fill'
+    $labelCertificate.Visible = $false
+#endregion labelCertificate
+
+#region comboBoxCertificate
+    $comboBoxCertificate = New-Object System.Windows.Forms.ComboBox
+    $comboBoxCertificate.Name = "comboBoxCertificate"
+    $comboBoxCertificate.Text = ""
+    $comboBoxCertificate.Dock = 'Fill'
+    $comboBoxCertificate.Visible = $false
+    $comboBoxCertificate.AutoSize = $true
+    $certs = Get-ChildItem "Cert:\$($comboBoxCertStore.Text)"
+    $comboBoxCertificate.Items.AddRange($certs.Thumbprint)
+    $comboBoxCertificate.DropDownWidth = Get-DropdownWidth -Text $certs.Thumbprint -Font $comboBoxCertificate.Font
+#endregion comboBoxCertificate
 
 #region buttonEncryptFile
     $buttonEncryptFile = New-Object System.Windows.Forms.Button
@@ -562,8 +615,9 @@ $stores = Get-ChildItem Cert:\CurrentUser, Cert:\LocalMachine | ForEach-Object {
 
 #region table layout
 $tableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel.RowCount = 6
+$tableLayoutPanel.RowCount = 7
 $tableLayoutPanel.ColumnCount = 2
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 $tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
@@ -581,13 +635,15 @@ $tableLayoutPanel.Controls.Add($comboBoxKeySource,1,0)
 $tableLayoutPanel.Controls.Add($label,0,1)
 $tableLayoutPanel.Controls.Add($textBoxKeyname,1,1)
 $tableLayoutPanel.Controls.Add($comboBoxCertStore,1,1)
-$tableLayoutPanel.Controls.Add($buttonEncryptFile,0,2)
-$tableLayoutPanel.Controls.Add($buttonDecryptFile,1,2)
-$tableLayoutPanel.Controls.Add($buttonImportPublicKey,0,3)
-$tableLayoutPanel.Controls.Add($buttonExportPublicKey,1,3)
-$tableLayoutPanel.Controls.Add($buttonCreateAsmKeys,0,4)
-$tableLayoutPanel.Controls.Add($buttonGetPrivateKey,1,4)
-$tableLayoutPanel.Controls.Add($labelKeyStatus,0,5)
+$tableLayoutPanel.Controls.Add($labelCertificate,0,2)
+$tableLayoutPanel.Controls.Add($comboBoxCertificate,1,2)
+$tableLayoutPanel.Controls.Add($buttonEncryptFile,0,3)
+$tableLayoutPanel.Controls.Add($buttonDecryptFile,1,3)
+$tableLayoutPanel.Controls.Add($buttonImportPublicKey,0,4)
+$tableLayoutPanel.Controls.Add($buttonExportPublicKey,1,4)
+$tableLayoutPanel.Controls.Add($buttonCreateAsmKeys,0,5)
+$tableLayoutPanel.Controls.Add($buttonGetPrivateKey,1,5)
+$tableLayoutPanel.Controls.Add($labelKeyStatus,0,6)
 $tableLayoutPanel.SetColumnSpan($labelKeyStatus,2)
 #endregion table layout
 
