@@ -1,3 +1,5 @@
+#region functions
+
 # Script Methods
 function EncryptFile {
     <#
@@ -185,7 +187,7 @@ function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
     #>
 
     # Stores a key pair in the key container.
-    $script:_cspp.KeyContainerName = $keyName
+    $script:_cspp.KeyContainerName = $textBoxKeyname.Text
     $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
     $script:_rsa.PersistKeyInCsp = $true
 
@@ -272,7 +274,7 @@ function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
     #>
     
     $sr = [System.IO.StreamReader]::new($pubKeyFile)
-    $script:_cspp.KeyContainerName = $keyName
+    $script:_cspp.KeyContainerName = $textBoxKeyname.Text
     $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
 
     $keytxt = $sr.ReadToEnd()
@@ -297,7 +299,7 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
 
         This task simulates the scenario of Alice using her private key to decrypt files encrypted by Bob.
     #>
-    $script:_cspp.KeyContainerName = $keyName
+    $script:_cspp.KeyContainerName = $textBoxKeyname.Text
     $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
     $script:_rsa.PersistKeyInCsp = $true
 
@@ -309,25 +311,32 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
     }
 }
 
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName System.Configuration
-
-# Set this to the full path of your App.config
-$configPath = "$PSScriptRoot\App.config"
-
-[System.AppDomain]::CurrentDomain.SetData("APP_CONFIG_FILE", $configPath)
-[Configuration.ConfigurationManager].GetField("s_initState", "NonPublic, Static").SetValue($null, 0)
-[Configuration.ConfigurationManager].GetField("s_configSystem", "NonPublic, Static").SetValue($null, $null)
-([Configuration.ConfigurationManager].Assembly.GetTypes() | 
-    Where-Object {$_.FullName -eq "System.Configuration.ClientConfigPaths"})[0].GetField("s_current", "NonPublic, Static").SetValue($null, $null)
-
-$AppSettings=[System.Configuration.ConfigurationManager]::AppSettings
-
+function Get-AppSettings {
+    param ()
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+    Add-Type -AssemblyName System.Configuration
+    
+    # Set this to the full path of your App.config
+    $configPath = "$PSScriptRoot\App.config"
+    
+    [System.AppDomain]::CurrentDomain.SetData("APP_CONFIG_FILE", $configPath)
+    [Configuration.ConfigurationManager].GetField("s_initState", "NonPublic, Static").SetValue($null, 0)
+    [Configuration.ConfigurationManager].GetField("s_configSystem", "NonPublic, Static").SetValue($null, $null)
+    ([Configuration.ConfigurationManager].Assembly.GetTypes() | 
+        Where-Object {$_.FullName -eq "System.Configuration.ClientConfigPaths"})[0].GetField("s_current", "NonPublic, Static").SetValue($null, $null)
+    
+    return @{
+        AppSettings = [System.Configuration.ConfigurationManager]::AppSettings
+        ConnectionStrings = [System.Configuration.ConfigurationManager]::ConnectionStrings
+    }
+}
+#endregion functions
 
 #region    DECLARE GLOBAL OBJECTS
 
     # Path variables for source, encryption, and decryption folders.
+    $AppSettings = (Get-AppSettings).AppSettings
     $srcFolder = $AppSettings["SourceFolder"]
     $encrFolder = $AppSettings["EncryptFolder"]
     $decrFolder = $AppSettings["DecryptFolder"]
@@ -347,6 +356,13 @@ $AppSettings=[System.Configuration.ConfigurationManager]::AppSettings
 <#
 ### controls
 #>
+
+#region textBoxKeyName
+    $textBoxKeyname = New-Object System.Windows.Forms.TextBox
+    $textBoxKeyname.Name = "textBoxKeyName"
+    $textBoxKeyname.Text = $keyName
+    # $textBoxKeyname.AutoSize = $true
+#endregion textBoxKeyName
 
 #region buttonEncryptFile
     $buttonEncryptFile = New-Object System.Windows.Forms.Button
@@ -418,31 +434,34 @@ $AppSettings=[System.Configuration.ConfigurationManager]::AppSettings
 
 
 $tableLayoutPanel = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel.RowCount = 4
+$tableLayoutPanel.RowCount = 5
 $tableLayoutPanel.ColumnCount = 2
-$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 25))) | Out-Null
-$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 25))) | Out-Null
-$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 25))) | Out-Null
-$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 25))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
+$tableLayoutPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null
 
 $tableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 50))) | Out-Null
 $tableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 50))) | Out-Null
 
 $tableLayoutPanel.Dock = "Fill"
 # $tableLayoutPanel.CellBorderStyle = "outset"
-$tableLayoutPanel.Controls.Add($buttonEncryptFile,0,0)
-$tableLayoutPanel.Controls.Add($buttonDecryptFile,1,0)
-$tableLayoutPanel.Controls.Add($buttonImportPublicKey,0,1)
-$tableLayoutPanel.Controls.Add($buttonExportPublicKey,1,1)
-$tableLayoutPanel.Controls.Add($buttonCreateAsmKeys,0,2)
-$tableLayoutPanel.Controls.Add($buttonGetPrivateKey,1,2)
-$tableLayoutPanel.Controls.Add($label1)
+$tableLayoutPanel.Controls.Add($textBoxKeyname,0,0)
+$tableLayoutPanel.SetColumnSpan($textBoxKeyname,2)
+$tableLayoutPanel.Controls.Add($buttonEncryptFile,0,1)
+$tableLayoutPanel.Controls.Add($buttonDecryptFile,1,1)
+$tableLayoutPanel.Controls.Add($buttonImportPublicKey,0,2)
+$tableLayoutPanel.Controls.Add($buttonExportPublicKey,1,2)
+$tableLayoutPanel.Controls.Add($buttonCreateAsmKeys,0,3)
+$tableLayoutPanel.Controls.Add($buttonGetPrivateKey,1,3)
+$tableLayoutPanel.Controls.Add($label1,0,4)
 $tableLayoutPanel.SetColumnSpan($label1,2)
 
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Crypto Tool"
-$form.ClientSize = New-Object System.Drawing.Size(400,400)
+$form.ClientSize = New-Object System.Drawing.Size(300,300)
 $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 $form.Add_FormClosed({
     $form.Close()
@@ -455,8 +474,8 @@ $form.ShowDialog()
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDx9pJrHbrPbtY8
-# 1vufnBfi54+IQrnio2USxpx7QVtcVKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDA9E0lVgtps0oL
+# Gkvt6Wk/ykBlW8xjflQOcLMqhZn6ZaCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -579,28 +598,28 @@ $form.ShowDialog()
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQghNVmaDAe4MktHCzxxRtsvGc2i1w2VHqcLVUeTAe1gB0wDQYJKoZIhvcN
-# AQEBBQAEggEAV6z/q0GkJ2wEDQPuyWnqyS/JygOoelOO18su9F4+TIkrSrLi0Jpt
-# swDyR11vUvc7B+ZMXBdWBB0WdBZN8tHLvlRfOQX3RHIok3j3oOyP1Utl7fPQLnSQ
-# Hbp3w4QWBG5/TQiyD1KuTYlGQILR7k/2EJY80jEiJzR9aJzFp+tMc1D6cgwMU21F
-# NPgIZaaKBKtl9GMpKFNoQ1PKujkfviOcl/FVvivldxGf8uwxLuYvA991BFHRX6Oa
-# cgGpqWagTJLUwvMIprTBKBja5J5Ep3HuqEPZNck6+ZWZqAvBSZpil7pfpLt9SBIt
-# z5k6EM2j+2frwvwZ0JULHhp35aKoDEhSkqGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQgzJcdQu2OESrjRwvPloOPRI4JUbZGWofPxZIUnfbuf1wwDQYJKoZIhvcN
+# AQEBBQAEggEAYQuqSz/m+sm7JAm1qzBdzbntdbytPqfRS/mkpjiKmwDbm1RHRY8w
+# sYH0b5ARIa/yCxhK9F6x0GI89keydQRXD5EQjxbr2yGW6I2ew4Fj3HkGFEyRJ8gj
+# /O/jBZkmDR1fOihlFovkUY8ZhBaSRl4zs78JokXBbGovB4yOxFXoggdH4SJbpqkG
+# r/JekRzItstiSScN2E9BHIvi7pco4olzpIXEuuo/wJfXO9TQV2S7ZSF8QHH8fukc
+# wBzvq4/e88XsxjwDozGyVLUfQTobfYSDgvmfRoGyygwHfsSOeTXpQzc4RjF0rBxV
+# DPyl2WMMsdMVCUx4fw3fL6c6aomLW/k9W6GCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjQyMDIzMTNaMC8GCSqGSIb3DQEJBDEiBCBxBT9ZSsLP3fj855LrlEV01O2c9aP2
-# 9zQpoQHGZBl19zANBgkqhkiG9w0BAQEFAASCAgA2+CGtVMUnEnVH2lng0wUC4TLw
-# MSDN8XhV0+rrygaAy+LLBzRQsidokRw57YDzWC7qM+MxxfBJG+PzKZrWGHDnU+c0
-# 3f3xSCB/sqByjb/sqMGPG8+rLmDCqvHrjDjeV9UGgSY8QPZ3MoHJ8o277ghyuFtm
-# G/mVm3Uo3OYHH4ad2Z8AFifeICSDkyt9COOAYavWmqKKxm7n52UuPiXhSQo2bwKS
-# YOc4tuD9RebDaiinmhqbh0i3Gdryp0rKwm7W2sULk/J4WfzBjtOLroEgoMAV73tR
-# p83IzpQH7y09B6qOh1lJZ/vlf/RbJeza0jF7SU/I/g29B7TNQr/cOyKaALiBi6Yg
-# H4+233CWgi2E6boODrgFl78xa7iycUvuvDgQqaPDMbWjFCMR1e3BXMuK/jk1Nd54
-# MaTyW6q62sIyYTobR4BW5dMj7AZXOkHOvtsEk4QHHN4ZWWSU24tmMubde/9vND+t
-# t3IbcNZQ+Rk2WcZ7m4FI7kNXUAPicAwE2ZiWagWyhn/EfH0AHgKbsxS0qIFBTxA7
-# EuOqb9bNFv3LoH7hnXM2ap38w0gWJb56pblWkEPwhwYtLb7PxHcvKv4gmVWY04Oj
-# ovzsbGsQEodIB+YnZodWWNMOyer0sV+VOfAiT1Q97tpKgqi4UfKMw0iyYe8+GG+d
-# 2pKk6kGeBUu/jez33g==
+# MjUxNDI1NDZaMC8GCSqGSIb3DQEJBDEiBCDTzbDJQfkJ7v4sFyu7Dj9LrCib+jGh
+# lSXnVCAT3U3XATANBgkqhkiG9w0BAQEFAASCAgBBBhF2ZrLXuFYBmoVZybVlXYrn
+# oxVw9myZH/Ayq2YgxVSq9Fnj1JH9KxbS7ybWFzAsSw7S/E4XzuutYqiXMhGZTMiB
+# MhoNlZcqPM3gcMXYejoh/KEVhT/q45diEsrhI2ssDzN4mBDA/8OvmK427rUUjlT4
+# f0w2DUaPxBw9xWJNkQq0TlSvJQsDdsqF4Wz/55CwmvRE8Ev6vQEW/7I9naqe3wZ8
+# 9VQ2mdgFVlxiRLaevQ2vccOzZcL4D+PgqOJxPiO3lRVROwXjX4vDAFdp2CNhWD/4
+# nWonzLMIcJLjuDe4MYDHEXiv2L6eC05GxnUHMLa+aKh12bUsJnxWy5upcW+poY4P
+# 9+Xb05Kj6g1NBetjV60jMEWzZ/BG6K/G1LUX1bkEUlh75w7EZ8j9gjIULlMKr5OV
+# buZQ9V4MQA6FQuk9gMAhHLtF8SlfTFrbUI/iztZ6fLMTiV+1aCvauveQRZD1caAw
+# z3rabyzZ00cGYmj77RMxG9jk0Z3N1DobIKy3dzJY+pFp6DU7HPnwAvLSf9O1fE3K
+# HzKks8TOdB0dRpX9/8TagSANEB6wbP/uOSbGfKHKNMNtWwfNs4lI4S9IbbYEOQmq
+# AfcywD8dMbHuFRNT1yhAtzYNeDihOc8imlJViSV/bSlX8fwkFJDizbR8GYhM/3y7
+# rpRhn+6724Ca29UX6w==
 # SIG # End signature block
