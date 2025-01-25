@@ -178,6 +178,28 @@ function DecryptFile {
     $outStreamDecrypted.Close()
     $outFs.Close()
 }
+function Get-CspKeyContainer {
+    param(
+        [string]$KeyContainerName
+    )
+
+    # check user crypto keys for a container with the specified name
+    $certUtil = certutil -user -key $KeyContainerName
+
+    if (-not ($certUtil -match 'NTE_BAD_KEYSET')) { # the key exists
+        $keyContainerExists = $true 
+        [int]$keyNameIndex = $certUtil.Trim().IndexOf($KeyContainerName)
+        $uniqueKeyId = $certUtil[$keyNameIndex + 1].Trim()
+
+        return @{
+            KeyExists = $keyContainerExists
+            UniqueKeyID = $uniqueKeyId
+        }
+    }
+    else {
+        throw "A key container does not exist with the Container Name '$KeyContainerName'"
+    }
+}
 
 # Event Handlers
 function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
@@ -286,8 +308,11 @@ function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
         This task simulates the scenario of Bob loading Alice's key with only public parameters so he can encrypt files for her.
     #>
     
+    # check for a container with the supplied key container name
+    Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
+
     $filebrowser = [System.Windows.Forms.OpenFileDialog]::new()
-    $filebrowser.InitialDirectory = $srcFolder
+    $filebrowser.InitialDirectory = $encrFolder
 
     if ($filebrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
         try {
@@ -309,6 +334,12 @@ function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
         catch {
             throw "An error occurred importing public key"
         }
+        finally {
+            # clean up
+            if ($sw) {
+                $sw.Close()
+            }
+        }
     }
 }
 function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
@@ -322,6 +353,10 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
 
         This task simulates the scenario of Alice using her private key to decrypt files encrypted by Bob.
     #>
+
+    # check for a container with the supplied key container name
+    Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
+
     $script:_cspp.KeyContainerName = $textBoxKeyname.Text
     $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
     $script:_rsa.PersistKeyInCsp = $true
