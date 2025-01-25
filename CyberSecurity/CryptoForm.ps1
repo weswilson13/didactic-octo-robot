@@ -256,11 +256,23 @@ function buttonExportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
 
     # Save the public key created by the RSA to a file. Caution, persisting the key to a file is a security risk.
     [System.IO.Directory]::CreateDirectory($encrFolder)
-    $sw = [System.IO.StreamWriter]::new($pubKeyFile, $false)
-    $sw.Write($script:_rsa.ToXmlString($false))
-
-    # clean up
-    $sw.Close()
+    $filebrowser = [System.Windows.Forms.SaveFileDialog]::new()
+    $filebrowser.InitialDirectory = $encrFolder
+    
+    if ($filebrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+    
+        try {
+            $sw = [System.IO.StreamWriter]::new($filebrowser.FileName, $false)
+            $sw.Write($script:_rsa.ToXmlString($false))
+        }
+        catch {
+            throw "An error occurred writing public key"
+        }
+        finally {
+            # clean up
+            $sw.Close()
+        }
+    }
 }
 function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
     <#
