@@ -1,39 +1,105 @@
+<#
+    .SYNOPSIS
+    Creates or Imports an encrypted byte array for use in encryption and decryption operations.
+
+    .DESCRIPTION
+    The AES SYMMETRIC algorithm requires the same Key and Initialization Vector (IV) be used for encryption and subsequent
+    decryption of data. This script allows creation of new encryption packages (key and IV) that can be saved to the local 
+    machine and/or exported for later import onto another device. The encryption package is saved to the local machine 
+    utilizing the Windows Data Protection API (DPAPI). This ensures the encryption key can only be retrieved by the current 
+    user on the current machine.  
+
+    When the encryption package is exported, it is saved in a file using the AES encryption standard. The user is asked
+    for a password that will seed the key for this encryption. This password must be either 8, 12, or 16 characters long
+    as it will be converted to an encryption key corresponding to 128, 192, or 256 bits, respectively. THIS PASSWORD MUST 
+    BE REMEMBERED AS IT IS REQUIRED TO DECRYPT THE ENCRYPTED KEY.
+
+    Access the encrypted XML content using Import-CliXml, the SecureString containing the encryption package is under the 
+    Password element. 
+    
+    .PARAMETER Create
+    Create a new encryption package (key and IV), save to an encrypted XML file
+
+    .PARAMETER Export
+    Exports the encryption package to an encrypted file. Use when the encryption package will be installed on additional machines.
+
+    .PARAMETER Import
+    Import an encryption package
+
+    .PARAMETER Path
+    Path where the encrypted XML should be created
+
+    .EXAMPLE
+    Create a new encryption package and encrypted export in the current users profile. Name the files EncryptionKey.
+
+    Create-EncryptedSecret.ps1 -Create -Export -Path $env:USERPROFILE\EncryptionKey.xml 
+
+    .EXAMPLE
+    Import an encryption package. Create the encrypted XML containing the key in the current users profile.
+
+    Create-EncryptedSecret.ps1 -Import C:\tools\EncryptedKey -Path $env:USERPROFILE\EncryptionKey.xml
+#>
+
 [CmdletBinding()]
-Param(
-    [System.IO.FileInfo]$ScriptPath,
-    [switch]$Encrypt,
-    [switch]$Decrypt,
-    [System.IO.FileInfo]$EncryptedKeyPath
+param(
+    # Create a new secret key
+    [Parameter(Mandatory=$false)]
+    [switch]$Create,
+
+    # Exports a secret key
+    [Parameter(Mandatory=$false)]
+    [switch]$Export,
+
+    # Exports a secret key
+    [Parameter(Mandatory=$false)]
+    [System.IO.FileInfo]$Import,
+
+    # Output path
+    [Parameter(Mandatory=$true)]
+    [string]$Path
 )
 
-if ($Encrypt.IsPresent -and $Decrypt.IsPresent) { throw }
-$encryptedFile = "Z:\scripts\ScheduledTasks\Encrypted\$($ScriptPath.BaseName).txt"
-
-# password retrieved from Secret Server or stored via encypted file on Scheduled Task machine
-$secureKey = (Import-Clixml $EncryptedKeyPath).Password
-
-if ($Encrypt.IsPresent) {
-    $code = Get-Content $ScriptPath -raw
-    $codeSecureString = ConvertTo-SecureString -String $code -AsPlainText -Force
-    $encrypted = ConvertFrom-SecureString -SecureString $codeSecureString -SecureKey $secureKey
-    $encrypted | Out-File $encryptedFile -Force
+if ($create.IsPresent -and $Import) { # cannot create and import a key
+    throw
 }
 
-if ($Decrypt.IsPresent) {
-    $workingDirectory = $ScriptPath.Directory
+if ($Create.IsPresent) { # create a new cryptographic key and IV
+    
+    $aes = [System.Security.Cryptography.Aes]::Create()
+    $aes.GenerateIV()
+    $aes.GenerateKey()
 
-    $code = Get-Content $encryptedFile -raw
-    $decryptedSecureString = ConvertTo-SecureString -String $code -SecureKey $secureKey
-    $codeToExecute = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(`
-        [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($decryptedSecureString))
-    Invoke-Expression $codeToExecute
+    $byteArrayString = ($aes.IV + $aes.Key) -join ','
 }
+elseif ($Import) { # import an encrypted byte string
+    $content = Get-Content $Import.FullName -raw
+    $exportSecureKey = Read-Host "Enter the password to decrypt the imported key" -AsSecureString
+    $encryptedSecureKey = ConvertTo-SecureString -String $content -SecureKey $exportSecureKey
+    $byteArrayString = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(`
+    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($encryptedSecureKey))
+}
+
+# create an encrypted XML file to store the key. Uses DPAPI. Only retrievable by specific user on specific machine.
+$secureString = ConvertTo-SecureString -String $byteArrayString -AsPlainText -Force
+[pscredential]::new("EncryptionKeyandIV", $secureString) | Export-Clixml $Path
+
+if ($Export) { # export the byte string to an encrypted file
+    $pathInfo = [System.IO.FileInfo]$Path
+    $pathFullName = $pathInfo.FullName
+    $extension = $pathInfo.Extension
+    $exportPath = $pathFullName.Replace($extension,"")
+    $exportSecureKey = Read-Host "Enter a password to encrypt the exported key. Passwords must be 8, 12, or 16 characters." -AsSecureString
+    ConvertFrom-SecureString -SecureString $secureString -SecureKey $exportSecureKey | Out-File $exportPath
+}
+
+return @{IV = $aes.IV; Key = $aes.key; ByteString = $byteArrayString}
+
 
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBHVWO48JPnQr12
-# M43QsxBDjbqpdoU+0PvBDklzRHWkDKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCkWkD/GsdFe3oP
+# AA8722V3kyAhIIw4OEcOpcxt/vJJJKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -156,28 +222,28 @@ if ($Decrypt.IsPresent) {
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQg1f4zFtgSFxewUpCVAy5/FxqVd+GoQGGKto6gntOiuiIwDQYJKoZIhvcN
-# AQEBBQAEggEAgFraIz0EIEOnZfUUBxrpFyX4sRvlbOhhZU/okm8zJR0oHSoyr2Gv
-# pf53czPLQfpXezMuI/zphGFuYGmHMYfgeDJKrJpGZj4ApReSHTl9rC9sxYOhUlAo
-# 2gqg0rRkyTMMFZjzeAy58rAkQWyOVjXY2evCctCk/3jsOJikaq3QRrEFaEYiDP02
-# BpXoYWcFcUhaL8xJSJC/bcr3EuNv0h60+KoA6EjojSbTpwZqBPOgxOTHKlDONY/Q
-# 0/e9WXD0aAWRXTefF9TOJIazIPKVLnUDdQbuOdWSRWnSGpe916pxxYnR/HAwRgKo
-# TWORXMN+JTSabSxqhtERqa+hDkVvzFWsl6GCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQg075L7EDD/WYStB3I2PPfpcyYH1iILWujoRVtZ6GKb1AwDQYJKoZIhvcN
+# AQEBBQAEggEATLmkdkjNWdl0Q7vEJpH2sE072yLIMHwUsDmkUlH+hAgCJ7nkn19v
+# DMlhQaXTf8eyHsI7ch7kuQTnKQmKApNob+JZv+QW6c6zJ09k1jqixYwUroNbWuzs
+# D3iK4YRmvMdg+3+XL6cqFHOGJOTnAwiHNn1k1SAhk9oquf51cS1s0tEUI0Jxtyxt
+# pQ87JXY8DPV+c3PTkRW5T9BPUX25cBHr/TgYCsj/q7hS3aayFcIOxBoTHwaj9Ngz
+# 5wRPwMNKvm+o2C8vEX9mUdT6aBd3kNoBz/S+YDh01wlbuclkE6Ah/oYKC0Hqqrke
+# v+o/SlVHH9/uIRWYZ4ZYwmuG55a2EUpybKGCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjEyMjEyMDFaMC8GCSqGSIb3DQEJBDEiBCBGBWsjfq/rTdlandI+ftXnwLfzY/WW
-# XweEA3QFijKuHDANBgkqhkiG9w0BAQEFAASCAgCdWcGvrw4QEb2GCX54cLqlSVuf
-# 8bmUu06Zmhh9gMo9NYzJ2DAR17wtGR+icwkEUluPrAQJGt0hTmYdWlLFm279l31P
-# uY3rSx3eMnNdvZDWbxSQMil+RezuJ9yMGAYFjp0d6PY2BRE/BYnQNsEzMY9KpV8y
-# tki+QhHKa9wvuC96br9uQ4lf7JACdQBK4DR0Y2yxLap+C+F6qPY5J4I3nY7D/qCc
-# bBNkjih7wFBkcx2J1j0mRGzj3IvxMFAgWbD840qqs/ydP25TLxBnXBZFDOJBb/hO
-# XBOrkCMeXo9woaaBx135uQVUXtiTRy3PVg0TWxnSILXPg7fDy8gfqZm1t8E1JRwx
-# zJu2OY9xud+PGvewc2ulrCOLckSNRjEpprA/RTuZEWuztpHYoGeSAoYwGu7e4Ae1
-# brWF0c7dfr0+iBOxgVbTaXHlKUmE0h/rq3Meg8n1Dmmpr3uc61DF6rVtEw/5PC3J
-# 2Hl5adpIoO0rOqJ+U2/8ZkQl9kx4pl/br5vLvn/1vNfd6/aJNeF6+10JPWIczQ2O
-# pFme8L5kUO9m4a94WBcG4RPf0XU0Mw3aYLf08Tlmk72+YcjO+knG73PIwWnZ/b0i
-# riXgfHFkvK7QMZlLnDt7hAEGjMxIncGneiPR08Vzph1TNLT1HuIF+0nvNGMJ6aHE
-# HcYGeEBfn+vrXjMzVg==
+# MjMxNDM2MDVaMC8GCSqGSIb3DQEJBDEiBCBDGEpmFXAYJGm72gVzOts9cYK3yvJm
+# K/RQg6Ljg7Dg+zANBgkqhkiG9w0BAQEFAASCAgBt4OB4FsTY/ajca9S9U4Ft2f9h
+# V8sdTGkCxCpqEjwvy63/lKvCSTFaLDnMu5QUOVkCZMsilgFCP8j83oF/Z9u90guF
+# mV+htea7eyaIfpSXAUHhF5Tnk7gW1uVBduGDNa6p0CJhXuY9fzNW9JjG4mpDUUhf
+# G35MHthnT45uNZb/BORI+a6WU/WpQp6jMDtYTixfpscvelwwK1K67Bk4RU172WAa
+# XbxHzx/Xyyw1JECa8N6CjosGlLJAbtQU7BX3SMgg+i8Dsqcvu3ySC5z975PdMKWO
+# WWxNGGV9R9LiDqQDbQo0aNoHP3dhiblmRIdnvF4V81Mtp109tOJgk7o4RQ1p0opR
+# 0yn5nCTTicjbMwO+z143CARejo2AQLhH9IxaEcYLnZn0aMEOXDtma8BRSyQrTxfG
+# 7i06dzILWeUvBgvBpB0wUj3Qq99pAQcYu1x9VWb8V+r08NAVrOwZ0x67iXi0S5h3
+# bmAPWbVvS1CzMn8NTMrNCardl5uAcdjF8ilgPUum5EqfW7fau8lQCM7EN43449xr
+# ob/DYOodjx9QR3lH3HI8nSIXlKJhqhVPqWwKcU/7PJvi0j51NyGRvencDrIp9+aZ
+# xRwzfGG3wRBbCx9P0ciGSC+pAYIPXkSIHigoXrMtNQiG+BEbvZyrFu3IIfAopEUe
+# Drxo9xR4dpwmY2393w==
 # SIG # End signature block

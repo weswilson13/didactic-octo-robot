@@ -1,39 +1,52 @@
+<#
+Encrypting a File
+Generate a Key and IV: These are necessary for encryption and decryption.
+Encrypt the File: Use the key and IV to encrypt the file.
+#>
 [CmdletBinding()]
 Param(
     [System.IO.FileInfo]$ScriptPath,
-    [switch]$Encrypt,
-    [switch]$Decrypt,
-    [System.IO.FileInfo]$EncryptedKeyPath
+    [System.IO.FileInfo]$SecureKeyPath
 )
 
-if ($Encrypt.IsPresent -and $Decrypt.IsPresent) { throw }
-$encryptedFile = "Z:\scripts\ScheduledTasks\Encrypted\$($ScriptPath.BaseName).txt"
+# Import the Key and Initialization Vector
+$secureString = (Import-Clixml $SecureKeyPath).Password
+$byteString = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(`
+    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureString))
+$byteArray = $byteString.Split(',')
+$iv = $byteArray | Select-Object -First 16
+$key = $byteArray | Select-Object -Skip 16   
 
-# password retrieved from Secret Server or stored via encypted file on Scheduled Task machine
-$secureKey = (Import-Clixml $EncryptedKeyPath).Password
+# Define paths
+$inputFilePath = $ScriptPath
+$encryptedFilePath = "Z:\scripts\ScheduledTasks\Encrypted\$($ScriptPath.BaseName).txt"
 
-if ($Encrypt.IsPresent) {
-    $code = Get-Content $ScriptPath -raw
-    $codeSecureString = ConvertTo-SecureString -String $code -AsPlainText -Force
-    $encrypted = ConvertFrom-SecureString -SecureString $codeSecureString -SecureKey $secureKey
-    $encrypted | Out-File $encryptedFile -Force
+# Encrypt the file
+$algorithm = [System.Security.Cryptography.Aes]::Create()
+$algorithm.Key = $key
+$algorithm.IV = $iv
+
+$encryptor = $algorithm.CreateEncryptor($algorithm.Key, $algorithm.IV)
+$inputFileStream = [System.IO.File]::OpenRead($inputFilePath)
+$outputFileStream = [System.IO.File]::OpenWrite($encryptedFilePath)
+$cryptoStream = New-Object System.Security.Cryptography.CryptoStream($outputFileStream, $encryptor, [System.Security.Cryptography.CryptoStreamMode]::Write)
+
+$buffer = New-Object byte[] 1024
+while (($read = $inputFileStream.Read($buffer, 0, $buffer.Length)) -gt 0) {
+    $cryptoStream.Write($buffer, 0, $read)
 }
 
-if ($Decrypt.IsPresent) {
-    $workingDirectory = $ScriptPath.Directory
+$cryptoStream.Close()
+$inputFileStream.Close()
+$outputFileStream.Close()
 
-    $code = Get-Content $encryptedFile -raw
-    $decryptedSecureString = ConvertTo-SecureString -String $code -SecureKey $secureKey
-    $codeToExecute = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(`
-        [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($decryptedSecureString))
-    Invoke-Expression $codeToExecute
-}
+
 
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBHVWO48JPnQr12
-# M43QsxBDjbqpdoU+0PvBDklzRHWkDKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCPVib5KJerZBgt
+# 0ti5ntk4tHlDR4ufBC2NxE1syj/VuqCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -156,28 +169,28 @@ if ($Decrypt.IsPresent) {
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQg1f4zFtgSFxewUpCVAy5/FxqVd+GoQGGKto6gntOiuiIwDQYJKoZIhvcN
-# AQEBBQAEggEAgFraIz0EIEOnZfUUBxrpFyX4sRvlbOhhZU/okm8zJR0oHSoyr2Gv
-# pf53czPLQfpXezMuI/zphGFuYGmHMYfgeDJKrJpGZj4ApReSHTl9rC9sxYOhUlAo
-# 2gqg0rRkyTMMFZjzeAy58rAkQWyOVjXY2evCctCk/3jsOJikaq3QRrEFaEYiDP02
-# BpXoYWcFcUhaL8xJSJC/bcr3EuNv0h60+KoA6EjojSbTpwZqBPOgxOTHKlDONY/Q
-# 0/e9WXD0aAWRXTefF9TOJIazIPKVLnUDdQbuOdWSRWnSGpe916pxxYnR/HAwRgKo
-# TWORXMN+JTSabSxqhtERqa+hDkVvzFWsl6GCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQgecLGJJMFAQbVCK22/iC02qrsJWbOeqaC3xMCGj5r2BIwDQYJKoZIhvcN
+# AQEBBQAEggEAKcIuxXxy+DKqRKq8cFplBr3UOuGLuNO272zoGsLDsSNxc9v4KaFA
+# xMH6VsVoKicoHbjKA322SwacDXyaOc9e8nIAgyOnYckd+l+aoSssJXwwRw3j+KJZ
+# d1jff5D2O/gAeaOBCovbkaw4CRCeiwqnM0L3plEhoh+am8HM6H+ZoIEnxJUVI9JX
+# Ja2uhlgHCOz2/QCxv9KpW29bRgaGucC/8vxp7lQc/7RgMWKV3ZOIaEdjK+oqxEmh
+# vkfg2HTceKpJnjoRPLidIKhrt4ecpIyKqQlctbQN9jFrCaKNuUa/ohVo/fjtYjt0
+# SANsGRNcLKYpY0MyUfeZ0Yz9zVKIPdMcD6GCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjEyMjEyMDFaMC8GCSqGSIb3DQEJBDEiBCBGBWsjfq/rTdlandI+ftXnwLfzY/WW
-# XweEA3QFijKuHDANBgkqhkiG9w0BAQEFAASCAgCdWcGvrw4QEb2GCX54cLqlSVuf
-# 8bmUu06Zmhh9gMo9NYzJ2DAR17wtGR+icwkEUluPrAQJGt0hTmYdWlLFm279l31P
-# uY3rSx3eMnNdvZDWbxSQMil+RezuJ9yMGAYFjp0d6PY2BRE/BYnQNsEzMY9KpV8y
-# tki+QhHKa9wvuC96br9uQ4lf7JACdQBK4DR0Y2yxLap+C+F6qPY5J4I3nY7D/qCc
-# bBNkjih7wFBkcx2J1j0mRGzj3IvxMFAgWbD840qqs/ydP25TLxBnXBZFDOJBb/hO
-# XBOrkCMeXo9woaaBx135uQVUXtiTRy3PVg0TWxnSILXPg7fDy8gfqZm1t8E1JRwx
-# zJu2OY9xud+PGvewc2ulrCOLckSNRjEpprA/RTuZEWuztpHYoGeSAoYwGu7e4Ae1
-# brWF0c7dfr0+iBOxgVbTaXHlKUmE0h/rq3Meg8n1Dmmpr3uc61DF6rVtEw/5PC3J
-# 2Hl5adpIoO0rOqJ+U2/8ZkQl9kx4pl/br5vLvn/1vNfd6/aJNeF6+10JPWIczQ2O
-# pFme8L5kUO9m4a94WBcG4RPf0XU0Mw3aYLf08Tlmk72+YcjO+knG73PIwWnZ/b0i
-# riXgfHFkvK7QMZlLnDt7hAEGjMxIncGneiPR08Vzph1TNLT1HuIF+0nvNGMJ6aHE
-# HcYGeEBfn+vrXjMzVg==
+# MjMwMzI4NDFaMC8GCSqGSIb3DQEJBDEiBCAo1q8bWWVpw1OK9/K37z+b+l5qyTFx
+# rFEK7TYEy1b9WzANBgkqhkiG9w0BAQEFAASCAgAVV2RWvkVEbmt6dAotb283+wkr
+# W97if6rsT70WA41+jwVvNHpXv0Rc+zmaLCvXtxyTzDYE5cuc3w5pnLFWodrP2zZd
+# e0M0qdaOuU7rtJls3pyIjqMCqKDCWpud54w8L4BR6Kotjkn/PryzhIzaAKLYaJVS
+# OQMQMUBayPdbLqKeauFIW+Ht9+YaIW8o3dWOEsWQ0X0I2MSyifmdCvWTRhD8jWPh
+# npabjIiKkDtIBXhWaOChIYBpxBrfeK5IuujGviO93l3mS4KLvkfU0ba47wEPfjGL
+# wvc2eKl8bQdHI9Rfo3DJBA1+bOtj9h0O0Ao48uNF9Av5nPIPGvOvFf9W9bF2/dHB
+# JAjNSKCiomGterORXYJUYvzT+mKwTHkjdlo9d/TcUuYSPT6bRfqlBx0N/ZJIWPOA
+# 2GYHbW3kcUTzryt95eJ5nK6uWmSGV1hG2N2qpXU+r51AMDNDg9KHGSrFvMoZ3uG8
+# e4Om7SBPpHUPMOZrjbXVzOKF89otfCq25KV/SnukQBmf9HuZOSwwpDbtLkNQY1gG
+# 4A06r1RCf1vrfXvKgxmIYcWqXo04mqUFotoUpDVhEdVontUvcFAVRI4aVesDuZ7r
+# NaJxGJTQXHZFqQydMD1L2kdvM9NNRvGiaaOuO93zorg0Zh+ha5c/5o6txTHjdmGg
+# WGr/+oTRsvtXLp9Vpg==
 # SIG # End signature block
