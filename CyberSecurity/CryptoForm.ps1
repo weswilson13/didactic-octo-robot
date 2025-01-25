@@ -24,7 +24,8 @@ function EncryptFile {
     #>
     [CmdletBinding()]
     param(
-        [System.IO.FileInfo]$File
+        [System.IO.FileInfo]$File,
+        [X509Certificate]$Cert
     )
 
     # Create instance of Aes for symmetric encryption of the data.
@@ -32,9 +33,16 @@ function EncryptFile {
     $transform = $aes.CreateEncryptor()
 
     # Use RSACryptoServiceProvider to encrypt the AES key.
-    # rsa is previously instantiated:
-    #    $rsa = [RSACryptoServiceProvider]::new(cspp)
-    [byte[]]$keyEncrypted = $script:_rsa.Encrypt($aes.Key, $false)
+    switch ($comboBoxKeySource) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
+        'Certificate Store' {
+            [System.Security.Cryptography.RSA]$script:_rsa = $Cert.PublicKey.GetRSAPublicKey()
+            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1
+            [byte[]]$keyEncrypted = $script:_rsa.Encrypt([byte[]]$aes.Key, $_padding)
+        }
+        'Key Container' {
+            [byte[]]$keyEncrypted = $script:_rsa.Encrypt($aes.Key, $false)
+        }
+    }
 
     # Create byte arrays to contain the length values of the key and IV.
     $lKey = $keyEncrypted.Length
@@ -144,7 +152,16 @@ function DecryptFile {
     [System.IO.Directory]::CreateDirectory($decrFolder)
 
     # Use RSACryptoServiceProvider to decrypt the AES key.
-    [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $false)
+    switch ($comboBoxKeySource) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
+        'Certificate Store' {
+            [System.Security.Cryptography.RSA]$_rsa = $Cert.PrivateKey
+            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1   
+            [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $_padding)
+        }
+        'Key Container' {
+            [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $false)
+        }
+    }
 
     # Decrypt the key.
     $transform = $aes.CreateDecryptor($keyDecrypted, $iv);
@@ -271,6 +288,7 @@ function buttonEncryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
         .SYNOPSIS
         Click event handler for the Encrypt File button (buttonEncryptFile_Click)
     #>
+
     if ($script:_rsa -eq $null) {
         [System.Windows.Forms.MessageBox]::Show("Key not set.")
     } 
@@ -281,9 +299,16 @@ function buttonEncryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
         if ($_encryptOpenFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK)
         {
             $fName = $_encryptOpenFileDialog.FileName
-            if (![string]::IsNullOrWhiteSpace($fName)) { # Pass the file name without the path.
+            if (![string]::IsNullOrWhiteSpace($fName)) { # Pass the file info
                 $fileInfo = [System.IO.FileInfo]$fName
-                EncryptFile($fileInfo)
+                
+                $params = @{ File = $fileInfo }
+                if ($comboBoxKeySource -eq 'Certificate Store' -and $comboBoxCertificate) { # if using a certificate, pass the cert info
+                    $certPath = "Cert:\{0}\{1}" -f $comboBoxCertStore.Text, $comboBoxCertificate.Text
+                    $cert = Get-ChildItem $certPath
+                    $params["Cert"] = $cert
+                } 
+                EncryptFile @params
             }
         }
     }
@@ -304,7 +329,14 @@ function buttonDecryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
             $fName = $_decryptOpenFileDialog.FileName
             if (![string]::IsNullOrWhiteSpace($fName)) {
                 $fileInfo = [System.IO.FileInfo]$fName
-                DecryptFile($fileInfo)
+
+                $params = @{ File = $fileInfo }
+                if ($comboBoxKeySource -eq 'Certificate Store' -and $comboBoxCertificate) { # if using a certificate, pass the cert info
+                    $certPath = "Cert:\{0}\{1}" -f $comboBoxCertStore.Text, $comboBoxCertificate.Text
+                    $cert = Get-ChildItem $certPath
+                    $params["Cert"] = $cert
+                } 
+                DecryptFile @params
             }
         }
     }
