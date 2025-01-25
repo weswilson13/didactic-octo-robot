@@ -258,6 +258,7 @@ function buttonExportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
     [System.IO.Directory]::CreateDirectory($encrFolder)
     $filebrowser = [System.Windows.Forms.SaveFileDialog]::new()
     $filebrowser.InitialDirectory = $encrFolder
+    $filebrowser.FileName = $pubKeyFile
     
     if ($filebrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
     
@@ -285,19 +286,29 @@ function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
         This task simulates the scenario of Bob loading Alice's key with only public parameters so he can encrypt files for her.
     #>
     
-    $sr = [System.IO.StreamReader]::new($pubKeyFile)
-    $script:_cspp.KeyContainerName = $textBoxKeyname.Text
-    $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
+    $filebrowser = [System.Windows.Forms.OpenFileDialog]::new()
+    $filebrowser.InitialDirectory = $srcFolder
 
-    $keytxt = $sr.ReadToEnd()
-    $script:_rsa.FromXmlString($keytxt)
-    $script:_rsa.PersistKeyInCsp = $true
+    if ($filebrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        try {
+            $sr = [System.IO.StreamReader]::new($filebrowser.FileName)
+            $script:_cspp.KeyContainerName = $textBoxKeyname.Text
+            $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
 
-    if ($script:_rsa.PublicOnly) {
-        $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
-    }
-    else { 
-        $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair" 
+            $keytxt = $sr.ReadToEnd()
+            $script:_rsa.FromXmlString($keytxt)
+            $script:_rsa.PersistKeyInCsp = $true
+
+            if ($script:_rsa.PublicOnly) {
+                $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
+            }
+            else { 
+                $label1.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair" 
+            }
+        }
+        catch {
+            throw "An error occurred importing public key"
+        }
     }
 }
 function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
@@ -358,7 +369,7 @@ function Get-AppSettings {
     [System.Security.Cryptography.RSACryptoServiceProvider]$script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
     
     # Public key file
-    $pubKeyFile = "$encrFolder\rsaPublicKey.txt"
+    $pubKeyFile = "rsaPublicKey.txt"
 
     # Key container name for private/public key value pair.
     $keyName = "Key01"
