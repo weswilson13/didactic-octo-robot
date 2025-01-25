@@ -33,14 +33,22 @@ function EncryptFile {
     $transform = $aes.CreateEncryptor()
 
     # Use RSACryptoServiceProvider to encrypt the AES key.
-    switch ($comboBoxKeySource) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
+    switch ($comboBoxKeySource.Text) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
         'Certificate Store' {
             [System.Security.Cryptography.RSA]$script:_rsa = $Cert.PublicKey.GetRSAPublicKey()
             $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1
             [byte[]]$keyEncrypted = $script:_rsa.Encrypt([byte[]]$aes.Key, $_padding)
+            break
         }
         'Key Container' {
             [byte[]]$keyEncrypted = $script:_rsa.Encrypt($aes.Key, $false)
+            break
+        }
+        default {
+            [System.Windows.Forms.MessageBox]::Show("A fatal error occurred while attempting to encrypt data.", "Encrypt Data",`
+                [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            
+            return
         }
     }
 
@@ -79,8 +87,10 @@ function EncryptFile {
     [byte[]]$data = New-Object byte[] $blockSizeBytes
     $bytesRead = 0
 
-    $inFs = [System.IO.FileStream]::new($file.FullName, [System.IO.FileMode]::Open)
-    
+    $inFs = [System.IO.FileStream]::new($File.FullName, [System.IO.FileMode]::Open)
+
+    Write-Host "Begin writing ciphertext to $outFile..." -NoNewline
+
     do {
         $count = $inFs.Read($data, 0, $blockSizeBytes)
         $offset += $count
@@ -88,12 +98,17 @@ function EncryptFile {
         $bytesRead += $blockSizeBytes
     } while ($count -gt 0)
 
+    Write-Host "Done."
+
     $outStreamEncrypted.FlushFinalBlock()
 
     # clean up
     $inFs.Close()
     $outStreamEncrypted.Close()
     $outFs.Close()
+
+    [System.Windows.Forms.MessageBox]::Show("Finished encryption operation!", "Encrypt Data", `
+        [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
 }
 function DecryptFile {
     <#
@@ -109,7 +124,8 @@ function DecryptFile {
 
     [CmdletBinding()]
     param(
-        [System.IO.FileInfo]$File
+        [System.IO.FileInfo]$File,
+        [X509Certificate]$Cert
     )
     
     # Create instance of Aes for symmetric decryption of the data.
@@ -152,11 +168,11 @@ function DecryptFile {
     [System.IO.Directory]::CreateDirectory($decrFolder)
 
     # Use RSACryptoServiceProvider to decrypt the AES key.
-    switch ($comboBoxKeySource) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
+    switch ($comboBoxKeySource.Text) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
         'Certificate Store' {
-            [System.Security.Cryptography.RSA]$_rsa = $Cert.PrivateKey
+            [System.Security.Cryptography.RSA]$script:_rsa = $Cert.PrivateKey
             $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1   
-            [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $_padding)
+            [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $_padding)
         }
         'Key Container' {
             [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $false)
@@ -182,6 +198,9 @@ function DecryptFile {
     # Start at the beginning of the cipher text.
     $inFs.Seek($startC, [System.IO.SeekOrigin]::Begin);
     $outStreamDecrypted = [System.Security.Cryptography.CryptoStream]::new($outFs, $transform, [System.Security.Cryptography.CryptoStreamMode]::Write)
+    
+    Write-Host "Begin writing cleartext to $outFile..." -NoNewline
+
     do {
         $count = $inFs.Read($data, 0, $blockSizeBytes)
         $offset += $count
@@ -190,10 +209,15 @@ function DecryptFile {
 
     $outStreamDecrypted.FlushFinalBlock()
 
+    Write-Host "Done"
+
     # clean up
     $inFs.Close()
     $outStreamDecrypted.Close()
     $outFs.Close()
+
+    [System.Windows.Forms.MessageBox]::Show("Finished Decryption operation!", "Decrypt Data", `
+        [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
 }
 function Get-CspKeyContainer {
     param(
@@ -303,7 +327,7 @@ function buttonEncryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
                 $fileInfo = [System.IO.FileInfo]$fName
                 
                 $params = @{ File = $fileInfo }
-                if ($comboBoxKeySource -eq 'Certificate Store' -and $comboBoxCertificate) { # if using a certificate, pass the cert info
+                if ($comboBoxKeySource.Text -eq 'Certificate Store' -and $comboBoxCertificate.Text) { # if using a certificate, pass the cert info
                     $certPath = "Cert:\{0}\{1}" -f $comboBoxCertStore.Text, $comboBoxCertificate.Text
                     $cert = Get-ChildItem $certPath
                     $params["Cert"] = $cert
@@ -331,7 +355,7 @@ function buttonDecryptFile_Click([psobject]$sender, [System.EventArgs]$e) {
                 $fileInfo = [System.IO.FileInfo]$fName
 
                 $params = @{ File = $fileInfo }
-                if ($comboBoxKeySource -eq 'Certificate Store' -and $comboBoxCertificate) { # if using a certificate, pass the cert info
+                if ($comboBoxKeySource.Text -eq 'Certificate Store' -and $comboBoxCertificate.Text) { # if using a certificate, pass the cert info
                     $certPath = "Cert:\{0}\{1}" -f $comboBoxCertStore.Text, $comboBoxCertificate.Text
                     $cert = Get-ChildItem $certPath
                     $params["Cert"] = $cert
