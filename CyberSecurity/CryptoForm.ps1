@@ -415,10 +415,18 @@ function Get-AppSettings {
 ### controls
 #>
 
+#region labelKeyName
+    $labelKeyName = New-Object System.Windows.Forms.Label
+    $labelKeyName.Text = "Key Container Name"
+    $labelKeyName.Font = New-Object System.Drawing.Font("Calibri",12,[Drawing.FontStyle]::Regular)
+    $labelKeyName.AutoSize = $true
+#endregion labelKeyName
+
 #region textBoxKeyName
     $textBoxKeyname = New-Object System.Windows.Forms.TextBox
     $textBoxKeyname.Name = "textBoxKeyName"
     $textBoxKeyname.Text = $keyName
+    $textBoxKeyname.Dock = 'Fill'
     # $textBoxKeyname.AutoSize = $true
 #endregion textBoxKeyName
 
@@ -505,8 +513,8 @@ $tableLayoutPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle(
 
 $tableLayoutPanel.Dock = "Fill"
 # $tableLayoutPanel.CellBorderStyle = "outset"
-$tableLayoutPanel.Controls.Add($textBoxKeyname,0,0)
-$tableLayoutPanel.SetColumnSpan($textBoxKeyname,2)
+$tableLayoutPanel.Controls.Add($labelKeyName,0,0)
+$tableLayoutPanel.Controls.Add($textBoxKeyname,1,0)
 $tableLayoutPanel.Controls.Add($buttonEncryptFile,0,1)
 $tableLayoutPanel.Controls.Add($buttonDecryptFile,1,1)
 $tableLayoutPanel.Controls.Add($buttonImportPublicKey,0,2)
