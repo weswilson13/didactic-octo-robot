@@ -168,15 +168,24 @@ function DecryptFile {
     [System.IO.Directory]::CreateDirectory($decrFolder)
 
     # Use RSACryptoServiceProvider to decrypt the AES key.
-    switch ($comboBoxKeySource.Text) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
-        'Certificate Store' {
-            [System.Security.Cryptography.RSA]$script:_rsa = $Cert.PrivateKey
-            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA256   
-            [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $_padding)
+    try {
+        switch ($comboBoxKeySource.Text) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
+            'Certificate Store' {
+                [System.Security.Cryptography.RSA]$script:_rsa = $Cert.PrivateKey
+                $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA256   
+                [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $_padding)
+            }
+            'Key Container' {
+                [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $false)
+            }
         }
-        'Key Container' {
-            [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $false)
-        }
+    }
+    catch {
+        $message = "Unable to decrypt the AES Key. The following error occurred:`n`n$($error[0].Exception.Message)"
+        [System.Windows.Forms.MessageBox]::Show($message, "Decrypt Symmetric Key", `
+        [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+
+        return
     }
 
     # Decrypt the key.
@@ -224,13 +233,15 @@ function Get-CspKeyContainer {
         [string]$KeyContainerName
     )
 
+    $currentUser = $env:USERNAME
+
     $keyContainerExists,$privateKeyExists = $false
 
     # check user crypto keys for a container with the specified name
     $certUtil = certutil -user -key $KeyContainerName
 
     if (-not ($certUtil -match 'NTE_BAD_KEYSET')) { # the key exists
-        if (-not ($certUtil -match 'NTE_NO_KEY')) { # the container holds a private key
+        if (-not ($certUtil -match "NTE_NO_KEY.*$currentUser")) { # the container holds a private key
             $privateKeyExists = $true
         }
         $keyContainerExists = $true 
@@ -420,7 +431,19 @@ function buttonImportPublicKey_Click([psobject]$sender, [System.EventArgs]$e) {
     # check for a container with the supplied key container name
     $keyContainer = Get-CspKeyContainer -KeyContainerName $textBoxKeyname.Text
     if (!$keyContainer.Exists) {
-        [System.Windows.Forms.MessageBox]::Show("A key container will be created with the name '$($textBoxKeyname.Text)'")
+        $message = "A new key container will be created with the name '$($textBoxKeyname.Text)'"
+        $ans = [System.Windows.Forms.MessageBox]::Show($message, "Import Public Key", `
+            [System.Windows.Forms.MessageBoxButtons]::OKCancel, [System.Windows.Forms.MessageBoxIcon]::Information)
+        
+        if ($ans -eq [System.Windows.Forms.DialogResult]::Cancel) { return } 
+    }
+    else {
+        $message = "The key container '$($textBoxKeyname.Text)' already exists. 
+                    Are you sure you want to overwrite the contents of this container?"
+        $ans = [System.Windows.Forms.MessageBox]::Show($message, "Import Public Key", `
+            [System.Windows.Forms.MessageBoxButtons]::OKCancel, [System.Windows.Forms.MessageBoxIcon]::Question)
+        
+        if ($ans -eq [System.Windows.Forms.DialogResult]::Cancel) { return }
     }
 
     $filebrowser = [System.Windows.Forms.OpenFileDialog]::new()
@@ -722,8 +745,8 @@ $form.ShowDialog()
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCfOCyVWlk1XhTe
-# SYjgDkINywglhh482mFTSBENIorPSqCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCD9m11oMG2uDcQ
+# dD4ymEEhx5qfYBuK2Hob89hnQUiTwqCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -846,28 +869,28 @@ $form.ShowDialog()
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQgXm2N+OliKhVTwNIRPZw7KCFJo4HlHXSwPUDhgsjE65owDQYJKoZIhvcN
-# AQEBBQAEggEATgXQc1v5xIAo+vzZ/gX9T0+xjWHeSuOs/lX9xlLAqP7fy3pPS34O
-# 2jt/yT7NYg5LQw4dvOVWYaKPqeCvqBGh9t/SzQriFnoErBoJ2A5AZiEOGhkeedI+
-# rS025rv4mslDCDW+m2DEP8vDe/C+dwRI1ixoVxya8ZE7rBK2aIKCxe18/ccYyX1J
-# 9GzajRpPSPacSKJub3A2O3rJA7l4udmocz/klOLme1V4lZ8GqZ5e72o9qdjj9k4n
-# i1WiK4a2vQ6mKnqmLQUgOiP+sjbkkSxegFTWjJ7HhSKGS5jZVr7Mroc5te46P8Yd
-# 2QXYQ1fPcj5zXsSFjxBZzKMgCs4eRYGL1qGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQgJcFQeiud9+HZZUyyxWJxX/qRqRXEcs0XddbCJoa4U/kwDQYJKoZIhvcN
+# AQEBBQAEggEAgXmSt3xRbwi2GxzUnLhAYCeqNeDRqKOAHH9DgytUF5UNd7laojdr
+# ir+2osCAlda+nCx5xnGGinquji9Z9RNTFbNaApvyIANWYIbE0+5RRHGVLKQh7FWc
+# B4V+s3ciHX8MmbAKnKvM6kNs1FMcXiISvAWA+dexYXAItBZoAuMDUALJAum/ZJ87
+# o39yJDd9P43WGibH0oOzxHwq65qO6oExAMPSwUrBTZernhBmB/6KuyGHkotDTspf
+# k1cTfBkLrtuzyeIy27T1nyYiNlmxgJfiq0zamYreQTlU6VFsIVv2dE2Jk9RGHcVq
+# X7q/sPxHS8kD6PJ4Hs0anMnW4YtTPOq2gaGCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjYxNDEyMzdaMC8GCSqGSIb3DQEJBDEiBCBSYKbmccStjrdl86cPMrPlPB1rU2hL
-# W3/8JQxVNFn86zANBgkqhkiG9w0BAQEFAASCAgAMY9c4st6w1bGMxqOaZqZ7daWw
-# BnJ06E9ju4gXkgPnaqykP0YAZnS9XPN+SR/qarMHoklKhb2yryUXeitcJC7NXdo3
-# c+ovJk5FwPZ/1m554heJDRWZ59XdgupbO4LvzhHJo2Y23JmazWNMo4f5X4mKo6Hv
-# FDqstRhavNtRE0rhnJpgdnAxq+P/dI7qAih1GCj2biohJfBGzkp+vE90IhDrJ2rS
-# dgpd5IXVveWliKHERieSYQUXXo/ONlo1sl7IyjWxglU9uktbETN/CiZMVwYmCRFB
-# Fs7qNYW6RrEi+NI0DJHf9er1uHcsJYKIJKvWOiOZxoNMeXv8KwQ+w87gYbuEqy+1
-# IfiLVK0Y04qwJmZsHV2K8fl8yMtah4FmvdMvRCyjuBBbeNv83N5iukMZ9e2m0RwY
-# AL/z3QHHrvBm1pTIHh1jK/HiYpigZyW6SFBVU4/l2wLYTTSLV8qMiPjRr60Cwg/O
-# FEV+c7skaXNQPim2ssrcBOMpCgwDnfbfj3/S39Z0jn9tcvh5FUCFt1hCQLJ/fW61
-# c0f5taWs4TNJzf7/WO9oDdsN3Zl903ZlpZSvdehYetkVErl+GnQX8Qqj3oNeaU9k
-# 43d1BhJcfyFRv4nl6aGC7BrhTEdnRF15yfVXRd6qT5pHnk02f8+h1aBe3Kz35j22
-# mUgxTasIvp/attxU7g==
+# MjYxODIwNTRaMC8GCSqGSIb3DQEJBDEiBCC0iRIVG2FflxB6lLpoLc/wLvPia3zh
+# SUGX2ggFQmM0UjANBgkqhkiG9w0BAQEFAASCAgAigsxXFU1eJBnwBr9Xq6dyjOPp
+# E9FPT75dFxmpL0KpsjEaBQNw1+9UPosrv5cbk8PIX9aqheH7ozxmMGbjH+hEI0gg
+# fJJHY3FCxxBQCVI3rKP4e//Oub2iNvixqXtXlQ7Dd01z12cy5k+5lhpGF2mw6yHj
+# 4hKq84SAJO+YfxBscIpAFh5nitDFKjCi9EL2vJw0UjFsnw0q5RS2DHdx6UZEVJva
+# 0Dquwid2Iwc3I9IWpmG8yxbiycci+HtWk/N8OfIjnXWIld/Y0WGsxVENtpz74tyO
+# gWn5HZfHO0ehcbnZmUGnun0dOkt5ZGqHd0spgfYVwnNTOYUYqC3qrjH5KDRZGMIZ
+# txUteLZjmx+oC25I61CoeOgz8jyv12z78aBjpuHkXFSZmBWsIett6xm0AWYiL7d8
+# oND9Z7v2mw4jbZbfEMpi19ZxnoewQ6Twar1Msbw2Liz6BY4YoMCFVg3WQVPkCCgU
+# oip+DyBnXV9Tt80oOy9YFn082wpqZjXWM2FWN03jxzfcBgJ8pggBbJhVMzlgmjA3
+# jNNsAhmf1Qi8isvnFAqI672u894jdWjVMTE3+i7jcm5RV53xb0FOfcDM4Qxy2tx5
+# bB8j3OWp4BahFRYkQ9ZWuA8SpUHdbEPF+GDeMVljviFe4/PMQPAvUrLV3/Qdq9Y3
+# rHEnbEf7jlBWmGBXMQ==
 # SIG # End signature block

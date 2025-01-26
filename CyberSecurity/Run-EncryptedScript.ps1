@@ -100,18 +100,26 @@ function DecryptFile {
     [System.IO.Directory]::CreateDirectory($decrFolder)
 
     # Use RSACryptoServiceProvider to decrypt the AES key.
-    if ($Cert) {
-        [System.Security.Cryptography.RSA]$_rsa = $Cert.PrivateKey
-        $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA256 
-        [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $_padding)
+    try {
+        if ($Cert) {
+            [System.Security.Cryptography.RSA]$_rsa = $Cert.PrivateKey
+            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA256 
+            [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $_padding)
+        }
+        else {
+                $_cspp = [System.Security.Cryptography.CspParameters]::new()
+                $_cspp.KeyContainerName = $KeyContainerName
+                $_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($_cspp)
+                $_rsa.PersistKeyInCsp = $true
+                
+                [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $false)
+        }
     }
-    else {
-            $_cspp = [System.Security.Cryptography.CspParameters]::new()
-            $_cspp.KeyContainerName = $KeyContainerName
-            $_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($_cspp)
-            $_rsa.PersistKeyInCsp = $true
-            
-            [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $false)
+    catch {
+        $message = "`n[ERROR]: Unable to decrypt the AES Key. The following error occurred:`n$($error[0].Exception.Message)"
+        Write-Host $message -ForegroundColor Red
+
+        return 500
     }
 
     # Decrypt the key.
@@ -159,22 +167,22 @@ if ($KeyContainerName) { # check for the existence of the key container
     $keyContainer = Get-CspKeyContainer -KeyContainerName $KeyContainerName
     if (!$keyContainer.Exists) { throw "$KeyContainerName does not exist" }
 
-    DecryptFile -File $fileInfo
+    $result = DecryptFile -File $fileInfo
 }
 elseif ($CertificateThumbprint) {
     $cert = Get-ChildItem Cert:\ -Recurse | 
             Where-Object {$_.HasPrivateKey -and $_.Thumbprint -eq $CertificateThumbprint} | 
             Select-Object -First 1
 
-    DecryptFile -File $fileInfo -Cert $cert
+    $result = DecryptFile -File $fileInfo -Cert $cert
 }
 else {
     throw "Unable to resolve supplied parameters"
 }
 
-# if ($LASTEXITCODE -ne 0) {
-#     throw "Unable to decrypt data"
-# }
+if ($result -ne 500) {
+    throw "Unable to decrypt data"
+}
 
 try {
     $proc = Start-Process pwsh.exe -ArgumentList "-NoProfile -NonInteractive -File `"$script:outFile`"" -Wait -PassThru -NoNewWindow -ErrorAction Stop
@@ -195,8 +203,8 @@ return @{
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBpQGiok20pgspq
-# EtqklOaE/N3VJnRmeSf/jAftJujVnaCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA2jjzjslLeF3pu
+# nPgeCse13z9EsaJmvZnCbmYMnfL8aKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -319,28 +327,28 @@ return @{
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQgriVRolb8FLSmyBFfBEN5ZmzRdsvZy48bbc0pzgCC7jcwDQYJKoZIhvcN
-# AQEBBQAEggEAGI1lE7IndtMPwvqjvY4KmKTi4M/ReK1JbY0vp5wJpggDxBs2abKN
-# GNFuOHcJezcIyc/yttmqTA5FlMom8MKF9xlJYQBH3ztX/cYAwmfBU0D41JpuLKIi
-# MNpKRVampyVR+6w8U+VZ3vhbSSn2SeyOgxGprn1swzO8TB+kPSBDnYRi0sCVGHTQ
-# DAUgCgRMJ1heumktGB5KnHRTYFTVeIelNeBPQLvSRfjp11vkBPz9se0ndBcuUPLx
-# hAXLW88IzZDxB1Z9gXXJ4FiRlQDEhYi+VUmdSbNiTzYLELWEU4avbdcO15/vex9m
-# OPxp8FoFu59V0ehVQsDfl2iKed218SOJQqGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQgv3G6G8SL2Ap8pwN3xW0Imm3VlYQkLdr+CJjZDtomi18wDQYJKoZIhvcN
+# AQEBBQAEggEAMTIwjTI5laokrU3N4pz+c8IhkV+uvbN9hB2aO0sfSibosdIPF8J5
+# NEJfKVpWJk3QhVE/k146j1PKVdmsN9MZKYbPb61m77j41tMLU1MsW+3h131vyzqf
+# aCCYnVkhtt0UJqYThlFRJYKm6pMKjYDYAtR/IOg0l/HNbzQDy0Db0X0GUbAcSWhC
+# RCJEiKGl+Inn01tUQt/EU4bkDwQmHOkqwijxu8NwFKeS93B1ZrzSO3+YuEMCNYeR
+# zc2PivY/Ot25W1LyOcxUqjnTFCAd8iC1HkcJyNgrJ2OH1Vykyy71BzCuCE+5udB+
+# 7u6dHNx/25th+bmFQOfHtx75IqIyd5+4C6GCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjYxNDE5MzZaMC8GCSqGSIb3DQEJBDEiBCCpOiUmvhGALfkKRQXBglhy9i1oskdG
-# tX15q8ilYn9NsTANBgkqhkiG9w0BAQEFAASCAgBujS915erG2YuoJGHUkwpUE9dr
-# mjaIcCiZ+LBBhFXnZyMIieY9ckY+uJw+UkOyhI2rUqNV0yVfN0m3L465vIOIDqq5
-# r4IxOqCyzgVlTdrdcDWrNieKfeBwlpmma8LUaoBZ0VI4vUwQrBmZoTNmVhykhjjD
-# 1T2EAJCYu3+mZ5PgTL2WRkmfGwDq7UfOEJDjIUOXUCOFHg5+tUGPuosnw9VdyQ5h
-# NPXscEttV6g88XqhJGqKD5+XhL5hGg7n/ha+UHqXad4lWHcWJnMLsB4IlcIebrmE
-# X9GIUejtC4WrJ8lngaL+B2lau/7fQNiv2Tdh/bgrfvFQCF97Lfts/ByhR2N+sCDN
-# lMf354C/njxk0lLO3Uph5t4DZJMoL5cC++Fwedm/+kgGbQnGJAeVECLTrn/afwGh
-# gm0tigDWuTJGKCfwlNJ2mP1TU/sHXwVWHJs0a8z76WYyYBCzg/yhEaO796ePzQqW
-# nrcnkVLj06YaoLtqS6ynMMFysNkzA98rQyrqIPw2XEuTTXkt/t/pdXWSeinUwO86
-# 0G4rxX8Jd2OD/Vk4AiN+ZyfmtE8n1bafdEHhCI6m9YCNt6I0EU2UvgA0ES5uO9FI
-# OqWZ6mCeiBYTFfqb4iWJAq9etPJ+as0AMJHL990foqjJLSBO/sdHrYVwgUFPuYCQ
-# u0tY20cL3QVlhoc3/Q==
+# MjYxODE4MTBaMC8GCSqGSIb3DQEJBDEiBCCJe/tR4dsEe/g4actxAUO4R/EYBxfO
+# js+KAPaIrQb/WTANBgkqhkiG9w0BAQEFAASCAgCVfHcNB9JUmlRt6DpC6/hyxgEK
+# oKcypMoVnNbS4O3RU8wbreASTb4EnKNPuILR/pjklzBx6rVYaNnfn/uL+mV7L4/o
+# MJMFuBrgW1oqdpc4AokrFHlBpYPF1Fe9fK8HMtLHIicdHxCOQkpIekkv6GQwIxS9
+# nzI1IsgMGzxC/zmGnus/uOX8NGOV6dfhRfzOBkYYmrcjxb8FLMXQuCJs6zZlLaf4
+# keltL0L+inTpQ340y5O0kmXwVSv+sq1drE5M2n+jJsgQrZsEGkSvf+GkNmID4orS
+# aY5+LplDlcd7MHd7wpyYSFyGgJzqo9UsCfx/x32O7WXR6SFP5Bs8G3KGvJhoo9Gr
+# D8QAAW6Ze8BjryWqf3IEIaUbQvodTam2EfiSRJZ+cx7UIbAsXZw39DLRIUv5mTqL
+# 6MTSSc0XH5/F4AZuOWDTkPJtJq6u36Qj3Lv9fqdC2NZX+PZUAliL+LLhUNrqI0Y6
+# EhSRnA9RY2KmC10DTdzIKN57gh3MtmGrs71eRksSOpBDyI/VUm15jSKIc9U5IZWt
+# ohJOaSD+iHZ+0R+0HFFIxN4b1RN1shcTcTBljEPRp5AYuh7v0ugdDrKnbciVpBFl
+# SK7BHeUe8APKiDodffveF2YB+fCngwdK2t4Wo6XxLtXOBOqxjURRJ9cjcccuGGAl
+# hTvuzZAoOgorfuIf4Q==
 # SIG # End signature block
