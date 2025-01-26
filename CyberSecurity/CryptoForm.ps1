@@ -1,6 +1,24 @@
 #region functions
 
-# Script Methods
+#region Script Methods
+
+function New-AsmKeys {
+    <#
+        .SYNOPSIS
+        Code to Create/Retrieve stored asymmetric keys 
+    #>    
+    # Stores a key pair in the key container.
+    $script:_cspp.KeyContainerName = $textBoxKeyname.Text
+    $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
+    $script:_rsa.PersistKeyInCsp = $true
+
+    if ($script:_rsa.PublicOnly) {
+        $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
+    }
+    else {
+        $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair"
+    }
+}
 function EncryptFile {
     <#
         .DESCRIPTION
@@ -294,7 +312,9 @@ function Get-AppSettings {
     }
 }
 
-# Event Handlers
+#endregion Script Methods
+
+#region Event Handlers
 function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
     <#
         .SYNOPSIS
@@ -307,17 +327,7 @@ function buttonCreateAsmKeys_Click([psobject]$sender, [System.EventArgs]$e) {
         [System.Windows.Forms.MessageBox]::Show("A key container with the specified name already exists. The existing keys will be retrieved.")
     }
 
-    # Stores a key pair in the key container.
-    $script:_cspp.KeyContainerName = $textBoxKeyname.Text
-    $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
-    $script:_rsa.PersistKeyInCsp = $true
-
-    if ($script:_rsa.PublicOnly) {
-        $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
-    }
-    else {
-        $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair"
-    }
+    New-AsmKeys
 
     [System.Windows.Forms.MessageBox]::Show("RSA Keys successfully created and stored in key container $($textBoxKeyName.Text)", "Create RSA Keys",`
         [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
@@ -502,16 +512,8 @@ function buttonGetPrivateKey_Click([psobject]$sender, [System.EventArgs]$e) {
         return
     }
 
-    $script:_cspp.KeyContainerName = $textBoxKeyname.Text
-    $script:_rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new($script:_cspp)
-    $script:_rsa.PersistKeyInCsp = $true
-
-    if ($script:_rsa.PublicOnly) {
-        $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Public Only"
-    }
-    else { 
-         $labelKeyStatus.Text = "Key: $($script:_cspp.KeyContainerName) - Full Key Pair" 
-    }
+    # attempt to retrieve the private key from the container
+    Get-AsmKeys
 }
 function comboBoxKeySource_SelectionChangeCommitted([psobject]$sender, [System.EventArgs]$e) {
     Write-host $this.selecteditem
@@ -542,9 +544,14 @@ function comboBoxCertStore_SelectionChangeCommitted([psobject]$sender, [System.E
     $comboBoxCertificate.Items.AddRange($certs.Thumbprint)
     $comboBoxCertificate.DropDownWidth = Get-DropdownWidth -Text $certs.Thumbprint -Font $this.Font
 }
+
+#endregion Event Handlers
+
 #endregion functions
 
-#region    DECLARE GLOBAL OBJECTS AND DEFAULT VALUES
+Set-Alias -Name Get-AsmKeys -Value New-AsmKeys
+
+#region DECLARE GLOBAL OBJECTS AND DEFAULT VALUES
 
     # Path variables for source, encryption, and decryption folders.
     $AppSettings = (Get-AppSettings).AppSettings
