@@ -36,7 +36,7 @@ function EncryptFile {
     switch ($comboBoxKeySource.Text) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
         'Certificate Store' {
             [System.Security.Cryptography.RSA]$script:_rsa = $Cert.PublicKey.GetRSAPublicKey()
-            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1
+            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA256
             [byte[]]$keyEncrypted = $script:_rsa.Encrypt([byte[]]$aes.Key, $_padding)
             break
         }
@@ -171,7 +171,7 @@ function DecryptFile {
     switch ($comboBoxKeySource.Text) { # if key source is Certificate Store, need to recreate RSACryptoServiceProvider
         'Certificate Store' {
             [System.Security.Cryptography.RSA]$script:_rsa = $Cert.PrivateKey
-            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1   
+            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA256   
             [byte[]]$keyDecrypted = $script:_rsa.Decrypt($keyEncrypted, $_padding)
         }
         'Key Container' {
@@ -718,8 +718,8 @@ $form.ShowDialog()
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA68x+8jx1M8rCL
-# h+CM/YnwU/d/+V4j196XQ+rGB3sxKaCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCfOCyVWlk1XhTe
+# SYjgDkINywglhh482mFTSBENIorPSqCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -842,28 +842,28 @@ $form.ShowDialog()
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQgPXWhAvooc9KJzT3AFvBRD3zVID7pNgOj/+VAJHwaTUUwDQYJKoZIhvcN
-# AQEBBQAEggEAGR6LzhUP3kxTM7GS5fyZ3ykLmFeqlnPIIQPd5vsVyS8wrE0yZjf+
-# 1SK6XKrB5tCJRyc+y7IO9E51tQhg2ml8okp4eawb5VoYRVK+FBHztpIKmrfm9ZVR
-# yFdiD27AaX+Im4WN/E9BULHvaL0TI4njimb2/V3/ziifLvFjx4SbdymIpAoIG4DI
-# unyWK4x0ZXCpcT5TfmvJYg00oN8e5wi8W7/0IdvPWzJELOx+mMMR0VcdhhJfZFSx
-# /ceDFVWNHQat8b8sYzodsIJckegbplRpne6uATlHq/VPgWvBSPdANF90CNM4Bhlr
-# 8McIB37RxwXs3Iu+nHSzSKhGUXNz8xX0qaGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQgXm2N+OliKhVTwNIRPZw7KCFJo4HlHXSwPUDhgsjE65owDQYJKoZIhvcN
+# AQEBBQAEggEATgXQc1v5xIAo+vzZ/gX9T0+xjWHeSuOs/lX9xlLAqP7fy3pPS34O
+# 2jt/yT7NYg5LQw4dvOVWYaKPqeCvqBGh9t/SzQriFnoErBoJ2A5AZiEOGhkeedI+
+# rS025rv4mslDCDW+m2DEP8vDe/C+dwRI1ixoVxya8ZE7rBK2aIKCxe18/ccYyX1J
+# 9GzajRpPSPacSKJub3A2O3rJA7l4udmocz/klOLme1V4lZ8GqZ5e72o9qdjj9k4n
+# i1WiK4a2vQ6mKnqmLQUgOiP+sjbkkSxegFTWjJ7HhSKGS5jZVr7Mroc5te46P8Yd
+# 2QXYQ1fPcj5zXsSFjxBZzKMgCs4eRYGL1qGCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjUyMTU0MjJaMC8GCSqGSIb3DQEJBDEiBCDhD0UAHfdcdEZhX+FouVmnCn7FY3c5
-# Kw0PlPPrls8jfDANBgkqhkiG9w0BAQEFAASCAgBqek7Sgy5sSIcrmJRUFShSZbEm
-# Q0Rk+TK+rwv35ANIcc3mqOTK5Svifoo6/LOznGpMU9AgX0U5g2wsNOmXWUk1c00j
-# 47Hd8dCDZ/cUYhA15CbChsygMpl+ASu4k0+2XxcojZZkJtRkSaE4nlR4BgLUWqRj
-# +X/7AvFOHWTP89ghy/PsRw8mSAlQe2bq8ztohadZqqkJ0n1t7eFCA7Uv90gdo1DS
-# Hky28GMwhC+lIp6Dh0WE5UVs5fy73lLNeOnB/dVH2qncZwHe2a53Oj30O0tp8HxN
-# 8k4vrBNCNsOfcRgGSyRpFn4yZMdBzmzsIVyTReRdmP4sw/19eTpas44/G/Wggzcc
-# MAMk+tCNjUlPB9p8Bi0XQ6l99tEQL8V+fiTX18dZ1MQcAv+BiSZ3rHhqAspIYkn5
-# plMA2p0vsvC1FIehj9ajHy0yzOW757VHJ5mMJGzc+0qZ/U3pRCsQJLgVQvyjYAKX
-# bkJ6DyWJRds/PDDvJwKOQc94ZM0Fe2hjHTRE11XFmgl9o5wyk9D47W1bJllqy6g2
-# X6fuI3XFCDlKRI2guH4RpWMfc9qeGXpk50oqkNESS5AZ979Er4mYtbvy7WRNTEIm
-# XQIRN5MqVg5E1I1K/4UcbMcLqTorCNV6XFQFhjeqstMOTlYKeL0Ne1w5WYVguwAC
-# mZ6SmCuxndFmYdRQUg==
+# MjYxNDEyMzdaMC8GCSqGSIb3DQEJBDEiBCBSYKbmccStjrdl86cPMrPlPB1rU2hL
+# W3/8JQxVNFn86zANBgkqhkiG9w0BAQEFAASCAgAMY9c4st6w1bGMxqOaZqZ7daWw
+# BnJ06E9ju4gXkgPnaqykP0YAZnS9XPN+SR/qarMHoklKhb2yryUXeitcJC7NXdo3
+# c+ovJk5FwPZ/1m554heJDRWZ59XdgupbO4LvzhHJo2Y23JmazWNMo4f5X4mKo6Hv
+# FDqstRhavNtRE0rhnJpgdnAxq+P/dI7qAih1GCj2biohJfBGzkp+vE90IhDrJ2rS
+# dgpd5IXVveWliKHERieSYQUXXo/ONlo1sl7IyjWxglU9uktbETN/CiZMVwYmCRFB
+# Fs7qNYW6RrEi+NI0DJHf9er1uHcsJYKIJKvWOiOZxoNMeXv8KwQ+w87gYbuEqy+1
+# IfiLVK0Y04qwJmZsHV2K8fl8yMtah4FmvdMvRCyjuBBbeNv83N5iukMZ9e2m0RwY
+# AL/z3QHHrvBm1pTIHh1jK/HiYpigZyW6SFBVU4/l2wLYTTSLV8qMiPjRr60Cwg/O
+# FEV+c7skaXNQPim2ssrcBOMpCgwDnfbfj3/S39Z0jn9tcvh5FUCFt1hCQLJ/fW61
+# c0f5taWs4TNJzf7/WO9oDdsN3Zl903ZlpZSvdehYetkVErl+GnQX8Qqj3oNeaU9k
+# 43d1BhJcfyFRv4nl6aGC7BrhTEdnRF15yfVXRd6qT5pHnk02f8+h1aBe3Kz35j22
+# mUgxTasIvp/attxU7g==
 # SIG # End signature block
