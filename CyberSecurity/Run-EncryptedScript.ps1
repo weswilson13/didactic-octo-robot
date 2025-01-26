@@ -54,7 +54,7 @@ function DecryptFile {
         [System.IO.FileInfo]$File,
         [X509Certificate]$Cert
     )
-    
+
     # Create instance of Aes for symmetric decryption of the data.
     $aes = [System.Security.Cryptography.Aes]::Create()
 
@@ -97,9 +97,9 @@ function DecryptFile {
 
     # Use RSACryptoServiceProvider to decrypt the AES key.
     if ($Cert) {
-            [System.Security.Cryptography.RSA]$_rsa = $Cert.PrivateKey
-            $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1   
-            [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $_padding)
+        [System.Security.Cryptography.RSA]$_rsa = $Cert.PrivateKey
+        $_padding = [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1   
+        [byte[]]$keyDecrypted = $_rsa.Decrypt($keyEncrypted, $_padding)
     }
     else {
             $_cspp = [System.Security.Cryptography.CspParameters]::new()
@@ -154,14 +154,19 @@ $params = @{ File = $fileInfo }
 if ($KeyContainerName) { # check for the existence of the key container 
     $keyContainer = Get-CspKeyContainer -KeyContainerName $KeyContainerName
     if (!$keyContainer.Exists) { throw "$KeyContainerName does not exist" }
-}
 
-if ($CertificateThumbprint) {
-    $cert = Get-ChildItem Cert:\ -Recurse | Where-Object {$_.Thumbprint -eq $CertificateThumbprint} 
-    $params["Cert"] = $cert
+    DecryptFile -File $fileInfo -KeyContainerName $KeyContainerName
 }
+elseif ($CertificateThumbprint) {
+    $cert = Get-ChildItem Cert:\ -Recurse | 
+            Where-Object {$_.HasPrivateKey -and $_.Thumbprint -eq $CertificateThumbprint} | 
+            Select-Object -First 1
 
-DecryptFile @params
+    DecryptFile -File $fileInfo -Cert $cert
+}
+else {
+    throw "Unable to resolve supplied parameters"
+}
 
 # if ($LASTEXITCODE -ne 0) {
 #     throw "Unable to decrypt data"
@@ -186,8 +191,8 @@ return @{
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAEFYzk6E+c71L8
-# +M7pGHXlLasJQ1SPiilgvV1cXPDb9aCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRvAD87e4Mm3g5
+# gt1M74MW9s9G6yrI/fkEwn+be2t9iKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -310,28 +315,28 @@ return @{
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQgnjJBV3ziseylkwYzVk+Hk3VoEVG8DOytXmKhhVRRJh4wDQYJKoZIhvcN
-# AQEBBQAEggEAvItC3cgyTzl0JJDEJdpsLqTWkbUD4BkfOEG+YRJflWST8TNS2mSo
-# EsfIz2ZUVvrNg/k4re0LV9aCImO544r6YMrGhM3NeI9fnQiST7Gfnbjx9GdnLUyp
-# lAVbLOvtZH1JG87xEhaK6+90MSDhOlFrNm9nN8Vl5oUkqkwnop9lGg2izwkJCwF8
-# mEtf/DxgyJa3ri+pyaivoEsqwsaxZ3EoE0wMPbfkjmNuzgPqtrVAEBtnqspkYnlw
-# 0sTxsCBrNxvH5XCbtctPOmjEF0rTr8RA9Se2MdZHv+vLhdrvl8kwGaqN8MTvgag0
-# A96ZMD3KqLVvq35tQj+/lox2tx6SGVsdIqGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQg2OxkqSBojdRBQk+Osd5Q2ro73JReS430NmYYzd/ZWnEwDQYJKoZIhvcN
+# AQEBBQAEggEAn+RgpFujO3kkaLbTJM9P76z6nsmrYfqMRpDbXLkbuFtpyORTkyfX
+# pceBqsHfsX2am7pMMR9bN8i1IsobDcX6rtWDrFr62qRxXCbzeMSKePflwPvO6dEG
+# y8Arl3zDgOL+rF3eYFRb8J/oznsImPWSYN4kUmpP1AEqX8tALyUA6jnAXe643sqF
+# +xq3rIbe4UXf8/sdFRynnjhOQ8qlVglETHFMItg+taMDlmbmqWxzPytm3W51Ilmp
+# qvZPZS8UcO667GasPTCrxCHq+zcfzTp5jBDX38R+ryQpIoEtiqUsZq2e/e/yKK1T
+# XgAFm4iEMg7S29GtyrgbtTTOhIAbZqiIDqGCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjYwMDQ3MDZaMC8GCSqGSIb3DQEJBDEiBCCYTsxxztiArTWeHDI8/OCshmCpd4os
-# AO8nfuYf7jkfZDANBgkqhkiG9w0BAQEFAASCAgCi7xz7VtZHzfAfIpgWfUtkhc1N
-# TSRoR6J+iaWnZW8qkW5WKeDPGRSQJeNhNNxkcLkLzXo3fbkGrOucevUdtxYaIRP1
-# 9/CStG++3tP6seVB24J0Nrve+XTOyvFaqQgLbcLeR38dL+m9Mo0e+RkHx/Og3Zzk
-# HqTg+JC15jRCAqRTiaR5JMJCGVDozpS+91lfMFcRFn1k69W1Uf9k7QefVai4YdfW
-# ToaSmzwVMjmvU61s4cS0tf7uAkGlwNp0vHLHz0f2v3lXpwKqAKTI0yhjVaSGk5TA
-# Xao3kAV++68uF7TCPv8/AWb/Mdw73Q9dHoKIrdVqsmAP9G3D+6y73IiSyrGA1WPN
-# 6m39bSvV7+vMih/feoE0Fd5eUfEM3/qNgPuShZDnEuJYEM9pzByYUfrSSWQF2a1R
-# r8PoWPMnerIDbyixvnJ0HcxQGHMXLEHXfP9LYnS49FCJgh4//R7CyRspLMQi0G8n
-# WaxfZ79wVB2SUcbt7eEWmPR6H0sNIT5+ooRLwukcx2zieT8XPzkIq0zlhh1X2d8C
-# DTeK9czXI+PF5ufjq/2brdlkf0LkjpUwqXwpUHLx/scz2ZUyfJ70HEDvp+I284sa
-# jrE6jamRrUyO0LLWYMiNvkZQR4akiJqjbOnZgJhcOuaXUB2TTxWOMXkX7vYgl59G
-# ra6HRc0vtTQ7NI6KIw==
+# MjYwMTQ4NDNaMC8GCSqGSIb3DQEJBDEiBCCvOB7kyDGtqUTUvGhyE8KQtIgTv5oe
+# 2+Psj7nJKESoOTANBgkqhkiG9w0BAQEFAASCAgAfjnWc0DaFD5k9V4jk2f3be37I
+# t0bdwwuvjoEpTQjMYicMRrvbYpnM3yoxohFwPNKr9I5q2h5t/Bx3bZXhtiYwNCX3
+# 9x/mmGItyBpHV7+IeLw/MdJUSqEi1jMiJ2+p69Bbf/vc0CG/KXctiOIDK/zrXnOI
+# Hh0IWE9Ar+UE1XVDMBgBs8FYFiziVVNylgB5+wOOB4Bga/P+2S5pZf/JdmafciME
+# nHVoO/eWWmqIahwpdgBVxLnCGVv7lbAyH5fHWxal1rS4TnONiXtQvjMferFm7LVm
+# q9swSzYHL81BGLS/cURN7j6QqlQkTOQ+6KAJF0R4XcwrAcGoJ6A3W0+GXq3i3Zcg
+# mZ/4gF6ZcUdbI0JSSkmdlO7OIO6K30Gn7TDEgVPrchlssjuGrfYNp6+pWSg0UL6E
+# 1wtm9hYjBb5tsRR2ANtspGShTsct5XZeBvDQ1lBc5m7As5WYNzvYDGmMcTgubPZa
+# AGE/9zkQktAWQV/L4dwbUx+0bFuqabn11HLVzoyX3N3q1krc728y8pdGg/faLrgB
+# kd1ONnbHSDVnolaG7XQemJl/M+b/nLh7nG8tGsjZ9ta9GBEt1ktG8HVvxCT8ld2S
+# pyMkh02o6y3C4DCVSTOXS86osWOJwysrqOaM7k6JSkB/4JdxMaZ40Tqk5L3WzWfA
+# 07skhDH/HCqc1/uU7A==
 # SIG # End signature block
