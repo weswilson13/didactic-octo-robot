@@ -65,7 +65,7 @@ function DecryptFile {
 
     # Construct the file name for the decrypted file.
     $guid = New-Guid
-    $outFile = [System.IO.Path]::Combine("$env:TEMP\$guid.ps1")
+    $script:outFile = [System.IO.Path]::Combine("$env:TEMP\$guid.ps1")
 
     # Use FileStream objects to read the encrypted file (inFs) and save the decrypted file (outFs).
     $inFs = [System.IO.FileStream]::new($File.FullName, [System.IO.FileMode]::Open)
@@ -115,7 +115,7 @@ function DecryptFile {
 
     # Decrypt the cipher text from from the FileSteam of the encrypted file (inFs) into the FileStream 
     # for the decrypted file (outFs).
-    $outFs = [System.IO.FileStream]::new($outFile, [System.IO.FileMode]::Create)
+    $outFs = [System.IO.FileStream]::new($script:outFile, [System.IO.FileMode]::Create)
 
     $count = 0
     $offset = 0
@@ -146,8 +146,6 @@ function DecryptFile {
     $inFs.Close()
     $outStreamDecrypted.Close()
     $outFs.Close()
-
-    Exit 0
 }
 
 $fileInfo = [System.IO.FileInfo]$ScriptPath
@@ -165,12 +163,12 @@ if ($CertificateThumbprint) {
 
 DecryptFile @params
 
-if ($LASTEXITCODE -ne 0) {
-    throw "Unable to decrypt data"
-}
+# if ($LASTEXITCODE -ne 0) {
+#     throw "Unable to decrypt data"
+# }
 
 try {
-    $proc = Start-Process pwsh.exe -ArgumentList "-NoProfile -NonInteractive -File `"$outFile`"" -Wait -PassThru -NoNewWindow -ErrorAction Stop
+    $proc = Start-Process pwsh.exe -ArgumentList "-NoProfile -NonInteractive -File `"$script:outFile`"" -Wait -PassThru -NoNewWindow -ErrorAction Stop
 }
 catch {
     Write-Host "An error ocurred."
@@ -178,7 +176,7 @@ catch {
 }
 finally {
     # remove the temporary file
-    Remove-Item $outFile
+    Remove-Item $script:outFile
 }
 
 return @{
@@ -188,8 +186,8 @@ return @{
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA5hVvqlpvHGEEy
-# Ko82S0tOEtdCIv8U/1Jo/NLqGoj2naCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAEFYzk6E+c71L8
+# +M7pGHXlLasJQ1SPiilgvV1cXPDb9aCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -312,28 +310,28 @@ return @{
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQgow6HrVK28Nug0uwuulW02aTzVOHpPEoCAtzp7MkvEt0wDQYJKoZIhvcN
-# AQEBBQAEggEAtwa7N7+P7UlERpfduFp68LeDe+NYaQL5dmODO9VfNU9avvTNeBLe
-# qtKcsmfX5IKdNZsN5HyzYzmDb2LtRIBJxROD4CK+4QJ4nP85Eh3vGFVPJGMxEKrO
-# u70Kyq5OiEDoOFxgJVq5aWznrOeE2iWWuwdfMuk69ZipAGVjU7w6b6j6T/FxN133
-# L/9VLtycnb45z/l5wBOulbIUi5/Z2OQiE+Q2n2pOUSlrU4/XLY4pY3qNPkIM6ofg
-# 5CkPMCAzI57YF1HNSsS5qxKtBPma9PRXm1knXgYLP3XQyKb3z59LaukO+lH7Z0Ww
-# fHSi26QfYTmu+W7117qja05bpZ2Ooqd/DqGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQgnjJBV3ziseylkwYzVk+Hk3VoEVG8DOytXmKhhVRRJh4wDQYJKoZIhvcN
+# AQEBBQAEggEAvItC3cgyTzl0JJDEJdpsLqTWkbUD4BkfOEG+YRJflWST8TNS2mSo
+# EsfIz2ZUVvrNg/k4re0LV9aCImO544r6YMrGhM3NeI9fnQiST7Gfnbjx9GdnLUyp
+# lAVbLOvtZH1JG87xEhaK6+90MSDhOlFrNm9nN8Vl5oUkqkwnop9lGg2izwkJCwF8
+# mEtf/DxgyJa3ri+pyaivoEsqwsaxZ3EoE0wMPbfkjmNuzgPqtrVAEBtnqspkYnlw
+# 0sTxsCBrNxvH5XCbtctPOmjEF0rTr8RA9Se2MdZHv+vLhdrvl8kwGaqN8MTvgag0
+# A96ZMD3KqLVvq35tQj+/lox2tx6SGVsdIqGCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjUyMjIzMzdaMC8GCSqGSIb3DQEJBDEiBCDUCfLY0QuFzhZzfkADdeAHIE/wG1r5
-# WNCEC9Gqy0YKpTANBgkqhkiG9w0BAQEFAASCAgB+X1Q5s3hgzp3+8vVaXXe4BR1M
-# xcrBtWjZMPyTlmXzLur1eDghKDZnD4MEqBxHG6Ut4OkPDyzaHwdeNSZJ6BQE51+M
-# /V7vAzKbtaL8S5YdyatECuUGlk3nAuLYATtbThORqQ7eQcec1fyIoHkLqaLcaYdl
-# 7ROMycZh2A4Ox9pMnmegII3W6v56U5T03/IU4OKamxB4b8ORwVWdLwCJcx8/hhSo
-# Rd2morNl47i2opJuYOTV4++LzZfbdU2chEVr/1sB/LrOwB25rBR5EXGoRrgRV2J7
-# LBfIEHQRyB/l4EZomLs6GTkHWX+Kd8+CyTbqH7s+NkmBwP8eaFb2L3/QFj5dxaze
-# zGg2PpR7oB4xuzpiUO+w/9sSN1q9ROBzIIMj4jWVerfMRg9OVFKbBKMGxxLLjk/A
-# pKS0pwQU0hOQrUlOSBznLFD2MSGXvphZokDtPv8X9+CNNUXhtsCurwXL95Q1ulYT
-# mMNmDq25fGnHTXwBvOZvvw9hWceBMRvVecbChC9i1ccFVE9z9LnPRMH+lM423xeY
-# aLPTzEBYEF4KZh5Gy4En/EsbM+Lv5BocgLzJ0XfInCrvSHnOWKaJBF02c0uka/g0
-# EHqz+euE70QwNqxM4dcsNGxJcGlWZ79tanK8DDSpZk/wLASXI+OLPW6LeKup/Dwg
-# A5t6/PiNEFwoUXhJHA==
+# MjYwMDQ3MDZaMC8GCSqGSIb3DQEJBDEiBCCYTsxxztiArTWeHDI8/OCshmCpd4os
+# AO8nfuYf7jkfZDANBgkqhkiG9w0BAQEFAASCAgCi7xz7VtZHzfAfIpgWfUtkhc1N
+# TSRoR6J+iaWnZW8qkW5WKeDPGRSQJeNhNNxkcLkLzXo3fbkGrOucevUdtxYaIRP1
+# 9/CStG++3tP6seVB24J0Nrve+XTOyvFaqQgLbcLeR38dL+m9Mo0e+RkHx/Og3Zzk
+# HqTg+JC15jRCAqRTiaR5JMJCGVDozpS+91lfMFcRFn1k69W1Uf9k7QefVai4YdfW
+# ToaSmzwVMjmvU61s4cS0tf7uAkGlwNp0vHLHz0f2v3lXpwKqAKTI0yhjVaSGk5TA
+# Xao3kAV++68uF7TCPv8/AWb/Mdw73Q9dHoKIrdVqsmAP9G3D+6y73IiSyrGA1WPN
+# 6m39bSvV7+vMih/feoE0Fd5eUfEM3/qNgPuShZDnEuJYEM9pzByYUfrSSWQF2a1R
+# r8PoWPMnerIDbyixvnJ0HcxQGHMXLEHXfP9LYnS49FCJgh4//R7CyRspLMQi0G8n
+# WaxfZ79wVB2SUcbt7eEWmPR6H0sNIT5+ooRLwukcx2zieT8XPzkIq0zlhh1X2d8C
+# DTeK9czXI+PF5ufjq/2brdlkf0LkjpUwqXwpUHLx/scz2ZUyfJ70HEDvp+I284sa
+# jrE6jamRrUyO0LLWYMiNvkZQR4akiJqjbOnZgJhcOuaXUB2TTxWOMXkX7vYgl59G
+# ra6HRc0vtTQ7NI6KIw==
 # SIG # End signature block
