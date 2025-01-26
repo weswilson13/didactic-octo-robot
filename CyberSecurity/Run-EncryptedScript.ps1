@@ -21,12 +21,15 @@ function Get-CspKeyContainer {
         [string]$KeyContainerName
     )
 
-    $keyContainerExists = $false
+    $keyContainerExists,$privateKeyExists = $false
 
     # check user crypto keys for a container with the specified name
     $certUtil = certutil -user -key $KeyContainerName
 
     if (-not ($certUtil -match 'NTE_BAD_KEYSET')) { # the key exists
+        if (-not ($certUtil -match 'NTE_NO_KEY')) { # the container holds a private key
+            $privateKeyExists = $true
+        }
         $keyContainerExists = $true 
         [int]$keyNameIndex = $certUtil.Trim().IndexOf($KeyContainerName)
         $uniqueKeyId = $certUtil[$keyNameIndex + 1].Trim()
@@ -34,6 +37,7 @@ function Get-CspKeyContainer {
 
     return @{
         Exists = $keyContainerExists
+        PrivateKeyExists = $privateKeyExists
         UniqueKeyID = $uniqueKeyId
     }
 }
