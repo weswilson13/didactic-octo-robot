@@ -1,4 +1,4 @@
-# Encrypting and Decrypting Scripts
+# ![alt text](key.png)Encrypting and Decrypting Scripts
 
 Scripts can be encrypted to help prevent malicious actors from manipulating code. 
 The method of encryption is two fold. The script contents are encrypted using a AES 256-bit symmetric encryption algorithm. 
