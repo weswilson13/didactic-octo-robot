@@ -740,13 +740,17 @@ $tableLayoutPanel.SetColumnSpan($labelKeyStatus,2)
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Crypto Tool"
 $form.ClientSize = New-Object System.Drawing.Size(300,300)
+$form.MinimizeBox = $false
+$form.MaximizeBox = $false
+$form.FormBorderStyle = 'Fixed3D'
+# $form.Icon = "$PSScriptRoot/key.png"
 $form.HelpButton = $true
 $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 $form.Add_FormClosed({
     $form.Close()
     $form.Dispose()
 })
-$form.Add_HelpRequested({
+$form.Add_HelpButtonClicked({
     . "$PSScriptRoot\Documentation\HowTo.html"
 })
 
