@@ -740,10 +740,18 @@ $tableLayoutPanel.SetColumnSpan($labelKeyStatus,2)
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Crypto Tool"
 $form.ClientSize = New-Object System.Drawing.Size(300,300)
+$form.MinimizeBox = $false
+$form.MaximizeBox = $false
+$form.FormBorderStyle = 'Fixed3D'
+# $form.Icon = "$PSScriptRoot/key.png"
+$form.HelpButton = $true
 $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 $form.Add_FormClosed({
     $form.Close()
     $form.Dispose()
+})
+$form.Add_HelpButtonClicked({
+    . "$PSScriptRoot\Documentation\HowTo.html"
 })
 
 $form.Controls.AddRange(@($tableLayoutPanel))
@@ -752,8 +760,8 @@ $form.ShowDialog()
 # SIG # Begin signature block
 # MIIb+QYJKoZIhvcNAQcCoIIb6jCCG+YCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCD9m11oMG2uDcQ
-# dD4ymEEhx5qfYBuK2Hob89hnQUiTwqCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC+2izpdX7Kplig
+# nL9A0qlL4FIGogR/zuIAF8C5v/+ORKCCFkIwggM7MIICI6ADAgECAhA2a84lByWj
 # mkYPfn9MTwxLMA0GCSqGSIb3DQEBCwUAMCMxITAfBgNVBAMMGHdlc19hZG1pbkBt
 # eWRvbWFpbi5sb2NhbDAeFw0yNDExMjQxNTE4NDFaFw0yNTExMjQxNTM4NDFaMCMx
 # ITAfBgNVBAMMGHdlc19hZG1pbkBteWRvbWFpbi5sb2NhbDCCASIwDQYJKoZIhvcN
@@ -876,28 +884,28 @@ $form.ShowDialog()
 # bXlkb21haW4ubG9jYWwCEDZrziUHJaOaRg9+f0xPDEswDQYJYIZIAWUDBAIBBQCg
 # gYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYB
 # BAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0B
-# CQQxIgQgJcFQeiud9+HZZUyyxWJxX/qRqRXEcs0XddbCJoa4U/kwDQYJKoZIhvcN
-# AQEBBQAEggEAgXmSt3xRbwi2GxzUnLhAYCeqNeDRqKOAHH9DgytUF5UNd7laojdr
-# ir+2osCAlda+nCx5xnGGinquji9Z9RNTFbNaApvyIANWYIbE0+5RRHGVLKQh7FWc
-# B4V+s3ciHX8MmbAKnKvM6kNs1FMcXiISvAWA+dexYXAItBZoAuMDUALJAum/ZJ87
-# o39yJDd9P43WGibH0oOzxHwq65qO6oExAMPSwUrBTZernhBmB/6KuyGHkotDTspf
-# k1cTfBkLrtuzyeIy27T1nyYiNlmxgJfiq0zamYreQTlU6VFsIVv2dE2Jk9RGHcVq
-# X7q/sPxHS8kD6PJ4Hs0anMnW4YtTPOq2gaGCAyAwggMcBgkqhkiG9w0BCQYxggMN
+# CQQxIgQgT59DTAbraxeukmr1zhMsiDZ+0BiB6fQ68jXTnoWGEIYwDQYJKoZIhvcN
+# AQEBBQAEggEADZkUUtY1Kv5J1hNfsU3c5SDVH3pn261xo3gbH+Is9epBBnpM0ZK7
+# DSIfY422MuvjK3YHA7cktMk3k1UODFkq28FNfweGzYSAXsiHHp7J98K5ituU7QEp
+# uEFsyFercvk22dnWRGoV90xhwPHykYonMztFxhLxtX7+SEazgY+boKxPcAPvYIX2
+# b4idJkSoim+3v8GJfPyQmCsRjj72uwvCAXGeyyMogwJxU3xLv0sO7a6WJCzwxtJc
+# x9VKf5jsiLT2xnHoH3ZPbl8toXAXFBmZVJEqR6xshjA2xK1BppoltSrEng7pu7ch
+# QiaA+TS7SFFuzGQ//LBApRBIu8Rk6gbMB6GCAyAwggMcBgkqhkiG9w0BCQYxggMN
 # MIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5j
 # LjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBU
 # aW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQwDQYJYIZIAWUDBAIBBQCg
 # aTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNTAx
-# MjYxODIwNTRaMC8GCSqGSIb3DQEJBDEiBCC0iRIVG2FflxB6lLpoLc/wLvPia3zh
-# SUGX2ggFQmM0UjANBgkqhkiG9w0BAQEFAASCAgAigsxXFU1eJBnwBr9Xq6dyjOPp
-# E9FPT75dFxmpL0KpsjEaBQNw1+9UPosrv5cbk8PIX9aqheH7ozxmMGbjH+hEI0gg
-# fJJHY3FCxxBQCVI3rKP4e//Oub2iNvixqXtXlQ7Dd01z12cy5k+5lhpGF2mw6yHj
-# 4hKq84SAJO+YfxBscIpAFh5nitDFKjCi9EL2vJw0UjFsnw0q5RS2DHdx6UZEVJva
-# 0Dquwid2Iwc3I9IWpmG8yxbiycci+HtWk/N8OfIjnXWIld/Y0WGsxVENtpz74tyO
-# gWn5HZfHO0ehcbnZmUGnun0dOkt5ZGqHd0spgfYVwnNTOYUYqC3qrjH5KDRZGMIZ
-# txUteLZjmx+oC25I61CoeOgz8jyv12z78aBjpuHkXFSZmBWsIett6xm0AWYiL7d8
-# oND9Z7v2mw4jbZbfEMpi19ZxnoewQ6Twar1Msbw2Liz6BY4YoMCFVg3WQVPkCCgU
-# oip+DyBnXV9Tt80oOy9YFn082wpqZjXWM2FWN03jxzfcBgJ8pggBbJhVMzlgmjA3
-# jNNsAhmf1Qi8isvnFAqI672u894jdWjVMTE3+i7jcm5RV53xb0FOfcDM4Qxy2tx5
-# bB8j3OWp4BahFRYkQ9ZWuA8SpUHdbEPF+GDeMVljviFe4/PMQPAvUrLV3/Qdq9Y3
-# rHEnbEf7jlBWmGBXMQ==
+# MjYyMzI2MzZaMC8GCSqGSIb3DQEJBDEiBCC6rXsOVICCfyUn0Jc3f64LWZyZdNi3
+# MpIZDFcDvDeB+DANBgkqhkiG9w0BAQEFAASCAgBmhb6rBy9LjLTQCh3y7EJpQmI2
+# L/WKVU6j0cHesfWi5kRlYRL5+5W8JuthWMxhDovAJHeGspX1ABEM+i3kPxzG5Zwl
+# o3r4GyxBbBi4JaX8q1Nmn/h047I9Kup3lHrHbCDIylFHbQARAxo2r8wFMA9Gm4CZ
+# s8X5WqjLfOXzl2cZo1v+z8uMxKxvpILx8sdOAuDl/mGUAkE0TDlmELWST7zimdEd
+# JQ+X4L/vb+ENIwnxsis8/1ldjtKAJnAR6sYk9GS9/gaAhB0ociFNV+XoDTjA43l9
+# 5R5uW9ASbqntm9q/kdwLC4gobgMSGh44AJf18UYl2yl3dDl2YIRKK+VV4+d5EBpB
+# Fkpu6YzTIQI9SPbVPg30ZhykI1y7tq2sdqUuLohLI+kcyY6OQNsvHXbzvNJFJByb
+# A0M+E/Um+B32FpoHAAhbUzyo3q32hld+UEnxxQwLCHoKOlLiB/5VTl/B5Kta09zh
+# eyBhFeIGZ9fjRtoXCcWNeIkvWeMy+M9rsXHcR9Fzg16uJfrSeiwPy022yUAWj8ie
+# zaQu/PWuRI5l+f7X8Jz+akZ7tm++eoAH6u9yYFzw/aZBZf5omshpVb66Uu6IUrNq
+# LqGrvu2pR2pVkI6pdSweI0k/wwH/NqZHfP6kTmzvX4wYUP/GuHmYvIutcbkVchvd
+# dN9oELsh9HamFAG7Yw==
 # SIG # End signature block

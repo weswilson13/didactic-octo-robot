@@ -2,3 +2,5 @@ Modules/
 bin/
 *.png
 *.exe
+*/Documentation/*.html
+*/Archive
