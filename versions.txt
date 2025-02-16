@@ -1,0 +1,21 @@
+{"ID":"1","Product":"7zip","APIVersion":"24.9","FileVersion":"24.9"}
+{"ID":"4","Product":"Tortoise Git","APIVersion":"2.17.0.2","FileVersion":"2.17.0.2"}
+{"ID":"6","Product":"WinSCP","APIVersion":"6.3.6","FileVersion":"6.3.6"}
+{"ID":"9","Product":"VMWare Tools","APIVersion":"12.5.0.24276846","FileVersion":"12.5.0.24276846"}
+{"ID":"11","Product":"Printer","PrinterSeries":"HP Color LaserJet M578 Series (FS5)","Version":"2508385_053964  (FutureSmart Bundle Version 5.8.1.1)"}
+{"ID":"12","Product":"Printer","PrinterSeries":"HP LaserJet M607/M608/M609 (FS5)","Version":"2508385_053965  (FutureSmart Bundle Version 5.8.1.1)"}
+{"ID":"13","Product":"Printer","PrinterSeries":"HP LaserJet M610/M611/M612 (FS5)","Version":"2508385_053965  (FutureSmart Bundle Version 5.8.1.1)"}
+{"ID":"14","Product":"Printer","PrinterSeries":"HP Color LaserJet MFP 6800, 6801 (FS5)","Version":"2508385_053970  (FutureSmart Bundle Version 5.8.1.1)"}
+{"ID":"16","Product":"Printer","PrinterSeries":"HP LaserJet 500 color M551 (FS3)","Version":"2309088_001479  (FutureSmart Bundle Version 3.9.12)"}
+{"ID":"17","Product":"Printer","PrinterSeries":"HP Color LaserJet M577 Series (FS5)","Version":"2508385_053964  (FutureSmart Bundle Version 5.8.1.1)"}
+{"ID":"18","Product":"Printer","PrinterSeries":"HP Color LaserJet M652/M653 (FS5)","Version":"2508385_053963  (FutureSmart Bundle Version 5.8.1.1)"}
+{"ID":"19","Product":"Printer","PrinterSeries":"HP LaserJet M506 (FS3)","Version":"2309110_002029  (FutureSmart Bundle Version 3.9.15)"}
+{"ID":"20","Product":"Printer","PrinterSeries":"HP Color LaserJet Enterprise MFP M776 (FS5)","Version":"2508385_053978  (FutureSmart Bundle Version 5.8.1.1)"}
+{"ID":"21","Product":"Printer","PrinterSeries":"HP Color LaserJet 5700 (FS5)","Version":"2508385_053974  (FutureSmart Bundle Version 5.8.1.1)"}
+{"ID":"23","Product":"Powershell","APIVersion":"7.5.0","FileVersion":"7.5.0.0"}
+{"ID":"29","Product":"Windows Terminal","APIVersion":"1.22.10352.0","FileVersion":"1.22.10352.0"}
+{"ID":"33","Product":"Notepad++","APIVersion":"8.7.7","FileVersion":"8.7.7.0"}
+{"ID":"36","Product":"Google Chrome","APIVersion":"133.0.6943.99","FileVersion":"70.199.49251"}
+{"ID":"37","Product":"Git","APIVersion":"2.48.1","FileVersion":"2.48.1.1"}
+{"ID":"38","Product":"VSCode","APIVersion":"1.97.2","FileVersion":"1.97.2"}
+{"ID":"39","Product":"Microsoft Edge","APIVersion":"133.0.3065.69","FileVersion":"133.0.3065.69"}
