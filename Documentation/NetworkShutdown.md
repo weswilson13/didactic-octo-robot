@@ -130,8 +130,31 @@ Log in to and gracefully shutdown each of the following servers:
 
     **Note:** the NNPTC1ELASXX servers must be shut down in **DESCENDING** order
 
+2. Using the Links page (see above), open [Prism Element]
+    1. **IMPORTANT:** Unless you have a valid ADMINVC- account, click 'Cancel' if prompted for a smart card certificate.
+    1. If the smart card certificate fails to work, clearing the certificate choice or restarting the browser session will be necessary to continue. Do not attempt to use the smart card certificate a second time.  
 
+3. Click on the **Home** button and select **VM**.
 
+4. Find and non-controller VMs that are still running and click on them.
+    1. Click the **Power Off Actions** button
+    1. Select **Guest shutdown** and click **submit**
+
+5. Using an SSH Client (SecureCRT or PuTTY), log in to a controller VM. Issue the following commands:
+    1. `cluster stop`
+    1. If prompted, press **I agree** in acknowledgement. Wait until the cluster stops
+
+6. Using an SSH Client (SecureCRT or PuTTY), log into Nutanix Block 7 CVMs and issue the command `shutdown -h now`
+
+## 5. Badgescanners
+
+Using a Client Admin account from a workstation in the Technician VLAN, shutdown the I/PORT Blade PCs
+
+## 6. Vital Services
+
+1. Gracefully shutdown the File Cluster owner node (**NNPTC1FS10**) and the SQL Cluster owner node (**NNPTC1SQ18**)
+
+2. Gracefully shutdown the primary NNPTC1 (**NNPTC1DC21**) and NRCS (**PTCW16P-DC06**) domain controllers 
 
 <!-- References to Hyperlinks -->
 [Links]:Z:\Shared\NNPTC\W_Drives\ISD\Links\Links-VDI.html
@@ -156,3 +179,5 @@ Log in to and gracefully shutdown each of the following servers:
 [PTCLVM-ESX0203]:https://ptclvm-esx0203.nntp.gov
 [PTCLVM-ESX0204]:https://ptclvm-esx0204.nntp.gov
 [PTCLVM-ESX02M]:https://ptclvm-esx0201.nntp.gov
+
+[Prism Element]:https://nnptc-ntnx-04.nnptc1.nnpp.gov:9440
