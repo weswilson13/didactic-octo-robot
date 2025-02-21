@@ -1,6 +1,6 @@
 <style>
     .updated {
-        color:rgb(255, 255, 255);
+        /* color:rgb(255, 255, 255); */
         position: absolute;
         top: 5px;
         right: 5px;
@@ -12,7 +12,7 @@
     <a>Last Updated: 2/22/2025</a></br>
 </div>
 
-# NNPTC Network Shutdown
+# ![NNPTC Logo][NNPTCLogo] NNPTC Network Shutdown
 
 *NOTE 1: Preferentially use the Administrators credentials for all logins. If necessary, breakglass credentials can be retrieved from Thycotic Secret Server (while it is available) or the breakglass password book. Breakglass credentials will be denoted with an alphanumeric code in superscript that can be matched to the credential in Secret Server (or book) for ease of reference*
 
@@ -27,15 +27,22 @@
 [3. Non-Vital Servers](#3-redundant-or-non-vital-services)  
 [4. Virtual Environment](#4-virtual-desktop-infrastructure-vdi)  
 [5. Badgescanners](#5-badgescanners)  
-[6. Vital Servers](#6-vital-services)
+[6. Vital Servers](#6-vital-services)  
+[7. NNTP Firewalls](#7-nntp-firewalls)  
+[8. NNTP Vital Services](#8-nntp-domain-controllers)  
+[9. Authentication Servers](#9-cisco-identity-services-ise)  
+[10. Support Equipment and UPSs](#10-secure-support-equipment-and-upss)  
+[11. DHCP](#11-dhcp)
 
 ## 1. CommVault (Backup Solution)
 
 1. <sup>SA1</sup> Log in to the CommVault Management Server (**NNPTC1CS01**), open the *CommCell console* and secure any backups as follows:
 
     1. For a scheduled outage, set up a blackout window for the duration of the outage
+        1. \<insert steps to setup a blackout window>
 
     1. Otherwise, kill any active jobs
+        1. \<insert steps to kill jobs>
 
 2. Gracefully shut down the server (this prevents any backups from starting unintentionally)
 
@@ -110,13 +117,13 @@
 
 6. Using the Links page (see above), log in to each ESXi Host using the appropriate vSphere Web Client  
 
-    Block 6 vSAN | Block 8 vSAN | NNTP vSAN
-    --- | --- | ---
-    [NNPTC1ESX0601] | [NNPTC1ESX0801] | [PTCLVM-ESX0201]
-    [NNPTC1ESX0602] | [NNPTC1ESX0802] | [PTCLVM-ESX0202]
-    [NNPTC1ESX0603] | [NNPTC1ESX0803] | [PTCLVM-ESX0203]
-    [NNPTC1ESX0604] | [NNPTC1ESX0804] | [PTCLVM-ESX0204]
-    |||[PTCLVM-ESX02M]
+    | <sup>ESX1</sup> Block 6 vSAN | <sup>ESX1</sup> Block 8 vSAN | <sup>ESX1</sup> NNTP vSAN |
+    | --- | --- | --- |
+    | [NNPTC1ESX0601] | [NNPTC1ESX0801] | [PTCLVM-ESX0201] |
+    | [NNPTC1ESX0602] | [NNPTC1ESX0802] | [PTCLVM-ESX0202] |
+    | [NNPTC1ESX0603] | [NNPTC1ESX0803] | [PTCLVM-ESX0203] |
+    | [NNPTC1ESX0604] | [NNPTC1ESX0804] | [PTCLVM-ESX0204] |
+    | <!-- -->        | <!-- -->        | [PTCLVM-ESX02M]  |
 
     **Note:** You may be prompted that the server is already managed by vCenter Server. Click 'OK'.
 
@@ -146,14 +153,14 @@
 
 1. <sup>SA1</sup> Gracefully shutdown the following servers:
 
-    <!-- --> | <!-- --> | <!-- --> | <!-- -->
-    --- | --- | --- | ---
-    NNPTC1APV01 | NNPTC1HD04 | NNPTC1HP04 | NNPTC1KM02
-    NNPTC1MON02 | NNPTC1NS01 | NNPTC1PS04 | NNPTC1SP02
-    NNPTC1SP03 | NNPTC1SQ16 | NNPTC1TSS01 | NNPTC1SW02 
-    NNPTC1VMS0501 | NNPTC1VMS0601 | NNPTC1ELAS01 | NNPTC1ELAS02
-    NNPTC1ELAS03 | NNPTC1ELAS04 | NNPTC1ELAS05 | NNPTC1ELAS06
-    NNPTC1ELAS07
+    | <!-- --> | <!-- --> | <!-- --> | <!-- --> |
+    | --- | --- | --- | --- |
+    | NNPTC1APV01 | NNPTC1HD04 | NNPTC1HP04 | NNPTC1KM02 |
+    | NNPTC1MON02 | NNPTC1NS01 | NNPTC1PS04 | NNPTC1SP02 |
+    | NNPTC1SP03 | NNPTC1SQ16 | NNPTC1TSS01 | NNPTC1SW02  |
+    | NNPTC1VMS0501 | NNPTC1VMS0601 | NNPTC1ELAS01 | NNPTC1ELAS02 |
+    | NNPTC1ELAS03 | NNPTC1ELAS04 | NNPTC1ELAS05 | NNPTC1ELAS06 |
+    | NNPTC1ELAS07 | <!-- --> | <!-- --> | <!-- --> |
 
     **Note:** the NNPTC1ELAS0X servers must be shut down in **DESCENDING** order
 
@@ -169,7 +176,8 @@
 
 5. <sup>NT1</sup> Using an SSH Client (SecureCRT or PuTTY), log in to a controller VM. Issue the following commands:
     1. `cluster stop`
-    1. If prompted, press **I agree** in acknowledgement. Wait until the cluster stops
+    1. If prompted, press **I agree** in acknowledgement.
+    1. Wait until the cluster stops.
 
 6. <sup>NT1</sup> Using an SSH Client (SecureCRT or PuTTY), log into Nutanix Block 7 CVMs and issue the command `shutdown -h now`
 
@@ -181,32 +189,76 @@
 
 1. <sup>SA1</sup> Gracefully shutdown the File Cluster owner node (**NNPTC1FS10**) and the SQL Cluster owner node (**NNPTC1SQ18**)
 
-2. <sup>DA1</sup> Gracefully shutdown the primary NNPTC1 (**NNPTC1DC21**) and NRCS (**PTCW16P-DC06**) domain controllers
+2. <sup>SA1</sup> Gracefully shutdown the SQL backup server (**NNPTC1NM02**)
+
+3. <sup>DA1</sup> Gracefully shutdown the primary NNPTC1 (**NNPTC1DC21**) and NRCS (**PTCW16P-DC06**) domain controllers
 
 **NOTE:** For servers without logins (e.g.- NRCS DC) a graceful shutdown may be manually performed by pressing the power button on the physical server for ~1 second. Observe the shutdown via KVM or other means.
 
-<!-- References to Hyperlinks -->
+## 7. NNTP Firewalls
+
+1. <sup>SW1</sup> Using the Links page (see above), login to the web interface for the backup Firewall (**Palo Alto Firewall 02**)
+2. Click on the **Device** menu in the ribbon. Select **Setup**
+3. Click the link to **Shutdown Device**
+4. Repeat Steps 1-3 for the primary Firewall (**Pal Alto Firewall 01**)
+
+## 8. NNTP Vital Services
+
+1. <sup>SA2</sup> Gracefully shutdown File server (**PTCLW16P-BU01**)
+2. <sup>DA2</sup> Gracefully shutdown the domain controller (**PTCLW22P-DC01**)
+
+**NOTE:** For servers without logins (e.g.- NNTP DC) a graceful shutdown may be manually performed by pressing the power button on the physical server for ~1 second. Observe the shutdown via KVM or other means.
+
+## 9. Cisco Identity Services (ISE)
+
+1. <sup>ISE1</sup> Using the appropriate KVM, log in to each ISE server console (primary first followed by the secondary)
+2. Execute the command `halt`
+3. Enter `y` in acknowledgement
+
+## 10. Secure Support Equipment and UPSs
+
+1. <sup>CRAC1</sup> Log in to the console for each CRAC unit. Turn the unit off.
+2. Go to each COM closet. Secure and unplug the UPS.
+3. Secure and unplug the UPSs in P120 and D107.
+4. **EXTENDED OUTAGES ONLY** Secure the UPS in P201A
+    1. \<Procedure to secure UPS>
+
+## 11. DHCP
+<sup>SA1</sup> Gracefully shutdown the primary DHCP server (**NNPTC1BU03**)
+
+**NOTE:** If access is not possible via KVM or iDRAC, press the power button on the server for ~1 second
+
+<!-- References to Hyperlinks and Images-->
+<!-- Formatting: 
+    Links:  [Link Text]: path-to-link "Alternative Text"
+    Images: [tag]: path-to-image "Alternative Text"
+-->
+
+<!-- Hyperlinks -->
 [Links]:Z:\Shared\NNPTC\W_Drives\ISD\Links\Links-VDI.html
 
-[NNPTC1VMS0501]:https://nnptc1vms0501.nnptc1.nnpp.gov/admin
-[NNPTC1VC0801]:https://nnptc1vc0801.nnptc1.nnpp.gov/
-[NNPTC1VMS0601]:https://nnptc1vms0601.nnptc1.nnpp.gov/admin
-[NNPTC1VC0601]:https://nnptc1vc0601.nnptc1.nnpp.gov/
-[PTCLW16V-HV0101]:https://ptclw16v-hv0101.nntp.gov/admin
-[PTCL-VC0101]:https://ptcl-vc0101.nntp.gov/
+[NNPTC1VMS0501]:https://nnptc1vms0501.nnptc1.nnpp.gov/admin "Block 8 Horizon"
+[NNPTC1VC0801]:https://nnptc1vc0801.nnptc1.nnpp.gov/ "Block 8 vCenter"
+[NNPTC1VMS0601]:https://nnptc1vms0601.nnptc1.nnpp.gov/admin "Block 6 Horizon"
+[NNPTC1VC0601]:https://nnptc1vc0601.nnptc1.nnpp.gov/ "Block 6 vCenter"
+[PTCLW16V-HV0101]:https://ptclw16v-hv0101.nntp.gov/admin "NNTP Horizon"
+[PTCL-VC0101]:https://ptcl-vc0101.nntp.gov/ "NNTP vCenter"
 
-[NNPTC1ESX0801]:https://nnptc1esx0801.nnptc1.nnpp.gov
-[NNPTC1ESX0802]:https://nnptc1esx0802.nnptc1.nnpp.gov
-[NNPTC1ESX0803]:https://nnptc1esx0803.nnptc1.nnpp.gov
-[NNPTC1ESX0804]:https://nnptc1esx0804.nnptc1.nnpp.gov
-[NNPTC1ESX0601]:https://nnptc1esx0601.nnptc1.nnpp.gov
-[NNPTC1ESX0602]:https://nnptc1esx0602.nnptc1.nnpp.gov
-[NNPTC1ESX0603]:https://nnptc1esx0603.nnptc1.nnpp.gov
-[NNPTC1ESX0604]:https://nnptc1esx0604.nnptc1.nnpp.gov
-[PTCLVM-ESX0201]:https://ptclvm-esx0201.nntp.gov
-[PTCLVM-ESX0202]:https://ptclvm-esx0202.nntp.gov
-[PTCLVM-ESX0203]:https://ptclvm-esx0203.nntp.gov
-[PTCLVM-ESX0204]:https://ptclvm-esx0204.nntp.gov
-[PTCLVM-ESX02M]:https://ptclvm-esx0201.nntp.gov
+[NNPTC1ESX0801]:https://nnptc1esx0801.nnptc1.nnpp.gov "Block 8 vSAN Node 1"
+[NNPTC1ESX0802]:https://nnptc1esx0802.nnptc1.nnpp.gov "Block 8 vSAN Node 2"
+[NNPTC1ESX0803]:https://nnptc1esx0803.nnptc1.nnpp.gov "Block 8 vSAN Node 3"
+[NNPTC1ESX0804]:https://nnptc1esx0804.nnptc1.nnpp.gov "Block 8 vSAN Node 4"
+[NNPTC1ESX0601]:https://nnptc1esx0601.nnptc1.nnpp.gov "Block 6 vSAN Node 1"
+[NNPTC1ESX0602]:https://nnptc1esx0602.nnptc1.nnpp.gov "Block 6 vSAN Node 2"
+[NNPTC1ESX0603]:https://nnptc1esx0603.nnptc1.nnpp.gov "Block 6 vSAN Node 3"
+[NNPTC1ESX0604]:https://nnptc1esx0604.nnptc1.nnpp.gov "Block 6 vSAN Node 4"
+[PTCLVM-ESX0201]:https://ptclvm-esx0201.nntp.gov "NNTP vSAN Node 1"
+[PTCLVM-ESX0202]:https://ptclvm-esx0202.nntp.gov "NNTP vSAN Node 2"
+[PTCLVM-ESX0203]:https://ptclvm-esx0203.nntp.gov "NNTP vSAN Node 3"
+[PTCLVM-ESX0204]:https://ptclvm-esx0204.nntp.gov "NNTP vSAN Node 4"
+[PTCLVM-ESX02M]:https://ptclvm-esx0201.nntp.gov "NNTP Management Node"
 
-[Prism Element]:https://nnptc-ntnx-04.nnptc1.nnpp.gov:9440
+[Prism Element]:https://nnptc-ntnx-04.nnptc1.nnpp.gov:9440 "Nutanix Management Console"
+
+<!-- Images -->
+[NNPTCLogo]: NNPTC_Logo.JPG "NNPTC Logo"
