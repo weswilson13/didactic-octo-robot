@@ -11,12 +11,18 @@ function New-HtmlTable {
 
     # $htmlPreContent = "<div class=""table-container"">"
     # $htmlPostContent = "</div>"
-
-    $html = $InputObject | ConvertTo-Html -Fragment #-PreContent $htmlPreContent -PostContent $htmlPostContent
+    $params = @{}
+    if ($TableClass -eq 'good') {
+        $params = @{
+            Property = 'PrinterName', 'PortName', 'CertificateSubject', 'Issuer', 'Expiry'
+         }
+    }
+    $html = $InputObject | ConvertTo-Html @params -Fragment #-PreContent $htmlPreContent -PostContent $htmlPostContent
     $columns = $InputObject | Get-Member -MemberType Properties
     if ($columns) {
         $columns = $columns.Count
     }
+
     $tableTitle = New-TableTitle -Title $TableTitle -Columns $columns -Class $TableClass
     
     return $html.Replace('<table>', $tableTitle)
@@ -137,16 +143,13 @@ foreach ($obj in $printerStatus) {
     }
 
     # check if 802.1x is enabled
-    if ($obj.'802.1x_Enabled' -eq 'FALSE') {
-        $bad8021x = [pscustomobject]@{
+    if ($obj.'802.1x_Enabled'.Trim() -eq 'FALSE') {
+        $bad8021x += [pscustomobject]@{
             PrinterName = $obj.PrinterName
             '802.1x_Enabled' = $obj.'802.1x_Enabled'
         }
     }
 }
-
-$badPrinters = $($badDnsPtrRecord.PrinterName; $badDnsARecord.PrinterName; $badNetworkIdHostName.PrinterName; $bad8021xUserName.PrinterName; $badCertificateCN.PrinterName) | Sort-Object -Unique
-$goodPrinters = $printerStatus | Where-Object {$_.PrinterName -notin $badPrinters} | Sort-Object PrinterName -Unique
 
 $htmlOutput = @"
 <html>
@@ -186,7 +189,6 @@ $htmlOutput = @"
             grid-template-columns: repeat(1, auto);
             gap: 20px;
             width: 95%
-            /* width: 100%; */
         }
 
         table, th, td {
@@ -227,16 +229,20 @@ $bad8021xUserNameHtml = New-HtmlTable -InputObject $bad8021xUserName -TableTitle
 $badCertificateCNHtml = New-HtmlTable -InputObject $badCertificateCN -TableTitle $badCertificateCNTitle -TableClass bad
 $bad8021xHtml = New-HtmlTable -InputObject $bad8021x -TableTitle $bad8021xTitle -TableClass bad
 
-$goodPrintersHtml = New-HtmlTable -InputObject $goodPrinters -TableTitle "SAT Printers" -TableClass good
+$badPrinters = @()
 
 foreach ($var in (Get-Variable -Name bad*)) {
     if ($var.Name -notmatch 'Html|Title') {
+        $badPrinters += ($var.Value).PrinterName
         if ($var.Value) { 
             $_var = "$($var.Name)Html"
             $htmlOutput += (Get-Variable -Name $_var).Value
         }
     }
 }
+
+$goodPrinters = $printerStatus | Where-Object {$_.PrinterName -notin $badPrinters} | Sort-Object PrinterName -Unique
+$goodPrintersHtml = New-HtmlTable -InputObject $goodPrinters -TableTitle "SAT Printers" -TableClass good
 
 $htmlOutput += 
 @"
