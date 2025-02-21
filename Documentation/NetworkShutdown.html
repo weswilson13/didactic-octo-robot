@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NetworkShutdown.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<style>
+    .updated {
+        /* color:rgb(255, 255, 255); */
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-size: 12px;
+    }
+</style>
+<div class="updated">
+    <a>Last Updated By: Wes Wilson</a></br>
+    <a>Last Updated: 2/22/2025</a></br>
+</div>
+<h1 id="nnptc-logo-nnptc-network-shutdown"><img src="NNPTC_Logo.JPG" alt="NNPTC Logo" title="NNPTC Logo"> NNPTC Network Shutdown</h1>
+<p><em>NOTE 1: Preferentially use the Administrators credentials for all logins. If necessary, breakglass credentials can be retrieved from Thycotic Secret Server (while it is available) or the breakglass password book. Breakglass credentials will be denoted with an alphanumeric code in superscript that can be matched to the credential in Secret Server (or book) for ease of reference</em></p>
+<p><em>NOTE 2: Many of the shutdown commands issued in this procedure can be executed remotely. If the Administrator intends on using this method, it is recommended to establish a remote desktop session with the File cluster <em>owner</em> node (<strong>NNPTC1FS10</strong>). Reference</em> <code>Z:\Shared\NNPTC\W_Drives\ISD\scripts\Dahl\ShutdownForPowerOutage.txt</code> <em>for these commands.</em></p>
+<p><em>NOTE 3: The <a href="Z:%5CShared%5CNNPTC%5CW_Drives%5CISD%5CLinks%5CLinks-VDI.html">Links</a> page should be utilized for easy navigation to required management portals and resources:</em> <code>Z:\Shared\NNPTC\W_Drives\ISD\Links\Links-VDI.html</code></p>
+<h1 id="general-flow-and-steps">General Flow and Steps</h1>
+<p><a href="#1-commvault-backup-solution">1. CommVault</a><br>
+<a href="#2-trellix-endpoint-security">2. Trellix</a><br>
+<a href="#3-redundant-or-non-vital-services">3. Non-Vital Servers</a><br>
+<a href="#4-virtual-desktop-infrastructure-vdi">4. Virtual Environment</a><br>
+<a href="#5-badgescanners">5. Badgescanners</a><br>
+<a href="#6-vital-services">6. Vital Servers</a><br>
+<a href="#7-nntp-firewalls">7. NNTP Firewalls</a><br>
+<a href="#8-nntp-domain-controllers">8. NNTP Vital Services</a><br>
+<a href="#9-cisco-identity-services-ise">9. Authentication Servers</a><br>
+<a href="#10-secure-support-equipment-and-upss">10. Support Equipment and UPSs</a><br>
+<a href="#11-dhcp">11. DHCP</a></p>
+<h2 id="1-commvault-backup-solution">1. CommVault (Backup Solution)</h2>
+<ol>
+<li>
+<p><sup>SA1</sup> Log in to the CommVault Management Server (<strong>NNPTC1CS01</strong>), open the <em>CommCell console</em> and secure any backups as follows:</p>
+<ol>
+<li>
+<p>For a scheduled outage, set up a blackout window for the duration of the outage</p>
+</li>
+<li>
+<p>Otherwise, kill any active jobs</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Gracefully shut down the server (this prevents any backups from starting unintentionally)</p>
+</li>
+<li>
+<p><sup>CV1</sup> Log in to each CommVault node (<strong>NNPTC1CV01</strong>, <strong>NNPTC1CV02</strong>, <strong>NNPTC1CV03</strong>) with an SSH client (PuTTY, SecureCRT, etc.). Execute the following commands to shutdown services:</p>
+<ol>
+<li><code>commvault stop</code></li>
+<li><code>commvault list</code> to enumerate all running processes. <strong>All</strong> processes should be in a <em>stopped</em> state before proceeding with the next commands. Move to the next step and come back to the CommVault shutdown if necessary.</li>
+<li>On a single node, execute <code>gluster volume stop NNPTCCommVault01</code></li>
+<li>at the completion of the above command, execute the following on each node:
+<code>shutdown -h now</code></li>
+</ol>
+</li>
+</ol>
+<h2 id="2-trellix-endpoint-security">2. Trellix (Endpoint Security)</h2>
+<ol>
+<li><sup>TR1</sup> Log in to the Hyper-V server (<strong>NNPTC1VM04</strong>) hosting the Trellix support servers - E-Policy (<strong>NNPTC1EPO03</strong>) and SQL Server (<strong>NNPTC1EPOSQL03</strong>)</li>
+<li>Open Hyper-V Manager</li>
+<li><sup>TR1</sup> Log in to and gracefully shutdown the E-Policy server (<strong>NNPTC1EPO03</strong>)</li>
+<li><sup>TR1</sup> Log in to and gracefully shutdown the Trellix database server (<strong>NNPTC1EPOSQL03</strong>)</li>
+<li>Gracefully shutdown the Hyper-V server (<strong>NNPTC1VM04</strong>)</li>
+</ol>
+<h2 id="3-redundant-or-non-vital-services">3. Redundant or Non-Vital Services</h2>
+<p><sup>SA1</sup> Log in to and gracefully shutdown each of the following servers:</p>
+<ul>
+<li>File cluster <em>passive</em> node (<strong>NNPTC1FS11</strong>)</li>
+<li>SQL cluster <em>passive</em> node (<strong>NNPTC1SQ17</strong>)</li>
+<li>SCCM relay server (<strong>PTCW19V-SCCM04</strong>)</li>
+<li>Backup NNPTC1 domain controller (<strong>NNPTC1DC22</strong>)</li>
+<li>Backup NRCS domain controller (<strong>PTCW16P-DC07</strong>)</li>
+</ul>
+<p><strong>NOTE:</strong> For servers without logins (e.g.- NRCS DC) a graceful shutdown may be manually performed by pressing the power button on the physical server for ~1 second. Observe the shutdown via KVM or other means.</p>
+<h2 id="4-virtual-desktop-infrastructure-vdi">4. Virtual Desktop Infrastructure (VDI)</h2>
+<h3 id="4a-vmware-virtual-environment">4.a VMWare Virtual Environment</h3>
+<p><strong>These steps are applicable to both NNPP and NNTP VDI except where noted.</strong></p>
+<ol>
+<li>
+<p>Using the Links page (see above), log in to the applicable VMWare Horizon View console (<sup>SA1</sup> <strong><a href="https://nnptc1vms0501.nnptc1.nnpp.gov/admin" title="Block 8 Horizon">NNPTC1VMS0501</a></strong>, <sup>SA1</sup> <strong><a href="https://nnptc1vms0601.nnptc1.nnpp.gov/admin" title="Block 6 Horizon">NNPTC1VMS0601</a></strong>, <sup>SA2</sup> <strong><a href="https://ptclw16v-hv0101.nntp.gov/admin" title="NNTP Horizon">PTCLW16V-HV0101</a></strong>)</p>
+</li>
+<li>
+<p>For each desktop pool, disable provisioning and the pool itself:</p>
+<ol>
+<li>Click on <strong>Desktops</strong> under the inventory in the left window pane</li>
+<li>Select all pools by enabling the top-level checkbox</li>
+<li>Select Status -&gt; Disable Provisioning</li>
+<li>Click 'OK' when prompted</li>
+<li>Select Status -&gt; Disable Desktop Pool</li>
+<li>Click 'OK' when prompted</li>
+</ol>
+</li>
+<li>
+<p>Remove all virtual desktops</p>
+<ol>
+<li>Select the <strong>Machines</strong> node in the system tree under Inventory</li>
+<li>Select all of the VMs</li>
+<li>With all of the VMs selected, click 'Remove' at the top of the page
+<ol>
+<li><em>NOTE: the complete list of VMs may be paginated. Ensure all VMs are removed from all pages</em></li>
+</ol>
+</li>
+<li>Click 'OK' when prompted</li>
+</ol>
+</li>
+<li>
+<p>Delete the <strong>cp-parent</strong> VMs</p>
+<ol>
+<li>Using the Links page (see above), log in to the applicable VMWare vCenter (<sup>VC1</sup> <strong><a href="https://nnptc1vc0801.nnptc1.nnpp.gov/" title="Block 8 vCenter">NNPTC1VC0801</a></strong>, <sup>VC2</sup> <strong><a href="https://nnptc1vc0601.nnptc1.nnpp.gov/" title="Block 6 vCenter">NNPTC1VC0601</a></strong>, <sup>VC1</sup> <strong><a href="https://ptcl-vc0101.nntp.gov/" title="NNTP vCenter">PTCL-VC0101</a></strong>)</li>
+<li>From the vCenter interface for the cluster, select each ESXi host from the left window pane
+<ol>
+<li>On the <strong>Summary</strong> tab, click the <strong>Edit</strong> button the lower potion of the <strong>Custom Attributes</strong> section</li>
+<li>Change the value of <code>InstantClone.Maintenance</code> from <code>0</code> to <code>1</code></li>
+</ol>
+</li>
+<li>Wait about 5-10 minutes or until all of the <strong>cp-parent</strong> VMs power off and delete</li>
+<li>Select the <strong>vCenter</strong> at the top of the system tree
+<ol>
+<li>Click on the <strong>Configure</strong> tab</li>
+<li>Click on <strong>Advanced Settings</strong></li>
+<li>Click the <strong>Edit</strong> button</li>
+<li>Select the <em>filter</em> icon and type <code>vcls</code> (there should be only one entry)</li>
+<li>Set the value to <code>False</code></li>
+<li>Click <strong>Save</strong></li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<p>In <strong>vSphere</strong>, select the <em>VMs and Templates</em> view</p>
+<ol>
+<li>Click on the <strong>Menu</strong> button and select <em>Hosts and Clusters</em>
+<ol>
+<li>Shutdown all VMs in this folder except for the vCenter appliance(s) (<strong>NNPTC1VC0801</strong>, <strong>NNPTC1VC0601</strong>, <strong>PTCL-VC0101</strong>), and for <strong>NNPP ONLY</strong> - any Nutanix Controller VMs (CVMs) with the name NTNX-*.</li>
+</ol>
+</li>
+<li>Right click on each server and select <em>Power -&gt; Shutdown Guest</em></li>
+</ol>
+</li>
+<li>
+<p>Using the Links page (see above), log in to each ESXi Host using the appropriate vSphere Web Client</p>
+<table>
+<thead>
+<tr>
+<th><sup>ESX1</sup> Block 6 vSAN</th>
+<th><sup>ESX1</sup> Block 8 vSAN</th>
+<th><sup>ESX1</sup> NNTP vSAN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://nnptc1esx0601.nnptc1.nnpp.gov" title="Block 6 vSAN Node 1">NNPTC1ESX0601</a></td>
+<td><a href="https://nnptc1esx0801.nnptc1.nnpp.gov" title="Block 8 vSAN Node 1">NNPTC1ESX0801</a></td>
+<td><a href="https://ptclvm-esx0201.nntp.gov" title="NNTP vSAN Node 1">PTCLVM-ESX0201</a></td>
+</tr>
+<tr>
+<td><a href="https://nnptc1esx0602.nnptc1.nnpp.gov" title="Block 6 vSAN Node 2">NNPTC1ESX0602</a></td>
+<td><a href="https://nnptc1esx0802.nnptc1.nnpp.gov" title="Block 8 vSAN Node 2">NNPTC1ESX0802</a></td>
+<td><a href="https://ptclvm-esx0202.nntp.gov" title="NNTP vSAN Node 2">PTCLVM-ESX0202</a></td>
+</tr>
+<tr>
+<td><a href="https://nnptc1esx0603.nnptc1.nnpp.gov" title="Block 6 vSAN Node 3">NNPTC1ESX0603</a></td>
+<td><a href="https://nnptc1esx0803.nnptc1.nnpp.gov" title="Block 8 vSAN Node 3">NNPTC1ESX0803</a></td>
+<td><a href="https://ptclvm-esx0203.nntp.gov" title="NNTP vSAN Node 3">PTCLVM-ESX0203</a></td>
+</tr>
+<tr>
+<td><a href="https://nnptc1esx0604.nnptc1.nnpp.gov" title="Block 6 vSAN Node 4">NNPTC1ESX0604</a></td>
+<td><a href="https://nnptc1esx0804.nnptc1.nnpp.gov" title="Block 8 vSAN Node 4">NNPTC1ESX0804</a></td>
+<td><a href="https://ptclvm-esx0204.nntp.gov" title="NNTP vSAN Node 4">PTCLVM-ESX0204</a></td>
+</tr>
+<tr>
+<td><!-- --></td>
+<td><!-- --></td>
+<td><a href="https://ptclvm-esx0201.nntp.gov" title="NNTP Management Node">PTCLVM-ESX02M</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> You may be prompted that the server is already managed by vCenter Server. Click 'OK'.</p>
+<ol>
+<li>
+<p>In the <strong>vSphere</strong> window for each ESXi host, click the <em>Virtual Machines</em> node. Shutdown the <strong>vCenter</strong> appliances (<strong>NNPTC1VC0801</strong>, <strong>NNPTC1VC0601</strong>, <strong>PTCL-VC0101</strong>)</p>
+<ol>
+<li>Right click on the VM and select <strong>Guest OS -&gt; Shut Down</strong></li>
+</ol>
+</li>
+<li>
+<p><strong>Ensure all of the VMs except the Nutanix VMs are shut down before proceeding</strong>. All of the VM icons should no longer have the &quot;play&quot; triangle.</p>
+</li>
+</ol>
+</li>
+<li>
+<p><strong>NNPP Only</strong> <sup>NT1</sup> Use a SSH Client (SecureCRT or PuTTY) to log into <strong>one</strong> of the Nutanix CVMs for <strong>each block</strong> (<strong>nnptc-ntnx-06-01.nnptc1.nnpp.gov</strong>, <strong>nnptc-ntnx-08-01.nnptc1.nnpp.gov</strong>)</p>
+<ol>
+<li>Shut down the cluster storage:
+<ol>
+<li>Execute the command <code>cluster stop</code></li>
+<li>If prompted, type <code>I agree</code> in acknowledgement</li>
+<li>Verify by executing <code>cluster status</code> and noting all 4 nodes in the down state</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<p><strong>NNPP Only</strong> From the ESXi vSphere web console, shutdown each Controller VM</p>
+<ol>
+<li>Right click on each server <em>NTNX-*-CVM</em> and select shutdown guest OS
+<ol>
+<li>If the VM does not shutdown, select <strong>Open Remote Console</strong>. If this doesn't work, click on the VM and then click the link to launch the web console and click 'OK'.</li>
+<li>Click in the console window on each server and press 'enter'. You should see a login prompt.</li>
+<li>Press they key combination CTRL + ALT to release the curser from the console window</li>
+<li>Click the VM menu and select <strong>Power -&gt; Shutdown Guest</strong></li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<p>Place the ESXi hosts in <em>Maintenance Mode</em> and shut down the host</p>
+<ol>
+<li>From the vSphere web client for each host, click the <strong>Actions</strong> button and select <em>Enter Maintenance Mode</em>. On <strong>NNTP</strong>, if prompted about data migration, choose the option for <strong>No Data Migration</strong>.</li>
+<li>Once the host is in Maintenance Mode, click the <strong>Actions</strong> button and select <strong>Shutdown</strong>.</li>
+</ol>
+</li>
+</ol>
+<h3 id="4b-nutanix-ahv-virtual-environment">4.b Nutanix AHV Virtual Environment</h3>
+<ol>
+<li>
+<p><sup>SA1</sup> Gracefully shutdown the following servers:</p>
+<table>
+<thead>
+<tr>
+<th><!-- --></th>
+<th><!-- --></th>
+<th><!-- --></th>
+<th><!-- --></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NNPTC1APV01</td>
+<td>NNPTC1HD04</td>
+<td>NNPTC1HP04</td>
+<td>NNPTC1KM02</td>
+</tr>
+<tr>
+<td>NNPTC1MON02</td>
+<td>NNPTC1NS01</td>
+<td>NNPTC1PS04</td>
+<td>NNPTC1SP02</td>
+</tr>
+<tr>
+<td>NNPTC1SP03</td>
+<td>NNPTC1SQ16</td>
+<td>NNPTC1TSS01</td>
+<td>NNPTC1SW02</td>
+</tr>
+<tr>
+<td>NNPTC1VMS0501</td>
+<td>NNPTC1VMS0601</td>
+<td>NNPTC1ELAS01</td>
+<td>NNPTC1ELAS02</td>
+</tr>
+<tr>
+<td>NNPTC1ELAS03</td>
+<td>NNPTC1ELAS04</td>
+<td>NNPTC1ELAS05</td>
+<td>NNPTC1ELAS06</td>
+</tr>
+<tr>
+<td>NNPTC1ELAS07</td>
+<td><!-- --></td>
+<td><!-- --></td>
+<td><!-- --></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> the NNPTC1ELAS0X servers must be shut down in <strong>DESCENDING</strong> order</p>
+</li>
+<li>
+<p><sup>NT2</sup> Using the Links page (see above), open <a href="https://nnptc-ntnx-04.nnptc1.nnpp.gov:9440" title="Nutanix Management Console">Prism Element</a></p>
+<ol>
+<li><strong>IMPORTANT:</strong> Unless you have a valid ADMINVC- account, click 'Cancel' if prompted for a smart card certificate.</li>
+<li>If the smart card certificate fails to work, clearing the certificate choice or restarting the browser session will be necessary to continue. Do not attempt to use the smart card certificate a second time.</li>
+</ol>
+</li>
+<li>
+<p>Click on the <strong>Home</strong> button and select <strong>VM</strong>.</p>
+</li>
+<li>
+<p>Find and non-controller VMs that are still running and click on them.</p>
+<ol>
+<li>Click the <strong>Power Off Actions</strong> button</li>
+<li>Select <strong>Guest shutdown</strong> and click <strong>submit</strong></li>
+</ol>
+</li>
+<li>
+<p><sup>NT1</sup> Using an SSH Client (SecureCRT or PuTTY), log in to a controller VM. Issue the following commands:</p>
+<ol>
+<li><code>cluster stop</code></li>
+<li>If prompted, press <strong>I agree</strong> in acknowledgement.</li>
+<li>Wait until the cluster stops.</li>
+</ol>
+</li>
+<li>
+<p><sup>NT1</sup> Using an SSH Client (SecureCRT or PuTTY), log into Nutanix Block 7 CVMs and issue the command <code>shutdown -h now</code></p>
+</li>
+</ol>
+<h2 id="5-badgescanners">5. Badgescanners</h2>
+<p><sup>CA1</sup> Using a Client Admin account from a workstation in the Technician VLAN, shutdown the I/PORT Blade PCs</p>
+<h2 id="6-vital-services">6. Vital Services</h2>
+<ol>
+<li>
+<p><sup>SA1</sup> Gracefully shutdown the File Cluster owner node (<strong>NNPTC1FS10</strong>) and the SQL Cluster owner node (<strong>NNPTC1SQ18</strong>)</p>
+</li>
+<li>
+<p><sup>SA1</sup> Gracefully shutdown the SQL backup server (<strong>NNPTC1NM02</strong>)</p>
+</li>
+<li>
+<p><sup>DA1</sup> Gracefully shutdown the primary NNPTC1 (<strong>NNPTC1DC21</strong>) and NRCS (<strong>PTCW16P-DC06</strong>) domain controllers</p>
+</li>
+</ol>
+<p><strong>NOTE:</strong> For servers without logins (e.g.- NRCS DC) a graceful shutdown may be manually performed by pressing the power button on the physical server for ~1 second. Observe the shutdown via KVM or other means.</p>
+<h2 id="7-nntp-firewalls">7. NNTP Firewalls</h2>
+<ol>
+<li><sup>SW1</sup> Using the Links page (see above), login to the web interface for the backup Firewall (<strong>Palo Alto Firewall 02</strong>)</li>
+<li>Click on the <strong>Device</strong> menu in the ribbon. Select <strong>Setup</strong></li>
+<li>Click the link to <strong>Shutdown Device</strong></li>
+<li>Repeat Steps 1-3 for the primary Firewall (<strong>Pal Alto Firewall 01</strong>)</li>
+</ol>
+<h2 id="8-nntp-vital-services">8. NNTP Vital Services</h2>
+<ol>
+<li><sup>SA2</sup> Gracefully shutdown File server (<strong>PTCLW16P-BU01</strong>)</li>
+<li><sup>DA2</sup> Gracefully shutdown the domain controller (<strong>PTCLW22P-DC01</strong>)</li>
+</ol>
+<p><strong>NOTE:</strong> For servers without logins (e.g.- NNTP DC) a graceful shutdown may be manually performed by pressing the power button on the physical server for ~1 second. Observe the shutdown via KVM or other means.</p>
+<h2 id="9-cisco-identity-services-ise">9. Cisco Identity Services (ISE)</h2>
+<ol>
+<li><sup>ISE1</sup> Using the appropriate KVM, log in to each ISE server console (primary first followed by the secondary)</li>
+<li>Execute the command <code>halt</code></li>
+<li>Enter <code>y</code> in acknowledgement</li>
+</ol>
+<h2 id="10-secure-support-equipment-and-upss">10. Secure Support Equipment and UPSs</h2>
+<ol>
+<li><sup>CRAC1</sup> Log in to the console for each CRAC unit. Turn the unit off.</li>
+<li>Go to each COM closet. Secure and unplug the UPS.</li>
+<li>Secure and unplug the UPSs in P120 and D107.</li>
+<li><strong>EXTENDED OUTAGES ONLY</strong> Secure the UPS in P201A
+<ol>
+<li>&lt;Procedure to secure UPS&gt;</li>
+</ol>
+</li>
+</ol>
+<h2 id="11-dhcp">11. DHCP</h2>
+<p><sup>SA1</sup> Gracefully shutdown the primary DHCP server (<strong>NNPTC1BU03</strong>)</p>
+<p><strong>NOTE:</strong> If access is not possible via KVM or iDRAC, press the power button on the server for ~1 second</p>
+<!-- References to Hyperlinks and Images-->
+<!-- Formatting: 
+    Links:  [Link Text]: path-to-link "Alternative Text"
+    Images: [tag]: path-to-image "Alternative Text"
+-->
+<!-- Hyperlinks -->
+<!-- Images -->
+
+</body>
+</html>
