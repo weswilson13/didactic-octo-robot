@@ -79,7 +79,7 @@
 
 **These steps are applicable to both NNPP and NNTP VDI except where noted.**
 
-1. Using the Links page (see above), log in to the applicable VMWare Horizon View console (<sup>SA1</sup> **[NNPTC1VMS0501]**, <sup>SA1</sup> **[NNPTC1VMS0601]**, <sup>SA2</sup> **[PTCLW16V-HV0101]**)
+1. Using the [Links] page (see above), log in to the applicable VMWare Horizon View console (<sup>SA1</sup> **[NNPTC1VMS0501]**, <sup>SA1</sup> **[NNPTC1VMS0601]**, <sup>SA2</sup> **[PTCLW16V-HV0101]**)
 
 2. For each desktop pool, disable provisioning and the pool itself:
     1. Click on **Desktops** under the inventory in the left window pane
@@ -97,7 +97,7 @@
     1. Click 'OK' when prompted
 
 4. Delete the **cp-parent** VMs
-    1. Using the Links page (see above), log in to the applicable VMWare vCenter (<sup>VC1</sup> **[NNPTC1VC0801]**, <sup>VC2</sup> **[NNPTC1VC0601]**, <sup>VC1</sup> **[PTCL-VC0101]**)
+    1. Using the [Links] page (see above), log in to the applicable VMWare vCenter (<sup>VC1</sup> **[NNPTC1VC0801]**, <sup>VC2</sup> **[NNPTC1VC0601]**, <sup>VC1</sup> **[PTCL-VC0101]**)
     1. From the vCenter interface for the cluster, select each ESXi host from the left window pane
         1. On the **Summary** tab, click the **Edit** button the lower potion of the **Custom Attributes** section
         1. Change the value of `InstantClone.Maintenance` from `0` to `1`
@@ -115,7 +115,7 @@
         1. Shutdown all VMs in this folder except for the vCenter appliance(s) (**NNPTC1VC0801**, **NNPTC1VC0601**, **PTCL-VC0101**), and for **NNPP ONLY** - any Nutanix Controller VMs (CVMs) with the name NTNX-*.
     1. Right click on each server and select *Power -> Shutdown Guest*
 
-6. Using the Links page (see above), log in to each ESXi Host using the appropriate vSphere Web Client  
+6. Using the [Links] page (see above), log in to each ESXi Host using the appropriate vSphere Web Client  
 
     | <sup>ESX1</sup> Block 6 vSAN | <sup>ESX1</sup> Block 8 vSAN | <sup>ESX1</sup> NNTP vSAN |
     | --- | --- | --- |
@@ -164,7 +164,7 @@
 
     **Note:** the NNPTC1ELAS0X servers must be shut down in **DESCENDING** order
 
-2. <sup>NT2</sup> Using the Links page (see above), open [Prism Element]
+2. <sup>NT2</sup> Using the [Links] page (see above), open [Prism Element]
     1. **IMPORTANT:** Unless you have a valid ADMINVC- account, click 'Cancel' if prompted for a smart card certificate.
     1. If the smart card certificate fails to work, clearing the certificate choice or restarting the browser session will be necessary to continue. Do not attempt to use the smart card certificate a second time.  
 
@@ -197,7 +197,7 @@
 
 ## 7. NNTP Firewalls
 
-1. <sup>SW1</sup> Using the Links page (see above), login to the web interface for the backup Firewall (**Palo Alto Firewall 02**)
+1. <sup>SW1</sup> Using the [Links] page (see above), login to the web interface for the backup Firewall (**Palo Alto Firewall 02**)
 2. Click on the **Device** menu in the ribbon. Select **Setup**
 3. Click the link to **Shutdown Device**
 4. Repeat Steps 1-3 for the primary Firewall (**Pal Alto Firewall 01**)
