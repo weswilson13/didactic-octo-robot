@@ -238,6 +238,10 @@ Potential [troubleshooting] tips for the I/PORTS can be found at the end of this
 
 5. From CommCell, remove any blackout window that may be in effect.
 
+## 7. Verification Steps
+
+
+
 # Badgescanner Troubleshooting
 
 <!-- References to Hyperlinks and Images-->
