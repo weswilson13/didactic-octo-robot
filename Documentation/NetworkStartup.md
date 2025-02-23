@@ -24,7 +24,11 @@
 [2. Switches and Firewalls](#2-networking-infrastructure)  
 [3. KVMs](#3-kvms)  
 [4. Power on Servers](#4-restore-services)  
-[5. Start the VDI](#5-starting-the-vdi)  
+[5. Start the VDI](#5-starting-the-vdi)
+[6. Starting Nutanix AHV](#6-start-up-nutanix-ahv)  
+[7. Restoring CommVault](#7-restore-commvault)
+[8. Network Verification](#8-verification-steps)
+[Troubleshooting](#badgescanner-troubleshooting)
 
 ## 1. Restore Support Equipment and UPSs
 
@@ -227,7 +231,7 @@ Potential [troubleshooting] tips for the I/PORTS can be found at the end of this
 
         **NOTE:** If any errors occured during the above actions, attempt the enablement on an individual pool (vice all pools).
 
-## 6. Restore CommVault
+## 7. Restore CommVault
 
 1. Turn on the CommVault Nodes (**NNPTC1CV01**, **NNPTC1CV02**, **NNPTC1CV03**)
 2. Once booted, use an SSH Client (SecureCRT or PuTTY) to <sup>CV1</sup> log in to each node
@@ -238,7 +242,7 @@ Potential [troubleshooting] tips for the I/PORTS can be found at the end of this
 
 5. From CommCell, remove any blackout window that may be in effect.
 
-## 7. Verification Steps
+## 8. Verification Steps
 
 
 

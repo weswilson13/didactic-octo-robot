@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NetworkStartup.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<style>
+    .updated {
+        /* color:rgb(255, 255, 255); */
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-size: 12px;
+    }
+</style>
+<div class="updated">
+    <a>Last Updated By: Wes Wilson</a></br>
+    <a>Last Updated: 2/22/2025</a></br>
+</div>
+<h1 id="nnptc-logo-nnptc-network-startup"><img src="NNPTC_Logo.JPG" alt="NNPTC Logo" title="NNPTC Logo"> NNPTC Network Startup</h1>
+<p><em>NOTE 1: Preferentially use the Administrators credentials for all logins. If necessary, breakglass credentials can be retrieved from Thycotic Secret Server (while it is available) or the breakglass password book. Breakglass credentials will be denoted with an alphanumeric code in superscript that can be matched to the credential in Secret Server (or book) for ease of reference</em></p>
+<p><em>NOTE 2: The <a href="Z:%5CShared%5CNNPTC%5CW_Drives%5CISD%5CLinks%5CLinks-VDI.html">Links</a> page should be utilized for easy navigation to required management portals and resources:</em> <code>Z:\Shared\NNPTC\W_Drives\ISD\Links\Links-VDI.html</code></p>
+<h1 id="general-flow-and-steps">General Flow and Steps</h1>
+<p><a href="#1-restore-support-equipment-and-upss">1. Restore Support Equipment and UPSs</a><br>
+<a href="#2-networking-infrastructure">2. Switches and Firewalls</a><br>
+<a href="#3-kvms">3. KVMs</a><br>
+<a href="#4-restore-services">4. Power on Servers</a><br>
+<a href="#5-starting-the-vdi">5. Start the VDI</a>
+<a href="#6-start-up-nutanix-ahv">6. Starting Nutanix AHV</a><br>
+<a href="#7-restore-commvault">7. Restoring CommVault</a>
+<a href="#8-verification-steps">8. Network Verification</a>
+<a href="#badgescanner-troubleshooting">Troubleshooting</a></p>
+<h2 id="1-restore-support-equipment-and-upss">1. Restore Support Equipment and UPSs</h2>
+<ol>
+<li>Ensure power is on at the CRAC Units</li>
+<li><sup>CRAC1</sup> Log in to the console for each CRAC unit. Turn the unit ON.</li>
+<li>Go to each COM closet. Secure and unplug the UPS.</li>
+<li>Plug in the UPSs in P120 and D107, verify they are <em>Online</em>.</li>
+<li>Verify the UPS in P201A is online and supplying power via the <em>inverter</em>
+<ol>
+<li>&lt;Procedure to bring UPS online&gt;</li>
+</ol>
+</li>
+</ol>
+<h2 id="2-networking-infrastructure">2. Networking Infrastructure</h2>
+<ol>
+<li>Turn on the <em>Core</em> switches (NNPP - <strong>NNPTC-D216-01</strong> and NNTP - <s><strong>PTCLW-SW-01</strong></s>)</li>
+<li>Turn on the [NNTP] Firewalls (<strong>Palo Alto Firewall 01</strong>, <strong>Palo Alto Firewall 02</strong>)</li>
+</ol>
+<p><strong>Make sure the core switches are fully online before continuing (~10 minutes)</strong> The lights on the active ports will be green when it is up.</p>
+<h2 id="3-kvms">3. KVMs</h2>
+<p>Turn on the KVMs (NNPP and NNTP)</p>
+<h2 id="4-restore-services">4. Restore Services</h2>
+<h3 id="4a-domain-controllers">4.a Domain Controllers</h3>
+<p>Power on the Domain Controllers:</p>
+<ul>
+<li><strong>NNPTC1DC21</strong></li>
+<li><strong>NNPTC1DC22</strong></li>
+<li><strong>PTCW16P-DC06</strong></li>
+<li><strong>PTCW16P-DC07</strong></li>
+<li><strong>PTCLW22P-DC01</strong> (NNTP)</li>
+</ul>
+<p>** Wait for these servers to come online fully before proceeding.** Verify using the KVM or other means.</p>
+<h3 id="4b-authentication-servers-cisco-identity-services-engine-ise">4.b Authentication Servers (Cisco Identity Services Engine (ISE))</h3>
+<ol>
+<li>
+<p>Turn on all of the <em>primary</em> ISE Nodes</p>
+<ul>
+<li><strong>NNPTC-D216-ISE-03</strong> (NNPP)</li>
+<li><strong>PTCL-ISE-03</strong> (NNTP)</li>
+</ul>
+<p>Wait at least 5 minutes. It will take ~15 minutes for the application server to fully come online.</p>
+<p>To monitor services, <sup>ISE1</sup> log in to the ISE server via KVM or SSH Client (SecureCRT or PuTTY). Enter the following command: <code>show application status ise</code></p>
+</li>
+<li>
+<p>Power on secondary ISE nodes</p>
+<ul>
+<li><strong>NNPTC-D216-ISE-04</strong> (NNPP)</li>
+<li><strong>PTCL-ISE-04</strong> (NNTP)</li>
+</ul>
+</li>
+</ol>
+<h3 id="4c-dhcp">4.c DHCP</h3>
+<p>Using the <sup>KVM1</sup> KVM or <sup>IDRAC1</sup> iDRAC, power on the <em>primary</em> DHCP servers</p>
+<ul>
+<li><strong>NNPTC1BU03</strong> (NNPP)</li>
+<li><strong>PTCLW16P-BU01</strong> (NNTP)</li>
+</ul>
+<h3 id="4d-cluster-nodes-and-other-services">4.d Cluster Nodes and Other Services</h3>
+<ol>
+<li>
+<p>Power on the following servers:</p>
+<ul>
+<li>Primary SQL Cluster Node (<strong>NNPTC1SQ18</strong>)</li>
+<li>Primary File Cluster Node (<strong>NNPTC1FS10</strong>)</li>
+<li>SCCM Relay Server (<strong>PTCLW19P-SCCM04</strong>)</li>
+<li>Hyper-V Management Server (<strong>NNPTC1VM04</strong>)</li>
+</ul>
+<p><strong>Wait for these servers to come online fully before proceeding</strong></p>
+</li>
+<li>
+<p><sup>TR1</sup> Log in to the Hyper-V Management Server (<strong>NNPTC1VM04</strong>). Open Hyper-V Manager and power on the Trellix servers in the following order:</p>
+<ol>
+<li>Trellix Database Server (<strong>NNPTC1EPOSQL03</strong>). Wait for services to come online.</li>
+<li>Trellix Management Server (<strong>NNPTC1EPO03</strong>)</li>
+</ol>
+</li>
+<li>
+<p><sup>SA1</sup> Log in to the <em>primary</em> File Cluster Node (<strong>NNPTC1FS10</strong>)</p>
+</li>
+<li>
+<p>Power on the secondary Cluster Nodes</p>
+<ul>
+<li>Secondary File Cluster Node (<strong>NNPTC1FS11</strong>)</li>
+<li>Secondary SQL Cluster Node (<strong>NNPTC1SQ17</strong>)</li>
+</ul>
+</li>
+<li>
+<p>(<strong>Optional</strong>) Clean up DNS entries for Virtual Desktops:</p>
+<ol>
+<li>Open DNS Management</li>
+<li>(NNPP) Remove all entries matching NNPTC-VM* from the NNPTC1.nnpp.gov DNS Zone</li>
+<li>(NNTP) Remove any entries matching PTCLW1[0,1]V*</li>
+</ol>
+</li>
+</ol>
+<h3 id="4e-nutanix">4.e Nutanix</h3>
+<ol>
+<li>
+<p>Turn on each host in each of the Nutanix Appliances</p>
+<table>
+<thead>
+<tr>
+<th>Block 6</th>
+<th>Block 7</th>
+<th>Block 8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NNPTC-NTNX-06-01</td>
+<td>NNPTC-NTNX-07-01</td>
+<td>NNPTC-NTNX-08-01</td>
+</tr>
+<tr>
+<td>NNPTC-NTNX-06-02</td>
+<td>NNPTC-NTNX-07-02</td>
+<td>NNPTC-NTNX-08-02</td>
+</tr>
+<tr>
+<td>NNPTC-NTNX-06-03</td>
+<td>NNPTC-NTNX-07-03</td>
+<td>NNPTC-NTNX-08-03</td>
+</tr>
+<tr>
+<td>NNPTC-NTNX-06-04</td>
+<td>NNPTC-NTNX-07-04</td>
+<td>NNPTC-NTNX-08-04</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ol>
+<h3 id="4f-badgescanners">4.f Badgescanners</h3>
+<ol>
+<li>Verify each Badgescanner blade pc is fully seated in the chassis.</li>
+<li>Power them on.</li>
+<li>UltraVNC may be used to monitor the badgescanner sessions remotely.</li>
+<li>The <a href="Z:%5CShared%5CNNPTC%5CW_Drives%5CISD%5Cscripts%5CDahl%5CDashboard.hta">HTA Dashboard</a> (IPRT Status page) may be used to see the last badgescanner state and determine the blade/PAD configuration.</li>
+</ol>
+<p>Potential <a href="#badgescanner-troubleshooting" title="Badgescanner Troubleshooting">troubleshooting</a> tips for the I/PORTS can be found at the end of this documentation.</p>
+<h2 id="5-starting-the-vdi">5. Starting the VDI</h2>
+<ol>
+<li>
+<p>Using the <a href="Z:%5CShared%5CNNPTC%5CW_Drives%5CISD%5CLinks%5CLinks-VDI.html">Links</a> page (see above), log in to each ESXi Host using the appropriate vSphere Web Client</p>
+<table>
+<thead>
+<tr>
+<th><sup>ESX1</sup> Block 6 vSAN</th>
+<th><sup>ESX1</sup> Block 8 vSAN</th>
+<th><sup>ESX1</sup> NNTP vSAN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://nnptc1esx0601.nnptc1.nnpp.gov" title="Block 6 vSAN Node 1">NNPTC1ESX0601</a></td>
+<td><a href="https://nnptc1esx0801.nnptc1.nnpp.gov" title="Block 8 vSAN Node 1">NNPTC1ESX0801</a></td>
+<td><a href="https://ptclvm-esx0201.nntp.gov" title="NNTP vSAN Node 1">PTCLVM-ESX0201</a></td>
+</tr>
+<tr>
+<td><a href="https://nnptc1esx0602.nnptc1.nnpp.gov" title="Block 6 vSAN Node 2">NNPTC1ESX0602</a></td>
+<td><a href="https://nnptc1esx0802.nnptc1.nnpp.gov" title="Block 8 vSAN Node 2">NNPTC1ESX0802</a></td>
+<td><a href="https://ptclvm-esx0202.nntp.gov" title="NNTP vSAN Node 2">PTCLVM-ESX0202</a></td>
+</tr>
+<tr>
+<td><a href="https://nnptc1esx0603.nnptc1.nnpp.gov" title="Block 6 vSAN Node 3">NNPTC1ESX0603</a></td>
+<td><a href="https://nnptc1esx0803.nnptc1.nnpp.gov" title="Block 8 vSAN Node 3">NNPTC1ESX0803</a></td>
+<td><a href="https://ptclvm-esx0203.nntp.gov" title="NNTP vSAN Node 3">PTCLVM-ESX0203</a></td>
+</tr>
+<tr>
+<td><a href="https://nnptc1esx0604.nnptc1.nnpp.gov" title="Block 6 vSAN Node 4">NNPTC1ESX0604</a></td>
+<td><a href="https://nnptc1esx0804.nnptc1.nnpp.gov" title="Block 8 vSAN Node 4">NNPTC1ESX0804</a></td>
+<td><a href="https://ptclvm-esx0204.nntp.gov" title="NNTP vSAN Node 4">PTCLVM-ESX0204</a></td>
+</tr>
+<tr>
+<td><!-- --></td>
+<td><!-- --></td>
+<td><a href="https://ptclvm-esx0201.nntp.gov" title="NNTP Management Node">PTCLVM-ESX02M</a></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>In the vSphere window for each ESXi Host, click the <em>Inventory</em> link and expand the server list</p>
+</li>
+<li>
+<p>Take the ESXi host out of <em>Maintenance Mode</em></p>
+<ol>
+<li>In the vSphere web client, click the <strong>Actions</strong> button and select <strong>Exit Maintenance Mode</strong></li>
+</ol>
+</li>
+<li>
+<p>Start the Nutanix Controller VMs (CVMs)</p>
+<ol>
+<li>On each host, right click on the Nutanix Controller VM (<strong>NTNX-*-CVM</strong>) and select <strong>Open Console</strong></li>
+<li>If the CVM is not running, select <strong>VM -&gt; Power -&gt; Power On</strong> from the menu</li>
+<li>Click inside each console and press enter</li>
+<li>Press the key-combination <code>CTRL + ALT</code> to release the cursor from the console window</li>
+</ol>
+<p><strong>NOTE:</strong> The CVMs are fully online when each is at a login prompt</p>
+</li>
+<li>
+<p>Using an SSH Client (SecureCRT or PuTTY), <sup>NT1</sup> log in to one of the Nutanix CVMs (on each cluster) to restore the cluster storage</p>
+ <table>
+     <tr><th colspan="2">Example CVMs for each Cluster</th></tr>
+     <tr><th>Block 6</th><td>nnptc-ntnx-06-01.nnptc1.nnpp.gov</td></tr>
+     <tr><th>Block 7</th><td>nnptc-ntnx-07-01.nnptc1.nnpp.gov</td></tr>
+     <tr><th>Block 8</th><td>nnptc-ntnx-05-01.nnptc1.nnpp.gov</td></tr>
+ </table>
+<ol>
+<li>
+<p>Enter the username and password</p>
+</li>
+<li>
+<p>Enter the command <code>cluster start</code> in the console</p>
+</li>
+<li>
+<p>Verify the cluster has started by issuing the command <code>cluster status</code></p>
+<p>All CVMs should report having a process ID (PID) for each service listed</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Locate the ESXi host with the vCenter appliance installed.</p>
+ <table>
+     <tr><th colspan="2">vCenter Servers</th></tr>
+     <tr><th>Block 6</th><td>NNPTC1VC0601</td></tr>
+     <tr><th>Block 8</th><td>NNPTC1VC0801</td></tr>
+     <tr><th>NNTP</th><td>PTCL-VC0101</td></tr>
+ </table>
+<ol>
+<li>Click the <em>Virtual Machines</em> link</li>
+<li>Right click on the server console. Select <strong>Open Browser Console</strong>.</li>
+<li>On the Action Menu, select <strong>Power -&gt; Power On</strong></li>
+</ol>
+</li>
+<li>
+<p>Log into each vCenter server (<sup>VC2</sup> <strong>NNPTC1VC0601</strong>, <sup>VC1</sup> <strong>NNPTC1VC0801</strong>, <sup>VC1</sup> <strong>PTCL-VC0101</strong>)</p>
+<ol>
+<li>Select the <em>VMs and Templates</em> view</li>
+<li>Start and VMs that are not started, <strong>ignore any VMs beginning with 'x'</strong>.
+<ol>
+<li>Right click on each VM and select <strong>Power -&gt; Power On</strong></li>
+</ol>
+</li>
+</ol>
+</li>
+<li>
+<p>From the cVenter interface for the Cluster, for each ESXi host:</p>
+<ol>
+<li>Click the <strong>Summary</strong> tab</li>
+<li>Click the <strong>Edit</strong> button in the <strong>Custom Attributes</strong> window</li>
+<li>Change the value of <code>InstantClone.Maintenance</code> from <code>2</code> to <code>0</code></li>
+<li>Select the <strong>vCenter</strong> at the top of the system tree
+<ol>
+<li>Click on the <strong>Configure</strong> tabb</li>
+<li>Click <strong>Advanced Settings</strong></li>
+<li>Click the <strong>Edit</strong> button</li>
+<li>Select the <em>filter</em> icon and type <code>vcls</code></li>
+<li>Set the Value to <code>True</code></li>
+<li>Click <strong>Save</strong></li>
+<li>Click <strong>Save</strong> again</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="6-start-up-nutanix-ahv">6. Start up Nutanix AHV</h2>
+<ol>
+<li>
+<p>Using an SSH Client (SecureCRT or PuTTY) <sup>NT1</sup> log in to each AHV host</p>
+<ol>
+<li>Issue the following command - <code>virsh list -all | grep CVM</code><br>
+Note the name of the CVM and whether it is running. If it is not running, execute the next command</li>
+<li><code>virsh start CVM_NAME</code> where 'CVM_NAME' is returned from the above command</li>
+</ol>
+</li>
+<li>
+<p><sup>NT1</sup> Using an SSH Client (SecureCRT or PuTTY), log in to &lt;IP Address&gt;.</p>
+<ol>
+<li>
+<p>Issue the command <code>cluster start</code></p>
+</li>
+<li>
+<p>Verify the cluster has started by issuing the command <code>cluster status | more</code></p>
+<p>All CVMs should report having a process ID (PID) for each service listed.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Using the <a href="Z:%5CShared%5CNNPTC%5CW_Drives%5CISD%5CLinks%5CLinks-VDI.html">Links</a> page (see above), <sup>NT1</sup> log in to <a href="https://nnptc-ntnx-04.nnptc1.nnpp.gov:9440" title="Nutanix Management Console">Prism Element</a></p>
+<ol>
+<li>
+<p>Click on <strong>Home</strong> and selec <strong>VM</strong></p>
+</li>
+<li>
+<p>Click on <strong>Table</strong></p>
+</li>
+<li>
+<p>Click on each VM in the list and then click the <em>Power</em> link (located above the graphs)</p>
+<p>Elasticstack Servers (<strong>NNPTC1ELAS0X</strong>) should be powered on in <strong>ASCENDING</strong> order</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Using the <a href="Z:%5CShared%5CNNPTC%5CW_Drives%5CISD%5CLinks%5CLinks-VDI.html">Links</a> page (see above), log in to the applicable VMWare Horizon View console (<sup>SA1</sup> <strong><a href="https://nnptc1vms0501.nnptc1.nnpp.gov/admin" title="Block 8 Horizon">Block 8 Horizon</a></strong>, <sup>SA1</sup> <strong><a href="https://nnptc1vms0601.nnptc1.nnpp.gov/admin" title="Block 6 Horizon">Block 6 Horizon</a></strong>, <sup>SA2</sup> <strong><a href="https://ptclw16v-hv0101.nntp.gov/admin" title="NNTP Horizon">NNTP Horizon</a></strong>)</p>
+<ol>
+<li>
+<p>Enable all desktop pools and provisioning for each pool</p>
+<ol>
+<li>Select ALL pools</li>
+<li>Select <em>Enable Desktop Pool</em></li>
+<li>Click 'OK' when prompted</li>
+<li>Select ALL pools</li>
+<li>Select <em>Enable Provisioning</em></li>
+<li>Click 'OK' when prompted</li>
+</ol>
+<p><strong>NOTE:</strong> If any errors occured during the above actions, attempt the enablement on an individual pool (vice all pools).</p>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="7-restore-commvault">7. Restore CommVault</h2>
+<ol>
+<li>
+<p>Turn on the CommVault Nodes (<strong>NNPTC1CV01</strong>, <strong>NNPTC1CV02</strong>, <strong>NNPTC1CV03</strong>)</p>
+</li>
+<li>
+<p>Once booted, use an SSH Client (SecureCRT or PuTTY) to <sup>CV1</sup> log in to each node</p>
+</li>
+<li>
+<p>Execute <code>df -h</code> on each node. This enumerates the mounted volumes on the node.</p>
+<p>Ensure the <code>/ws/glus</code> volume is mounted</p>
+</li>
+<li>
+<p>If the services on the nodes do not start within 30 minutes as noted in the <code>commvault list</code> command, run the command <code>commvault -all restart</code></p>
+</li>
+<li>
+<p>From CommCell, remove any blackout window that may be in effect.</p>
+</li>
+</ol>
+<h2 id="8-verification-steps">8. Verification Steps</h2>
+<h1 id="badgescanner-troubleshooting">Badgescanner Troubleshooting</h1>
+<!-- References to Hyperlinks and Images-->
+<!-- Formatting: 
+    Links:  [Link Text]: path-to-link "Alternative Text"
+    Images: [tag]: path-to-image "Alternative Text"
+-->
+<!-- Hyperlinks -->
+<!-- Images -->
+<!-- Bookmarks -->
+
+</body>
+</html>
