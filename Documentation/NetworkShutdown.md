@@ -6,6 +6,9 @@
         right: 5px;
         font-size: 12px;
     }
+    .page-break {
+        break-after: page;
+    }
 </style>
 <div class="updated">
     <a>Last Updated By: Wes Wilson</a></br>
@@ -14,7 +17,7 @@
 
 # ![NNPTC Logo][NNPTCLogo] NNPTC Network Shutdown
 
-*NOTE 1: Preferentially use the Administrators credentials for all logins. If necessary, breakglass credentials can be retrieved from Thycotic Secret Server (while it is available) or the breakglass password book. Breakglass credentials will be denoted with an alphanumeric code in superscript that can be matched to the credential in Secret Server (or book) for ease of reference*
+*NOTE 1: Preferentially use the Administrator's credentials for all logins. If necessary, break glass credentials can be retrieved from Thycotic Secret Server (while it is available) or the break glass password book. Throughout this document, break glass credentials will be denoted with an alphanumeric code in superscript that can be matched to the credential in Secret Server (or book) for ease of reference*
 
 *NOTE 2: Many of the shutdown commands issued in this procedure can be executed remotely. If the Administrator intends on using this method, it is recommended to establish a remote desktop session with the File cluster *owner* node (**NNPTC1FS10**). Reference* `Z:\Shared\NNPTC\W_Drives\ISD\scripts\Dahl\ShutdownForPowerOutage.txt` *for these commands.*
 
@@ -33,6 +36,7 @@
 [9. Authentication Servers](#9-cisco-identity-services-ise)  
 [10. Support Equipment and UPSs](#10-secure-support-equipment-and-upss)  
 [11. DHCP](#11-dhcp)
+[12. Credential Mapping](#12 - Credential Mapping)
 
 ## 1. CommVault (Backup Solution)
 
@@ -46,6 +50,8 @@
 
 2. Gracefully shut down the server (this prevents any backups from starting unintentionally)
 
+<div class="page-break"></div>
+
 3. <sup>CV1</sup> Log in to each CommVault node (**NNPTC1CV01**, **NNPTC1CV02**, **NNPTC1CV03**) with an SSH client (PuTTY, SecureCRT, etc.). Execute the following commands to shutdown services:
     1. `commvault stop`
     1. `commvault list` to enumerate all running processes. **All** processes should be in a *stopped* state before proceeding with the next commands. Move to the next step and come back to the CommVault shutdown if necessary.
@@ -55,9 +61,9 @@
 
 ## 2. Trellix (Endpoint Security)
 
-1. <sup>TR1</sup> Log in to the Hyper-V server (**NNPTC1VM04**) hosting the Trellix support servers - E-Policy (**NNPTC1EPO03**) and SQL Server (**NNPTC1EPOSQL03**)
+1. <sup>TR1</sup> Log in to the Hyper-V Management server (**NNPTC1VM04**) hosting the Trellix support servers - E-Policy/Management (**NNPTC1EPO03**) and SQL Server (**NNPTC1EPOSQL03**)
 2. Open Hyper-V Manager
-3. <sup>TR1</sup> Log in to and gracefully shutdown the E-Policy server (**NNPTC1EPO03**)
+3. <sup>TR1</sup> Log in to and gracefully shutdown the Trellix Management server (**NNPTC1EPO03**)
 4. <sup>TR1</sup> Log in to and gracefully shutdown the Trellix database server (**NNPTC1EPOSQL03**)
 5. Gracefully shutdown the Hyper-V server (**NNPTC1VM04**)
 
@@ -79,25 +85,29 @@
 
 **These steps are applicable to both NNPP and NNTP VDI except where noted.**
 
-1. Using the [Links] page (see above), log in to the applicable VMWare Horizon View console (<sup>SA1</sup> **[NNPTC1VMS0501]**, <sup>SA1</sup> **[NNPTC1VMS0601]**, <sup>SA2</sup> **[PTCLW16V-HV0101]**)
+1. Using the [Links] page (see above), log in to the applicable VMWare Horizon View console  
+(<sup>SA1</sup> **[NNPTC1VMS0501]**, <sup>SA1</sup> **[NNPTC1VMS0601]**, <sup>SA2</sup> **[PTCLW16V-HV0101]**)
+
+<div class="page-break"></div>
 
 2. For each desktop pool, disable provisioning and the pool itself:
     1. Click on **Desktops** under the inventory in the left window pane
     1. Select all pools by enabling the top-level checkbox
-    1. Select Status -> Disable Provisioning
+    1. Select **Status -> Disable Provisioning**
     1. Click 'OK' when prompted
-    1. Select Status -> Disable Desktop Pool
+    1. Select **Status -> Disable Desktop Pool**
     1. Click 'OK' when prompted
 
 3. Remove all virtual desktops
     1. Select the **Machines** node in the system tree under Inventory
     1. Select all of the VMs
-    1. With all of the VMs selected, click 'Remove' at the top of the page  
-        1. *NOTE: the complete list of VMs may be paginated. Ensure all VMs are removed from all pages*
+    1. With all of the VMs selected, click **Remove** at the top of the page  
+        1. *NOTE: the complete list of VMs may be paginated. Ensure all VMs are removed on all pages*
     1. Click 'OK' when prompted
 
 4. Delete the **cp-parent** VMs
-    1. Using the [Links] page (see above), log in to the applicable VMWare vCenter (<sup>VC1</sup> **[NNPTC1VC0801]**, <sup>VC2</sup> **[NNPTC1VC0601]**, <sup>VC1</sup> **[PTCL-VC0101]**)
+    1. Using the [Links] page (see above), log in to the applicable VMWare vCenter  
+    (<sup>VC1</sup> **[NNPTC1VC0801]**, <sup>VC2</sup> **[NNPTC1VC0601]**, <sup>VC1</sup> **[PTCL-VC0101]**)
     1. From the vCenter interface for the cluster, select each ESXi host from the left window pane
         1. On the **Summary** tab, click the **Edit** button the lower potion of the **Custom Attributes** section
         1. Change the value of `InstantClone.Maintenance` from `0` to `1`
@@ -113,7 +123,9 @@
 5. In **vSphere**, select the *VMs and Templates* view
     1. Click on the **Menu** button and select *Hosts and Clusters*
         1. Shutdown all VMs in this folder except for the vCenter appliance(s) (**NNPTC1VC0801**, **NNPTC1VC0601**, **PTCL-VC0101**), and for **NNPP ONLY** - any Nutanix Controller VMs (CVMs) with the name NTNX-*.
-    1. Right click on each server and select *Power -> Shutdown Guest*
+    1. Right click on each server and select **Power -> Shutdown Guest**
+
+<div class="page-break"></div>
 
 6. Using the [Links] page (see above), log in to each ESXi Host using the appropriate vSphere Web Client  
 
@@ -149,28 +161,31 @@
     1. From the vSphere web client for each host, click the **Actions** button and select *Enter Maintenance Mode*. On **NNTP**, if prompted about data migration, choose the option for **No Data Migration**.
     1. Once the host is in Maintenance Mode, click the **Actions** button and select **Shutdown**.
 
+<div class="page-break"></div>
+
 ### 4.b Nutanix AHV Virtual Environment
 
 1. <sup>SA1</sup> Gracefully shutdown the following servers:
 
-    | <!-- --> | <!-- --> | <!-- --> | <!-- --> |
-    | --- | --- | --- | --- |
-    | NNPTC1APV01 | NNPTC1HD04 | NNPTC1HP04 | NNPTC1KM02 |
-    | NNPTC1MON02 | NNPTC1NS01 | NNPTC1PS04 | NNPTC1SP02 |
-    | NNPTC1SP03 | NNPTC1SQ16 | NNPTC1TSS01 | NNPTC1SW02  |
-    | NNPTC1VMS0501 | NNPTC1VMS0601 | NNPTC1ELAS01 | NNPTC1ELAS02 |
-    | NNPTC1ELAS03 | NNPTC1ELAS04 | NNPTC1ELAS05 | NNPTC1ELAS06 |
-    | NNPTC1ELAS07 | <!-- --> | <!-- --> | <!-- --> |
+    <table>
+        <tr><th colspan="4">Block 7 AHV VMs</th></tr>
+        <tr><td>NNPTC1APV01</td><td>NNPTC1HD04</td><td>NNPTC1HP04</td><td>NNPTC1KM02</td></tr>
+        <tr><td>NNPTC1MON02</td><td>NNPTC1NS01</td><td>NNPTC1PS04</td><td>NNPTC1SP02</td></tr>
+        <tr><td>NNPTC1SP03</td><td>NNPTC1SQ16</td><td>NNPTC1TSS01</td><td>NNPTC1SW02</td></tr>
+        <tr><td>NNPTC1VMS0501</td><td>NNPTC1VMS0601</td><td>NNPTC1ELAS01</td><td>NNPTC1ELAS02</td></tr>
+        <tr><td>NNPTC1ELAS03</td><td>NNPTC1ELAS04</td><td>NNPTC1ELAS05</td><td>NNPTC1ELAS06</td></tr>
+        <tr><td>NNPTC1ELAS07</td><td></td><td></td><td></td></tr>
+    </table>
 
     **Note:** the NNPTC1ELAS0X servers must be shut down in **DESCENDING** order
 
 2. <sup>NT2</sup> Using the [Links] page (see above), open [Prism Element]
     1. **IMPORTANT:** Unless you have a valid ADMINVC- account, click 'Cancel' if prompted for a smart card certificate.
-    1. If the smart card certificate fails to work, clearing the certificate choice or restarting the browser session will be necessary to continue. Do not attempt to use the smart card certificate a second time.  
+    1. If the smart card certificate fails, clearing the certificate choice or restarting the browser session will be necessary to continue. Do not attempt to use the smart card certificate a second time.  
 
 3. Click on the **Home** button and select **VM**.
 
-4. Find and non-controller VMs that are still running and click on them.
+4. Find any non-controller VMs that are still running and click on them.
     1. Click the **Power Off Actions** button
     1. Select **Guest shutdown** and click **submit**
 
@@ -204,7 +219,7 @@
 
 ## 8. NNTP Vital Services
 
-1. <sup>SA2</sup> Gracefully shutdown File server (**PTCLW16P-BU01**)
+1. <sup>SA2</sup> Gracefully shutdown the File server (**PTCLW16P-BU01**)
 2. <sup>DA2</sup> Gracefully shutdown the domain controller (**PTCLW22P-DC01**)
 
 **NOTE:** For servers without logins (e.g.- NNTP DC) a graceful shutdown may be manually performed by pressing the power button on the physical server for ~1 second. Observe the shutdown via KVM or other means.

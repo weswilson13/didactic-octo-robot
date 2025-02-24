@@ -6,6 +6,9 @@
         right: 5px;
         font-size: 12px;
     }
+    .page-break {
+        break-after: page;
+    }
 </style>
 <div class="updated">
     <a>Last Updated By: Wes Wilson</a></br>
@@ -24,17 +27,17 @@
 [2. Switches and Firewalls](#2-networking-infrastructure)  
 [3. KVMs](#3-kvms)  
 [4. Power on Servers](#4-restore-services)  
-[5. Start the VDI](#5-starting-the-vdi)
+[5. Start the VDI](#5-starting-the-vdi)  
 [6. Starting Nutanix AHV](#6-start-up-nutanix-ahv)  
-[7. Restoring CommVault](#7-restore-commvault)
-[8. Network Verification](#8-verification-steps)
+[7. Restoring CommVault](#7-restore-commvault)  
+[8. Network Verification](#8-verification-steps)  
 [Troubleshooting](#badgescanner-troubleshooting)
 
 ## 1. Restore Support Equipment and UPSs
 
 1. Ensure power is on at the CRAC Units
 2. <sup>CRAC1</sup> Log in to the console for each CRAC unit. Turn the unit ON.
-3. Go to each COM closet. Secure and unplug the UPS.
+3. Go to each COM closet. Plug in the UPS and ensure it is *Online* and supplying power. 
 4. Plug in the UPSs in P120 and D107, verify they are *Online*.
 5. Verify the UPS in P201A is online and supplying power via the *inverter*
     1. \<Procedure to bring UPS online>
@@ -50,9 +53,11 @@
 
 Turn on the KVMs (NNPP and NNTP)
 
+<div class="page-break"></div>
+
 ## 4. Restore Services
 
-### 4.a Domain Controllers
+### 4.a - Domain Controllers
 
 Power on the Domain Controllers:
   * **NNPTC1DC21**
@@ -63,7 +68,7 @@ Power on the Domain Controllers:
 
 ** Wait for these servers to come online fully before proceeding.** Verify using the KVM or other means.
 
-### 4.b Authentication Servers (Cisco Identity Services Engine (ISE))
+### 4.b - Authentication Servers (Cisco Identity Services Engine (ISE))
 
 1. Turn on all of the *primary* ISE Nodes
     * **NNPTC-D216-ISE-03** (NNPP)
@@ -77,13 +82,13 @@ Power on the Domain Controllers:
     * **NNPTC-D216-ISE-04** (NNPP)
     * **PTCL-ISE-04** (NNTP)
 
-### 4.c DHCP
+### 4.c - DHCP
 
 Using the <sup>KVM1</sup> KVM or <sup>IDRAC1</sup> iDRAC, power on the *primary* DHCP servers
   * **NNPTC1BU03** (NNPP)
   * **PTCLW16P-BU01** (NNTP)
 
-### 4.d Cluster Nodes and Other Services
+### 4.d - Cluster Nodes and Other Services
 
 1. Power on the following servers:
     * Primary SQL Cluster Node (**NNPTC1SQ18**)
@@ -92,6 +97,8 @@ Using the <sup>KVM1</sup> KVM or <sup>IDRAC1</sup> iDRAC, power on the *primary*
     * Hyper-V Management Server (**NNPTC1VM04**)
 
     **Wait for these servers to come online fully before proceeding**
+
+<div class="page-break"></div>
 
 2. <sup>TR1</sup> Log in to the Hyper-V Management Server (**NNPTC1VM04**). Open Hyper-V Manager and power on the Trellix servers in the following order:
     1. Trellix Database Server (**NNPTC1EPOSQL03**). Wait for services to come online.
@@ -108,7 +115,7 @@ Using the <sup>KVM1</sup> KVM or <sup>IDRAC1</sup> iDRAC, power on the *primary*
     1. (NNPP) Remove all entries matching NNPTC-VM* from the NNPTC1.nnpp.gov DNS Zone
     1. (NNTP) Remove any entries matching PTCLW1[0,1]V*
 
-### 4.e Nutanix
+### 4.e - Nutanix
 
 1. Turn on each host in each of the Nutanix Appliances
 
@@ -119,7 +126,7 @@ Using the <sup>KVM1</sup> KVM or <sup>IDRAC1</sup> iDRAC, power on the *primary*
     | NNPTC-NTNX-06-03 | NNPTC-NTNX-07-03 | NNPTC-NTNX-08-03 |
     | NNPTC-NTNX-06-04 | NNPTC-NTNX-07-04 | NNPTC-NTNX-08-04 |
 
-### 4.f Badgescanners
+### 4.f - Badgescanners
 
 1. Verify each Badgescanner blade pc is fully seated in the chassis.
 2. Power them on.
@@ -127,6 +134,8 @@ Using the <sup>KVM1</sup> KVM or <sup>IDRAC1</sup> iDRAC, power on the *primary*
 4. The [HTA Dashboard] (IPRT Status page) may be used to see the last badgescanner state and determine the blade/PAD configuration.
 
 Potential [troubleshooting] tips for the I/PORTS can be found at the end of this documentation.
+
+<div class="page-break"></div>
 
 ## 5. Starting the VDI
 
@@ -167,6 +176,8 @@ Potential [troubleshooting] tips for the I/PORTS can be found at the end of this
     1. Verify the cluster has started by issuing the command `cluster status`
 
         All CVMs should report having a process ID (PID) for each service listed 
+
+<div class="page-break"></div>
 
 6. Locate the ESXi host with the vCenter appliance installed.
 
@@ -244,9 +255,7 @@ Potential [troubleshooting] tips for the I/PORTS can be found at the end of this
 
 ## 8. Verification Steps
 
-
-
-# Badgescanner Troubleshooting
+## Badgescanner Troubleshooting
 
 <!-- References to Hyperlinks and Images-->
 <!-- Formatting: 
