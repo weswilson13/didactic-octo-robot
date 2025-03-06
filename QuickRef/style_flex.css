@@ -1,0 +1,58 @@
+body {
+    position: relative;
+    /* left: 2%; */
+    align-items: center;
+    vertical-align: top;
+    width: 95%;
+}
+header {
+    background-color: #40ae49;
+    color: white;
+    padding: 0px;
+    text-align: center;
+    border: 1px solid white;
+    width: 100%;
+}
+
+.grid-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+table {
+    width: 100%;
+}
+.table-container {
+    flex-basis: 50%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#GroupChanges {
+    flex-basis: 100%;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th {
+    height: 40px;
+    font-size: 20px;
+    background-color: #32396f;
+}
+
+td.eventId {
+    width: 100px;
+}
+
+@media (max-width: 800px) {
+    .grid-container{
+        display: block;
+    }
+    .table-container {
+        display: block;
+        width: 100%;
+    }
+}
