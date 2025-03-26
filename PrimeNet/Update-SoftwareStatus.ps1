@@ -1,10 +1,10 @@
 $folder = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions"
-$template = Join-Path $folder "SoftwareStatusTemplateV2.html"
+$template = Join-Path $folder "SoftwareStatusTemplate.html"
 $firmware = Join-Path $folder "firmware.txt"
 
 # add more applications here as necessary. update html template accordingly.
 $printerModels = "8500,609,551,577,578,652,506,612,6800,776,5700"
-$applications = 'adobe','edge','chrome','firefox','powershell','vmware','defender','terminal','vscode'
+$applications = 'adobe','edge','chrome','firefox','git','linqpad','nodejs','npp','powershell','vmware','defender','terminal','vscode','winscp'
 $vmwareProducts = 'esxi','vcenter','tools','horizon','vsan'
 
 $content = Get-Content $template
@@ -30,6 +30,7 @@ foreach ($app in $applications) {
     $fileDate = $file.LastWriteTime
     
     Write-Host "$file, $fileDate"
+    if ([datetime]$fileDate -gt [datetime]::Now.AddHours(-24)) { $fileDate = "<span class=`"new`">$fileDate<span>" }
 
     if ($app -ne 'vmware') { # vmware file needs to be handled differently
 
@@ -80,4 +81,4 @@ foreach ($printer in $printerModels.Split(',')) { # loop through each printer mo
 
 } # end foreach
 
-$content | Out-File "$folder\SoftwareStatusV2.html"
+$content | Out-File "$folder\SoftwareStatus.html"
