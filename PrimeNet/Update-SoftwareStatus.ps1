@@ -1,3 +1,26 @@
+function New-Html {
+    $html = ""
+    foreach ($software in $softwareVersions) {
+        $aryLinks = @()
+        $links = $software.Link.split(',') 
+        $linkTexts = $software.LinkText.Split(',')
+        
+        for ($i=0; $i -lt $links.Count; $i++) {
+        $aryLinks += "<a href=`"$($links[$i])`" target=`"_blank`">$($linkTexts[$i])</a>"
+        }
+        $strLinks = $aryLinks -join "<br>"
+        $html += "<tr>
+                    <td class=`"App`">{0}</td>
+                    <td id=`"{1}`" class=`"Version`">[{1}]</td>
+                    <td>
+                        {2}
+                    </td>
+                </tr>" -f $software.SoftwareName, $software.Id, $strLinks
+    }
+    $formattedHtml = Format-HTML -Content $html
+
+    return $formattedHtml -Replace '</?html>'
+}
 $folder = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions"
 $template = Join-Path $folder "SoftwareStatusTemplate.html"
 $firmware = Join-Path $folder "firmware.txt"
@@ -7,8 +30,9 @@ $softwareVersions = Import-Csv $softwareVersionsCsv
 # add more applications here as necessary. update html template accordingly.
 $printerModels = "8500,609,551,577,578,652,506,612,6800,776,5700"
 
-$htmlContent = Get-Content $template
+$htmlContent = Get-Content $template -Raw
 $htmlContent = $htmlContent.Replace('[date]',(Get-Date -f 'MM/dd/yyyy HH:mm'))
+$htmlContent = $htmlContent.Replace('[html]', (New-Html))
 
 foreach ($obj in $softwareVersions) {
     $version,$fileDate,$newContent = $null
