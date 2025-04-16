@@ -29,10 +29,11 @@ $softwareVersions = Import-Csv $softwareVersionsCsv
 
 # add more applications here as necessary. update html template accordingly.
 $printerModels = "8500,609,551,577,578,652,506,612,6800,776,5700"
+$printerModels = $printerModels.Split(',') | Sort-Object @{e={[int]$_}}
 
 $htmlContent = Get-Content $template -Raw
 $htmlContent = $htmlContent.Replace('[date]',(Get-Date -f 'MM/dd/yyyy HH:mm'))
-$htmlContent = $htmlContent.Replace('[html]', (New-Html))
+$htmlContent = $htmlContent.Replace('[softwareHtml]', (New-Html))
 
 foreach ($obj in $softwareVersions) {
     $version,$fileDate,$newContent = $null
@@ -61,12 +62,16 @@ $firmwareFileInfo = Get-ItemProperty $firmware
 $firmwares = Get-Content $firmware
 
 $htmlContent = $htmlContent.Replace('[printer-date]',$firmwareFileInfo.LastWriteTime)
-
-foreach ($printer in $printerModels.Split(',')) { # loop through each printer model 
-
+$html = ""
+foreach ($printer in $printerModels) { # loop through each printer model 
+    
     $latestFirmware = $firmwares | Where-Object { $_ -match "M?$printer" } | Select-Object -Last 1
-    $htmlContent = $htmlContent -replace "\[M?$printer\]",$latestFirmware
+    $printer = [regex]::Match($latestFirmware, "M?$printer").Value
+    $html += "<tr><td class=`"Printer`">$printer</td><td class=`"firmware`">$latestFirmware</td></tr>"
 
 } # end foreach
+
+$formattedHtml = Format-HTML -Content $html
+$htmlContent = $htmlContent.Replace('[printerHtml]', $formattedHtml)
 
 $htmlContent | Out-File "$folder\SoftwareStatus.html"
