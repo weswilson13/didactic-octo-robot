@@ -43,7 +43,7 @@
         font-size: 20px;
         background-color: darkblue;
         color: aliceblue;
-		text-align: center;
+        text-align: center;
       }
 
       td {
@@ -82,95 +82,50 @@
     </style>
   </head>
   <body>
-    <header class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-tertiary">
-		<nav class="container-fluid navbar navbar-expand-lg bg-body-tertiary">
-			<div class="container-fluid">
-			  <a class="navbar-brand" href="#">Software Upload Status</a>
-			  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			  </button>
-			  <div class="collapse navbar-collapse" id="navbarText">
-				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-				  <li class="nav-item">
-					<a class="nav-link active" aria-current="page" href="#" onclick="Toggle('software-table')">Software Versions</a>
-				  </li>
-				  <li class="nav-item">
-					<a class="nav-link" href="#" onclick="Toggle('printer-table')">Printer Firmware</a>
-				  </li>
-				  <li class="nav-item">
-					<a class="nav-link" href="#" onclick="Toggle('server-table')">Server Software</a>
-				  </li>
-				</ul>
-				<span class="navbar-text">
-				  Last Updated: [date]
-				</span>
-			  </div>
-			</div>
-		  </nav>
-	  </header>
-    <!-- <div class="btn-group">
-      <button
-        type="button"
-        class="btn btn-outline-secondary"
-        onclick="Toggle('software-table')"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="currentColor"
-          class="bi bi-app"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M11 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5 1a4 4 0 0 0-4 4v6a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V5a4 4 0 0 0-4-4z"
-          />
-        </svg>
-        <span class="visually-hidden">Button</span>
-      </button>
-      <button
-        type="button"
-        class="btn btn-outline-secondary"
-        onclick="Toggle('printer-table')"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="currentColor"
-          class="bi bi-printer"
-          viewBox="0 0 16 16"
-        >
-          <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"></path>
-          <path
-            d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"
-          ></path>
-        </svg>
-        <span class="visually-hidden">Button</span>
-      </button>
-      <button
-        type="button"
-        class="btn btn-outline-secondary"
-        onclick="Toggle('server-table')"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="currentColor"
-          class="bi bi-motherboard"
-          viewBox="0 0 16 16"
-        >
-          <path
-            d="M11.5 2a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5m2 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5m-10 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zM5 3a1 1 0 0 0-1 1h-.5a.5.5 0 0 0 0 1H4v1h-.5a.5.5 0 0 0 0 1H4a1 1 0 0 0 1 1v.5a.5.5 0 0 0 1 0V8h1v.5a.5.5 0 0 0 1 0V8a1 1 0 0 0 1-1h.5a.5.5 0 0 0 0-1H9V5h.5a.5.5 0 0 0 0-1H9a1 1 0 0 0-1-1v-.5a.5.5 0 0 0-1 0V3H6v-.5a.5.5 0 0 0-1 0zm0 1h3v3H5zm6.5 7a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"
-          />
-          <path
-            d="M1 2a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-2H.5a.5.5 0 0 1-.5-.5v-1A.5.5 0 0 1 .5 9H1V8H.5a.5.5 0 0 1-.5-.5v-1A.5.5 0 0 1 .5 6H1V5H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 2zm1 11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1z"
-          />
-        </svg>
-        <span class="visually-hidden">Button</span>
-      </button>
-    </div> -->
+    <header
+      class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-tertiary"
+    >
+      <nav class="container-fluid navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">Software Upload Status</a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarText"
+            aria-controls="navbarText"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a
+                  class="nav-link active"
+                  aria-current="page"
+                  href="#"
+                  onclick="Toggle('software-table')"
+                  >Software Versions</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" onclick="Toggle('printer-table')"
+                  >Printer Firmware</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" onclick="Toggle('server-table')"
+                  >Server Software</a
+                >
+              </li>
+            </ul>
+            <span class="navbar-text"> Last Updated: [date] </span>
+          </div>
+        </div>
+      </nav>
+    </header>
     <div class="container-fluid table-container">
       <table id="software-table" class="container-fluid table">
         <th class="bg-secondary" colspan="3">
@@ -212,14 +167,31 @@
       integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
       crossorigin="anonymous"
     ></script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
     <script>
       function Toggle(id) {
         var x = document.getElementById(id);
-		Array.from(document.getElementsByClassName("table")).forEach((element) => {
-			element.style.display = "none";
-	  	});
-		x.style.display = "block";
+        Array.from(document.getElementsByClassName("table")).forEach(
+          (element) => {
+            element.style.display = "none";
+          }
+        );
+        x.style.display = "block";
       }
+
+      $(".nav-item a").on("click", function () {
+        $(".nav-item a").removeClass("active");
+        $(this).addClass("active");
+
+        document
+          .querySelector(`[aria-current="page"]`)
+          .removeAttribute("aria-current");
+        $(this).attr("aria-current", "page");
+      });
     </script>
   </body>
 </html>
