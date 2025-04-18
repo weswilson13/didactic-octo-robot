@@ -8,7 +8,7 @@ function New-Html {
         for ($i=0; $i -lt $links.Count; $i++) {
         $aryLinks += "<a href=`"$($links[$i])`" target=`"_blank`">$($linkTexts[$i])</a>"
         }
-        $strLinks = $aryLinks -join "<br>"
+        $strLinks = $aryLinks -join "<br>`r"
         $html += "<tr>
                     <td class=`"App`">{0}</td>
                     <td id=`"{1}`" class=`"Version`">[{1}]</td>
@@ -17,15 +17,44 @@ function New-Html {
                     </td>
                 </tr>" -f $software.SoftwareName, $software.Id, $strLinks
     }
-    $formattedHtml = Format-HTML -Content $html
+    #$formattedHtml = Format-HTML -Content $html
 
-    return $formattedHtml -Replace '</?html>'
+    #return $formattedHtml -Replace '</?html>'
+    return $html
 }
+function New-ServerHtml {
+    $html = ""
+    foreach ($software in $serverSoftware) {
+        $aryLinks = @()
+        $links = $software.Link.split(',') 
+        $linkTexts = $software.LinkText.Split(',')
+        
+        for ($i=0; $i -lt $links.Count; $i++) {
+        $aryLinks += "<a href=`"$($links[$i])`" target=`"_blank`">$($linkTexts[$i])</a>"
+        }
+        $strLinks = $aryLinks -join "<br>`r"
+        $html += "<tr>
+                    <td class=`"App`">{0}</td>
+                    <td id=`"{1}`" class=`"Version`">[{1}]</td>
+                    <td>
+                        {2}
+                    </td>
+                </tr>" -f $software.ServerModel, $software.Id, $strLinks
+    }
+    #$formattedHtml = Format-HTML -Content $html
+
+    #return $formattedHtml -Replace '</?html>'
+    return $html
+}
+#Import-Module .\PSParseHTML -Scope Local -ErrorAction Stop
+
 $folder = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions"
 $template = Join-Path $folder "SoftwareStatusTemplate.html"
 $firmware = Join-Path $folder "firmware.txt"
 $softwareVersionsCsv = Join-Path $folder "SoftwareVersions.csv"
+$serverVersionsCsv = Join-Path $folder "ServerSoftware.csv"
 $softwareVersions = Import-Csv $softwareVersionsCsv
+$serverSoftware = Import-Csv $serverVersionsCsv
 
 # add more applications here as necessary. update html template accordingly.
 $printerModels = "8500,609,551,577,578,652,506,612,6800,776,5700"
@@ -34,6 +63,7 @@ $printerModels = $printerModels.Split(',') | Sort-Object @{e={[int]$_}}
 $htmlContent = Get-Content $template -Raw
 $htmlContent = $htmlContent.Replace('[date]',(Get-Date -f 'MM/dd/yyyy HH:mm'))
 $htmlContent = $htmlContent.Replace('[softwareHtml]', (New-Html))
+$htmlContent = $htmlContent.Replace('[serverHtml]', (New-ServerHtml))
 
 foreach ($obj in $softwareVersions) {
     $version,$fileDate,$newContent = $null
@@ -71,7 +101,7 @@ foreach ($printer in $printerModels) { # loop through each printer model
 
 } # end foreach
 
-$formattedHtml = Format-HTML -Content $html
-$htmlContent = $htmlContent.Replace('[printerHtml]', $formattedHtml)
+#$formattedHtml = Format-HTML -Content $html
+$htmlContent = $htmlContent.Replace('[printerHtml]', $html)
 
 $htmlContent | Out-File "$folder\SoftwareStatus.html"
