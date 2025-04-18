@@ -11,15 +11,6 @@
       crossorigin="anonymous"
     />
     <style>
-      header {
-        background-color: crimson;
-        color: white;
-        padding: 0px;
-        text-align: center;
-        border: 1px solid white;
-        width: 50%;
-      }
-
       body {
         font-family: Arial, sans-serif;
         display: flex;
@@ -34,7 +25,7 @@
         display: grid;
         grid-template-columns: repeat(1, auto);
         gap: 20px;
-        width: 50%;
+        width: 60%;
       }
 
       table,
@@ -60,7 +51,7 @@
       }
 
       td.App {
-        width: 20%;
+        width: 25%;
       }
 
       td.Version {
@@ -72,15 +63,15 @@
       }
 
       #software-table {
-        display: block;
+        display: flex;
       }
 
       #printer-table {
-        display: block;
+        display: none;
       }
 
       #server-table {
-        display: block;
+        display: none;
       }
 
       .btn-group {
@@ -91,10 +82,33 @@
     </style>
   </head>
   <body>
-    <header>
-      <h1>Software Upload Status [[date]]</h1>
-    </header>
-    <div class="btn-group">
+    <header class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-tertiary">
+		<nav class="container-fluid navbar navbar-expand-lg bg-body-tertiary">
+			<div class="container-fluid">
+			  <a class="navbar-brand" href="#">Software Upload Status</a>
+			  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			  </button>
+			  <div class="collapse navbar-collapse" id="navbarText">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+				  <li class="nav-item">
+					<a class="nav-link active" aria-current="page" href="#" onclick="Toggle('software-table')">Software Versions</a>
+				  </li>
+				  <li class="nav-item">
+					<a class="nav-link" href="#" onclick="Toggle('printer-table')">Printer Firmware</a>
+				  </li>
+				  <li class="nav-item">
+					<a class="nav-link" href="#" onclick="Toggle('server-table')">Server Software</a>
+				  </li>
+				</ul>
+				<span class="navbar-text">
+				  Last Updated: [date]
+				</span>
+			  </div>
+			</div>
+		  </nav>
+	  </header>
+    <!-- <div class="btn-group">
       <button
         type="button"
         class="btn btn-outline-secondary"
@@ -156,38 +170,38 @@
         </svg>
         <span class="visually-hidden">Button</span>
       </button>
-    </div>
-    <div class="table-container">
-      <table id="software-table" class="table">
-        <th colspan="3">
+    </div> -->
+    <div class="container-fluid table-container">
+      <table id="software-table" class="container-fluid table">
+        <th class="bg-secondary" colspan="3">
           Applications
           <tr>
-            <th>Software Title</th>
-            <th>Latest Version</th>
-            <th>Download Link</th>
+            <th class="bg-secondary">Software Title</th>
+            <th class="bg-secondary">Latest Version</th>
+            <th class="bg-secondary">Download Link</th>
           </tr>
         </th>
         [softwareHtml]
       </table>
 
-      <table id="printer-table" class="table">
-        <th colspan="2">
+      <table id="printer-table" class="container-fluid table">
+        <th class="bg-secondary" colspan="2">
           Printer Firmware [[printer-date]]
           <tr>
-            <th>Model</th>
-            <th>Firmware</th>
+            <th class="bg-secondary">Model</th>
+            <th class="bg-secondary">Firmware</th>
           </tr>
         </th>
         [printerHtml]
       </table>
 
-      <table id="server-table" class="table">
-        <th colspan="3">
+      <table id="server-table" class="container-fluid table">
+        <th class="bg-secondary" colspan="3">
           Server Software
           <tr>
-            <th>Server Model</th>
-            <th>Product Type</th>
-            <th>Latest Version</th>
+            <th class="bg-secondary">Server Model</th>
+            <th class="bg-secondary">Product Type</th>
+            <th class="bg-secondary">Latest Version</th>
           </tr>
         </th>
         [serverHtml]
