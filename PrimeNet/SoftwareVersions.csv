@@ -1,0 +1,24 @@
+Id,SoftwareName,LatestVersion,Link,LinkText,Datetime
+adobe,Adobe,12252024,"https://helpx.adobe.com/acrobat/kb/install-updates-reader-acrobat.html,https://www.adobe.com/devnet-docs/acrobatetk/tools/ReleaseNotesDC/index.html","Adobe Reader Update (Opens in Silo),Release Notes (Opens in Edge)",4/16/2025 16:23
+iGelBaseSystem,iGel OS Base System,12.0.4,https://app.igel.com/base_system/, iGel App Portal (Opens in Silo),4/16/2025 16:23
+iGelHorizon,iGel App - VMWare Horizon Client,1.5.7,https://app.igel.com/horizon/, iGel App Portal (Opens in Silo),4/16/2025 16:23
+iGelNetID,iGel App - PointSharp NetID Client,3.0.4,https://app.igel.com/netid/, iGel App Portal (Opens in Silo),4/16/2025 16:23
+git,Git for Windows,2.49.1,https://github.com/git-for-windows/git/releases, Git for Windows Download (Opens in Silo),4/16/2025 16:23
+chrome,Google Chrome,135.76.34.1,https://chromeenterprise.google/download/?modal-id=download-chrome, Google Chrome Enterprise Download (Opens in Silo),4/16/2025 16:23
+edge,Microsoft Edge,135.092.1234.28,https://www.microsoft.com/en-us/edge/business/download?form=MA13FJ,Edge Enterprise Download (Opens in Edge),4/16/2025 16:23
+firefox,Mozilla Firefox,137,https://www.mozilla.org/en-US/firefox/all/#product-desktop-release,Mozilla Firefox Updates (Opens in Silo),4/16/2025 16:23
+fusionpro,FusionPro,14.0.3,https://fusionpro.com/support/downloads/,FusionPro downloads (Opens in Silo),4/14/2025 17:02
+linqpad,LINQPad,8.4,https://www.linqpad.net/Download.aspx,LINQPad downloads (Opens in Silo),4/16/2025 16:23
+nodejs,Node.js,20.0.5,https://nodejs.org/en/download,Node.js downloads (Opens in Silo),4/16/2025 16:23
+npp,Notepad++,8.7.9,https://github.com/notepad-plus-plus/notepad-plus-plus/releases/,Notepad++ downloads (Opens in Silo),4/16/2025 16:23
+powershell,Powershell,7.5.0,https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4&viewFallbackFrom=powershell-7.2#msi,Powershell 7 Updates (Opens in Edge),4/16/2025 16:23
+putty,PuTTY,0.83,https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html,PuTTY (Opens in Silo),4/16/2025 16:23
+vmware_tools,VMWare Tools,12.5.1,,,4/16/2025 16:23
+vmware_esxi,VMWare ESXi,7u3S,https://knowledge.broadcom.com/external/article?legacyId=2143832,VMWare ESXi Updates (Opens in Edge),4/16/2025 16:23
+vmware_horizon,VMWare Horizon 8,8.13.1,,,4/16/2025 16:23
+vmware_vcenter,VMWare vCenter,7u3t,https://knowledge.broadcom.com/external/article?legacyId=2143838,VMWare vCenter Server Updates (Opens in Edge),4/16/2025 16:23
+vmware_vsan,VMWare vSAN,,https://knowledge.broadcom.com/external/article?legacyId=2145116,VMWare vSAN Updates (Opens in Edge),4/16/2025 16:23
+vscode,Visual Studio Code,1.99.2,https://code.visualstudio.com/download#,VS Code Download (Opens in Edge),4/16/2025 16:23
+winscp,WinSCP,6.3.5,https://winscp.net/eng/download.php,WinSCP Download (Opens in Silo),4/16/2025 16:23
+terminal,Windows Terminal,1.21.10351.0,https://github.com/microsoft/terminal/releases,Windows Terminal Releases (Opens in Silo),4/16/2025 16:23
+defender,Windows Defender,,https://www.microsoft.com/en-us/wdsi/defenderupdates,Defender Updates,4/16/2025 16:23
