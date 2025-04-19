@@ -1,4 +1,3 @@
-#TYPE System.Management.Automation.PSCustomObject
 "id","SoftwareName","LatestVersion","DateTime","Link","LinkText"
 "adobe","Adobe","2500120432","3/11/2025 7:34","https://helpx.adobe.com/acrobat/kb/install-updates-reader-acrobat.html,https://www.adobe.com/devnet-docs/acrobatetk/tools/ReleaseNotesDC/index.html","Adobe Reader Update (Opens in Silo),Release Notes (Opens in Edge)"
 "beats","Elastic Beats","","","https://www.elastic.co/downloads/beats","Elastic Beats (Open in Silo)"
