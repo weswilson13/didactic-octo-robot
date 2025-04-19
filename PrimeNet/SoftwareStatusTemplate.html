@@ -80,12 +80,13 @@
     </style>
   </head>
   <body>
-    <header
-      class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-tertiary"
-    >
-      <nav class="container-fluid navbar navbar-expand-lg bg-body-tertiary">
+    <header class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-secondary">
+      <nav class="container-fluid navbar navbar-expand-lg">
         <div class="container-fluid">
-          <a class="navbar-brand" href="#">Software Upload Status</a>
+          <a class="navbar-brand" href="#">
+			<img src=".\NNPTC_Logo.jpg" alt="NNPTC Logo" height="40" class="d-inline-block">
+			Software Upload Status
+		  </a>
           <button
             class="navbar-toggler"
             type="button"
@@ -128,16 +129,14 @@
       <div class="table-responsive">
         <table
           id="software-table"
-          class="table table-striped table-hover mx-auto w-auto"
+          class="table table-bordered border-dark table-hover mx-auto w-auto"
         >
-          <th class="bg-secondary" colspan="3">
-            Applications
+          <tr><th scope="col" class="table-success" colspan="3">Applications</th></tr>
             <tr>
-              <th class="bg-secondary">Software Title</th>
-              <th class="bg-secondary">Latest Version</th>
-              <th class="bg-secondary">Download Link</th>
+              <th scope="col" class="table-success">Software Title</th>
+              <th scope="col" class="table-success">Latest Version</th>
+              <th scope="col" class="table-success">Download Link</th>
             </tr>
-          </th>
           [softwareHtml]
         </table>
       </div>
@@ -145,15 +144,13 @@
       <div class="table-responsive">
         <table
           id="printer-table"
-          class="table table-striped table-hover mx-auto w-auto"
+          class="table table-bordered border-dark table-hover mx-auto w-auto"
         >
-          <th class="bg-secondary" colspan="2">
-            Printer Firmware [[printer-date]]
+          <tr><th scope="col" class="table-primary" colspan="2">Printer Firmware [[printer-date]]</th></tr>
             <tr>
-              <th class="bg-secondary">Model</th>
-              <th class="bg-secondary">Firmware</th>
+              <th scope="col" class="table-primary">Model</th>
+              <th scope="col" class="table-primary">Firmware</th>
             </tr>
-          </th>
           [printerHtml]
         </table>
       </div>
@@ -161,16 +158,14 @@
       <div class="table-responsive">
         <table
           id="server-table"
-          class="table table-striped table-hover mx-auto w-auto"
+          class="table table-bordered border-dark table-hover mx-auto w-auto"
         >
-          <th class="bg-secondary" colspan="3">
-            Server Software
+          <tr><th scope="col" class="table-secondary" colspan="3">Server Software</th></tr>
             <tr>
-              <th class="bg-secondary">Server Model</th>
-              <th class="bg-secondary">Product Type</th>
-              <th class="bg-secondary">Latest Version</th>
+              <th scope="col" class="table-secondary">Server Model</th>
+              <th scope="col" class="table-secondary">Product Type</th>
+              <th scope="col" class="table-secondary">Latest Version</th>
             </tr>
-          </th>
           [serverHtml]
         </table>
       </div>
