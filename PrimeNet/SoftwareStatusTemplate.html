@@ -38,9 +38,9 @@
         border: 1px solid black;
       }
 
-      .new {
+      /* .new {
         background-color: yellow;
-      }
+      } */
 
       th {
         height: 40px;
@@ -201,6 +201,9 @@
           .removeAttribute("aria-current");
         $(this).attr("aria-current", "page");
       });
+
+	  $("td span.new").closest('tr').addClass("table-success");
+
     </script>
   </body>
 </html>
