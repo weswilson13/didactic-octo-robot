@@ -20,7 +20,7 @@ function New-Html {
 
         if ($Server.IsPresent) {
             $html += "<tr>
-                        <td class=`"App`">{0}</td>
+                        <td class=`"ServerApp`">{0}</td>
                         <td>{1}</td>
                         <td id=`"{2}`" class=`"Version`">[{2}]</td>
                         <td>
@@ -30,12 +30,12 @@ function New-Html {
         }
         else {
             $html += "<tr>
-                        <td class=`"App`">{0}</td>
+                        <td class=`"App {3}`">{0}</td>
                         <td id=`"{1}`" class=`"Version`">[{1}]</td>
                         <td>
                             {2}
                         </td>
-                    </tr>" -f $software.SoftwareName, $software.Id, $strLinks
+                    </tr>" -f $software.SoftwareName, $software.Id, $strLinks, $software.Bin
         }
     }
     
@@ -65,6 +65,7 @@ function New-Html {
 }
 
 $folder = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions"
+$folder=$PSScriptRoot
 $template = Join-Path $folder "SoftwareStatusTemplate.html"
 $firmware = Join-Path $folder "firmware.txt"
 $softwareVersionsCsv = Join-Path $folder "SoftwareVersions.csv"

@@ -20,7 +20,16 @@
         margin: 0;
         /* width: 95%; */
       }
-
+      .container {
+        display: flex;
+      }
+      .btn-group {
+        display: flex;
+        align-items: flex-start;
+        width: 50px;
+        position: absolute;
+        left: 0;
+      }
       .table-container {
         display: grid;
         grid-template-columns: repeat(1, auto);
@@ -28,9 +37,9 @@
         width: auto;
       }
 
-	  .table {
-		width: auto;
-	  }
+      .table {
+        width: auto;
+      }
 
       table,
       th,
@@ -80,13 +89,20 @@
     </style>
   </head>
   <body>
-    <header class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-secondary">
+    <header
+      class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-secondary"
+    >
       <nav class="container-fluid navbar navbar-expand-lg">
         <div class="container-fluid">
           <a class="navbar-brand" href="#">
-			<img src=".\NNPTC_Logo.jpg" alt="NNPTC Logo" height="40" class="d-inline-block">
-			Software Upload Status
-		  </a>
+            <img
+              src=".\NNPTC_Logo.jpg"
+              alt="NNPTC Logo"
+              height="40"
+              class="d-inline-block"
+            />
+            Software Upload Status
+          </a>
           <button
             class="navbar-toggler"
             type="button"
@@ -125,50 +141,75 @@
         </div>
       </nav>
     </header>
-    <div class="container-fluid table-container">
-      <div class="table-responsive">
-        <table
-          id="software-table"
-          class="table table-bordered border-dark table-hover mx-auto w-auto"
-        >
-          <tr><th scope="col" class="table-success" colspan="3">Applications</th></tr>
+    <div class="container">
+      <div class="btn-group d-grid gap-2 col-2 mx-auto">
+        <button class="btn btn-primary" type="button">All</button>
+        <button class="btn btn-primary" type="button">Adobe</button>
+        <button class="btn btn-primary" type="button">Browser</button>
+        <button class="btn btn-primary" type="button">Developer</button>
+        <button class="btn btn-primary" type="button">Elastic</button>
+        <button class="btn btn-primary" type="button">iGel</button>
+        <button class="btn btn-primary" type="button">PrintShop</button>
+        <button class="btn btn-primary" type="button">Utilities</button>
+        <button class="btn btn-primary" type="button">Virtualization</button>
+      </div>
+      <div class="container-fluid table-container">
+        <div class="table-responsive">
+          <table
+            id="software-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+            <tr>
+              <th scope="col" class="table-success" colspan="3">
+                Applications
+              </th>
+            </tr>
             <tr>
               <th scope="col" class="table-success">Software Title</th>
               <th scope="col" class="table-success">Latest Version</th>
               <th scope="col" class="table-success">Download Link</th>
             </tr>
-          [softwareHtml]
-        </table>
-      </div>
+            [softwareHtml]
+          </table>
+        </div>
 
-      <div class="table-responsive">
-        <table
-          id="printer-table"
-          class="table table-bordered border-dark table-hover mx-auto w-auto"
-        >
-          <tr><th scope="col" class="table-primary" colspan="2">Printer Firmware [[printer-date]]</th></tr>
+        <div class="table-responsive">
+          <table
+            id="printer-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+            <tr>
+              <th scope="col" class="table-primary" colspan="2">
+                Printer Firmware [[printer-date]]
+              </th>
+            </tr>
             <tr>
               <th scope="col" class="table-primary">Model</th>
               <th scope="col" class="table-primary">Firmware</th>
             </tr>
-          [printerHtml]
-        </table>
-      </div>
+            [printerHtml]
+          </table>
+        </div>
 
-      <div class="table-responsive">
-        <table
-          id="server-table"
-          class="table table-bordered border-dark table-hover mx-auto w-auto"
-        >
-          <tr><th scope="col" class="table-secondary" colspan="4">Server Software</th></tr>
+        <div class="table-responsive">
+          <table
+            id="server-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+            <tr>
+              <th scope="col" class="table-secondary" colspan="4">
+                Server Software
+              </th>
+            </tr>
             <tr>
               <th scope="col" class="table-secondary">Server Model</th>
               <th scope="col" class="table-secondary">Product Type</th>
               <th scope="col" class="table-secondary">Latest Version</th>
-			  <th scope="col" class="table-secondary">Download Link</th>
+              <th scope="col" class="table-secondary">Download Link</th>
             </tr>
-          [serverHtml]
-        </table>
+            [serverHtml]
+          </table>
+        </div>
       </div>
     </div>
     <script
@@ -184,6 +225,11 @@
     <script>
       function Toggle(id) {
         var x = document.getElementById(id);
+		if (id == "software-table") {
+			$('.btn-group').show();
+		} else {
+			$('.btn-group').hide();
+		}
         Array.from(document.getElementsByClassName("table")).forEach(
           (element) => {
             element.style.display = "none";
@@ -202,8 +248,17 @@
         $(this).attr("aria-current", "page");
       });
 
-	  $("td span.new").closest('tr').addClass("table-success");
+      $("td span.new").closest("tr").addClass("table-success");
 
+      $("div .btn").on("click", function () {
+        var buttonText = this.innerText;
+		if (buttonText == "All") {
+			$(".App").closest("tr").show();
+		} else {
+          $(".App").closest("tr").hide();
+          $(`.${buttonText}`).closest("tr").toggle();
+		}
+      });
     </script>
   </body>
 </html>
