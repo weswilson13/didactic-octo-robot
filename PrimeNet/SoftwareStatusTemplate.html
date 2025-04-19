@@ -25,8 +25,12 @@
         display: grid;
         grid-template-columns: repeat(1, auto);
         gap: 20px;
-        width: 60%;
+        width: auto;
       }
+
+	  .table {
+		width: auto;
+	  }
 
       table,
       th,
@@ -51,11 +55,11 @@
       }
 
       td.App {
-        width: 25%;
+        width: auto;
       }
 
       td.Version {
-        width: 35%;
+        width: auto;
       }
 
       td.Printer {
@@ -72,12 +76,6 @@
 
       #server-table {
         display: none;
-      }
-
-      .btn-group {
-        position: absolute;
-        top: 5px;
-        left: 5px;
       }
     </style>
   </head>
@@ -127,40 +125,55 @@
       </nav>
     </header>
     <div class="container-fluid table-container">
-      <table id="software-table" class="container-fluid table">
-        <th class="bg-secondary" colspan="3">
-          Applications
-          <tr>
-            <th class="bg-secondary">Software Title</th>
-            <th class="bg-secondary">Latest Version</th>
-            <th class="bg-secondary">Download Link</th>
-          </tr>
-        </th>
-        [softwareHtml]
-      </table>
+      <div class="table-responsive">
+        <table
+          id="software-table"
+          class="table table-striped table-hover mx-auto w-auto"
+        >
+          <th class="bg-secondary" colspan="3">
+            Applications
+            <tr>
+              <th class="bg-secondary">Software Title</th>
+              <th class="bg-secondary">Latest Version</th>
+              <th class="bg-secondary">Download Link</th>
+            </tr>
+          </th>
+          [softwareHtml]
+        </table>
+      </div>
 
-      <table id="printer-table" class="container-fluid table">
-        <th class="bg-secondary" colspan="2">
-          Printer Firmware [[printer-date]]
-          <tr>
-            <th class="bg-secondary">Model</th>
-            <th class="bg-secondary">Firmware</th>
-          </tr>
-        </th>
-        [printerHtml]
-      </table>
+      <div class="table-responsive">
+        <table
+          id="printer-table"
+          class="table table-striped table-hover mx-auto w-auto"
+        >
+          <th class="bg-secondary" colspan="2">
+            Printer Firmware [[printer-date]]
+            <tr>
+              <th class="bg-secondary">Model</th>
+              <th class="bg-secondary">Firmware</th>
+            </tr>
+          </th>
+          [printerHtml]
+        </table>
+      </div>
 
-      <table id="server-table" class="container-fluid table">
-        <th class="bg-secondary" colspan="3">
-          Server Software
-          <tr>
-            <th class="bg-secondary">Server Model</th>
-            <th class="bg-secondary">Product Type</th>
-            <th class="bg-secondary">Latest Version</th>
-          </tr>
-        </th>
-        [serverHtml]
-      </table>
+      <div class="table-responsive">
+        <table
+          id="server-table"
+          class="table table-striped table-hover mx-auto w-auto"
+        >
+          <th class="bg-secondary" colspan="3">
+            Server Software
+            <tr>
+              <th class="bg-secondary">Server Model</th>
+              <th class="bg-secondary">Product Type</th>
+              <th class="bg-secondary">Latest Version</th>
+            </tr>
+          </th>
+          [serverHtml]
+        </table>
+      </div>
     </div>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
@@ -180,7 +193,7 @@
             element.style.display = "none";
           }
         );
-        x.style.display = "block";
+        x.style.display = "flex";
       }
 
       $(".nav-item a").on("click", function () {
