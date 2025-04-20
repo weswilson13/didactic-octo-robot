@@ -19,7 +19,7 @@ function New-Html {
         $strLinks = $aryLinks -join "<br>`r"
 
         if ($Server.IsPresent) {
-            $html += "<tr>
+            $html += "<tr class=`"$($software.ServerModel.Replace(' ',''))`">
                         <td class=`"ServerApp`">{0}</td>
                         <td>{1}</td>
                         <td id=`"{2}`" class=`"Version`">[{2}]</td>
@@ -30,7 +30,7 @@ function New-Html {
         }
         else {
             $html += "<tr>
-                        <td class=`"App {3}`">{0}</td>
+                        <td class=`"{3} App`">{0}</td>
                         <td id=`"{1}`" class=`"Version`">[{1}]</td>
                         <td>
                             {2}
@@ -83,10 +83,11 @@ $htmlContent = $htmlContent.Replace('[softwareHtml]', (New-Html))
 $htmlContent = $htmlContent.Replace('[serverHtml]', (New-Html -Server))
 
 # create button group
-$html = @("<button class=`"btn btn-primary`" type=`"button`">All</button>")
-$buttons = $softwareVersions | Select-Object -ExpandProperty Bin -Unique
+$html = @("<button class=`"btn btn-primary All`" type=`"button`">All</button>")
+$buttons = $softwareVersions | Select-Object @{n='Name';e={$_.Bin}}, @{n='Label';e={'Software'}} -Unique
+$buttons += $serverSoftware | Select-Object @{n='Name';e={$_.ServerModel}}, @{n='Label';e={'Server'}} -Unique
 foreach ($button in $buttons) {
-    $html += "<button class=`"btn btn-primary`" type=`"button`">$button</button>"
+    $html += "<button class=`"btn btn-primary $($button.Label)`" type=`"button`">$($button.Name)</button>"
 }
 $html = $html -join "`n"
 $htmlContent = $htmlContent.Replace('[buttonHtml]', $html)

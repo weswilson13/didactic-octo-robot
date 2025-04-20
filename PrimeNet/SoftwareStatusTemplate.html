@@ -26,7 +26,7 @@
       .btn-group {
         display: flex;
         align-items: flex-start;
-        width: 50px;
+        width: auto;
         position: absolute;
         left: 0;
       }
@@ -118,7 +118,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
                 <a
-                  class="nav-link active"
+                  class="nav-link Software active"
                   aria-current="page"
                   href="#"
                   onclick="Toggle('software-table')"
@@ -126,12 +126,12 @@
                 >
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#" onclick="Toggle('printer-table')"
+                <a class="nav-link Printer" href="#" onclick="Toggle('printer-table')"
                   >Printer Firmware</a
                 >
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#" onclick="Toggle('server-table')"
+                <a class="nav-link Server" href="#" onclick="Toggle('server-table')"
                   >Server Software</a
                 >
               </li>
@@ -142,9 +142,7 @@
       </nav>
     </header>
     <div class="container">
-      <div class="btn-group d-grid gap-2 col-2 mx-auto">
-        [buttonHtml]
-      </div>
+      <div class="btn-group d-grid gap-2 col-2 mx-auto">[buttonHtml]</div>
       <div class="container-fluid table-container">
         <div class="table-responsive">
           <table
@@ -217,11 +215,7 @@
     <script>
       function Toggle(id) {
         var x = document.getElementById(id);
-		if (id == "software-table") {
-			$('.btn').show();
-		} else {
-			$('.btn').hide();
-		}
+
         Array.from(document.getElementsByClassName("table")).forEach(
           (element) => {
             element.style.display = "none";
@@ -230,9 +224,26 @@
         x.style.display = "flex";
       }
 
+      function ToggleButtons(element) {
+        $(".btn:not(.All)").hide();
+        if (element.classList.contains("Software")) {
+          $(".btn.Software").show();
+        } else if (element.classList.contains("Server")) {
+          $(".btn.Server").show();
+        }
+      }
+
+      $(document).ready(function () {
+        var a = document.querySelector(".nav-link.active");
+        ToggleButtons(a);
+      });
+
       $(".nav-item a").on("click", function () {
+		$("[class$=App]").closest("tr").show();
+
         $(".nav-item a").removeClass("active");
         $(this).addClass("active");
+        ToggleButtons(this);
 
         document
           .querySelector(`[aria-current="page"]`)
@@ -245,13 +256,13 @@
       $("td span.nodate").closest("tr").addClass("table-warning");
 
       $("div .btn").on("click", function () {
-        var buttonText = this.innerText;
-		if (buttonText == "All") {
-			$(".App").closest("tr").show();
-		} else {
-          $(".App").closest("tr").hide();
+        var buttonText = this.innerText.replaceAll(' ','');
+        if (buttonText == "All") {
+          $("[class$=App]").closest("tr").show();
+        } else {
+          $("[class$=App]").closest("tr").hide();
           $(`.${buttonText}`).closest("tr").toggle();
-		}
+        }
       });
     </script>
   </body>
