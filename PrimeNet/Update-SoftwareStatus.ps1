@@ -52,7 +52,7 @@ function New-Html {
                 if ([datetime]$_date -gt [datetime]::Now.AddHours(-24)) { $_date = "<span class=`"new`">$_date<span>" }
             }
             else {
-                $_date = "???" 
+                $_date = "<span class=`"nodate`">???<span>" 
             }
     
             $newContent = "<b>$version</b>  ($_date)"

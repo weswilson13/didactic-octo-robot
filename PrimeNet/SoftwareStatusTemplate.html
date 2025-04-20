@@ -242,6 +242,8 @@
 
       $("td span.new").closest("tr").addClass("table-success");
 
+      $("td span.nodate").closest("tr").addClass("table-warning");
+
       $("div .btn").on("click", function () {
         var buttonText = this.innerText;
 		if (buttonText == "All") {
