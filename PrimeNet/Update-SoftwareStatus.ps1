@@ -83,7 +83,7 @@ $htmlContent = $htmlContent.Replace('[softwareHtml]', (New-Html))
 $htmlContent = $htmlContent.Replace('[serverHtml]', (New-Html -Server))
 
 # create button group
-$html = @()
+$html = @("<button class=`"btn btn-primary`" type=`"button`">All</button>")
 $buttons = $softwareVersions | Select-Object -ExpandProperty Bin -Unique
 foreach ($button in $buttons) {
     $html += "<button class=`"btn btn-primary`" type=`"button`">$button</button>"
