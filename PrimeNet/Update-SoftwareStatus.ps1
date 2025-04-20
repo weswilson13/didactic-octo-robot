@@ -83,14 +83,9 @@ $htmlContent = $htmlContent.Replace('[softwareHtml]', (New-Html))
 $htmlContent = $htmlContent.Replace('[serverHtml]', (New-Html -Server))
 
 # create button group
-$html = @("<button class=`"btn btn-primary All`" type=`"button`">All</button>")
+$buttonHtml = @("<button class=`"btn btn-primary All`" type=`"button`">All</button>")
 $buttons = $softwareVersions | Select-Object @{n='Name';e={$_.Bin}}, @{n='Label';e={'Software'}} -Unique
 $buttons += $serverSoftware | Select-Object @{n='Name';e={$_.ServerModel}}, @{n='Label';e={'Server'}} -Unique
-foreach ($button in $buttons) {
-    $html += "<button class=`"btn btn-primary $($button.Label)`" type=`"button`">$($button.Name)</button>"
-}
-$html = $html -join "`n"
-$htmlContent = $htmlContent.Replace('[buttonHtml]', $html)
 
 # review printer firmware
 $firmwareFileInfo = Get-ItemProperty $firmware
@@ -102,10 +97,17 @@ foreach ($printer in $printerModels) { # loop through each printer model
     
     $latestFirmware = $firmwares | Where-Object { $_ -match "M?$printer" } | Select-Object -Last 1
     $printer = [regex]::Match($latestFirmware, "M?$printer").Value
-    $html += "<tr><td class=`"Printer`">$printer</td><td class=`"firmware`">$latestFirmware</td></tr>"
+    $html += "<tr><td class=`"Printer $printer`">$printer</td><td class=`"firmware`">$latestFirmware</td></tr>"
+    $buttons += $printer | Select-Object  @{n='Name';e={$_}}, @{n='Label';e={'Printer'}} -Unique
 
 } # end foreach
 
 $htmlContent = $htmlContent.Replace('[printerHtml]', $html)
+
+foreach ($button in $buttons) {
+    $buttonHtml += "<button class=`"btn btn-primary $($button.Label)`" type=`"button`">$($button.Name)</button>"
+}
+$buttonHtml = $buttonHtml -join "`n"
+$htmlContent = $htmlContent.Replace('[buttonHtml]', $buttonHtml)
 
 $htmlContent | Out-File "$folder\SoftwareStatus.html"

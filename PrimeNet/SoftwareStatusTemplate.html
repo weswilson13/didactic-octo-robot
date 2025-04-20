@@ -230,6 +230,8 @@
           $(".btn.Software").show();
         } else if (element.classList.contains("Server")) {
           $(".btn.Server").show();
+        } else if (element.classList.contains("Printer")) {
+          $(".btn.Printer").show();
         }
       }
 
@@ -239,7 +241,7 @@
       });
 
       $(".nav-item a").on("click", function () {
-		$("[class$=App]").closest("tr").show();
+		$("[class$=App],.Printer").closest("tr").show();
 
         $(".nav-item a").removeClass("active");
         $(this).addClass("active");
@@ -258,9 +260,9 @@
       $("div .btn").on("click", function () {
         var buttonText = this.innerText.replaceAll(' ','');
         if (buttonText == "All") {
-          $("[class$=App]").closest("tr").show();
+          $("[class$=App],.Printer").closest("tr").show();
         } else {
-          $("[class$=App]").closest("tr").hide();
+          $("[class$=App],.Printer").closest("tr").hide();
           $(`.${buttonText}`).closest("tr").toggle();
         }
       });
