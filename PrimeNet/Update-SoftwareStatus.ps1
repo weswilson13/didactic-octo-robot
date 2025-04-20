@@ -82,6 +82,15 @@ $htmlContent = $htmlContent.Replace('[date]',(Get-Date -f 'MM/dd/yyyy HH:mm'))
 $htmlContent = $htmlContent.Replace('[softwareHtml]', (New-Html))
 $htmlContent = $htmlContent.Replace('[serverHtml]', (New-Html -Server))
 
+# create button group
+$html = @()
+$buttons = $softwareVersions | Select-Object -ExpandProperty Bin -Unique
+foreach ($button in $buttons) {
+    $html += "<button class=`"btn btn-primary`" type=`"button`">$button</button>"
+}
+$html = $html -join "`n"
+$htmlContent = $htmlContent.Replace('[buttonHtml]', $html)
+
 # review printer firmware
 $firmwareFileInfo = Get-ItemProperty $firmware
 $firmwares = Get-Content $firmware
