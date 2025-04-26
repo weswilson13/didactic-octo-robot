@@ -10,9 +10,11 @@ function New-Html {
     }
     foreach ($software in $collection) {
         $aryLinks = @()
-        $img = $null
+        $img, $checked = $null
         $softwareName = $software.SoftwareName
         if ($software.LogoOnly -eq 1) { $softwareName = $null }
+
+        if ($software.LoginRequired -eq 1) { $checked = " checked" }
 
         $links = $software.Link.split(',') 
         $linkTexts = $software.LinkText.Split(';')
@@ -49,6 +51,7 @@ function New-Html {
                         <td>
                             {2}
                         </td>
+                        <td class=`"checkbox text-center`"><input type=`"checkbox`"$checked></td>
                     </tr>" -f $softwareName, $software.Id, $strLinks, $software.Bin
         }
     }
