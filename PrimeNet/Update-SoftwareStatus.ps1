@@ -51,7 +51,7 @@ function New-Html {
                         <td>
                             {2}
                         </td>
-                        <td class=`"checkbox text-center`"><input type=`"checkbox`"$checked></td>
+                        <td class=`"checkbox text-center align-middle`"><input type=`"checkbox`"$checked></td>
                     </tr>" -f $softwareName, $software.Id, $strLinks, $software.Bin
         }
     }
