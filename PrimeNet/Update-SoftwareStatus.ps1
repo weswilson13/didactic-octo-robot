@@ -10,9 +10,23 @@ function New-Html {
     }
     foreach ($software in $collection) {
         $aryLinks = @()
+        $img = $null
+        $softwareName = $software.SoftwareName
+        if ($software.LogoOnly -eq 1) { $softwareName = $null }
+
         $links = $software.Link.split(',') 
-        $linkTexts = $software.LinkText.Split(',')
-        
+        $linkTexts = $software.LinkText.Split(';')
+        $src = Get-ChildItem .\images | Where-Object { $_.Name -match $software.Id } | Select-Object -ExpandProperty Name
+        if ($src) { $img = "<img height=`"30px`" src=`".\images\$src`">" }
+        <#switch($software.Id) {
+            'teradici' { "<img style=`"background-color:blue`" height=`"30px`" src=`".\images\teradici.svg`">"; break }
+            'hpwja' { "<img height=`"30px`" src=`".\images\hpwja.jpg`">"; break }
+            'servicepro' { "<img height=`"30px`" src=`".\images\servicepro.png`">"; break }
+            'ssms' { "<img height=`"30px`" src=`".\images\ssms.png`">"; break }
+            'vscode' { "<img height=`"30px`" src=`".\images\vscode.png`">"; break }
+            default { $null }
+        }#>
+
         for ($i=0; $i -lt $links.Count; $i++) {
             $aryLinks += "<a href=`"$($links[$i])`" target=`"_blank`">$($linkTexts[$i])</a>"
         }
@@ -30,12 +44,12 @@ function New-Html {
         }
         else {
             $html += "<tr>
-                        <td class=`"{3} App`">{0}</td>
+                        <td class=`"{3} App`">$img{0}</td>
                         <td id=`"{1}`" class=`"Version`">[{1}]</td>
                         <td>
                             {2}
                         </td>
-                    </tr>" -f $software.SoftwareName, $software.Id, $strLinks, $software.Bin
+                    </tr>" -f $softwareName, $software.Id, $strLinks, $software.Bin
         }
     }
     
@@ -65,7 +79,6 @@ function New-Html {
 }
 
 $folder = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions"
-$folder=$PSScriptRoot
 $template = Join-Path $folder "SoftwareStatusTemplate.html"
 $firmware = Join-Path $folder "firmware.txt"
 $softwareVersionsCsv = Join-Path $folder "SoftwareVersions.csv"
