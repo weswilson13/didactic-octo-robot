@@ -97,8 +97,12 @@ function New-Html {
     return $html
 }
 
-$folder = Get-ChildItem "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet" -Directory | 
-          Where-Object {$_.Name -match 'SoftwareVersions'} | Select-Object -ExpandProperty FullName
+$folder = switch -Regex ($env:USERDNSDOMAIN) {
+    'UNRPNET.GOV' { Get-ChildItem "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet" -Directory | 
+                    Where-Object {$_.Name -match 'SoftwareVersions'} | Select-Object -ExpandProperty FullName
+    }
+    default { $PSScriptRoot }
+}
 $template = Join-Path $folder "SoftwareStatusTemplate.html"
 $firmware = Join-Path $folder "firmware.txt"
 $softwareVersionsCsv = Join-Path $folder "SoftwareVersions.csv"
