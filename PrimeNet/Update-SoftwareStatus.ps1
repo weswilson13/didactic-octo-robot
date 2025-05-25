@@ -115,7 +115,7 @@ $serverSoftware = Import-Csv $serverVersionsCsv
 $printerModels = "8500,609,551,577,578,652,506,612,6800,776,5700"
 $printerModels = $printerModels.Split(',') | Sort-Object @{e={[int]$_}}
 
-$htmlContent = Get-Content $template -Raw
+$htmlContent = Get-Content $template -Raw -Encoding UTF8
 $htmlContent = $htmlContent.Replace('[date]',(Get-Date -f 'MM/dd/yyyy HH:mm'))
 $htmlContent = $htmlContent.Replace('[softwareHtml]', (New-Html))
 $htmlContent = $htmlContent.Replace('[serverHtml]', (New-Html -Server))
@@ -151,4 +151,4 @@ foreach ($button in $buttons) {
 $buttonHtml = $buttonHtml -join "`n"
 $htmlContent = $htmlContent.Replace('[buttonHtml]', $buttonHtml)
 
-$htmlContent | Out-File "$folder\SoftwareStatus.html"
+$htmlContent | Out-File "$folder\SoftwareStatus.html" -Encoding utf8
