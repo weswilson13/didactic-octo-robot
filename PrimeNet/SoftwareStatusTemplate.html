@@ -47,10 +47,6 @@
         border: 1px solid black;
       }
 
-      /* .new {
-        background-color: yellow;
-      } */
-
       th {
         height: 40px;
         font-size: 20px;
@@ -89,11 +85,7 @@
 	  
 	  img {
 		padding-right: 5px;
-	  }
-	  
-	  .checkbox {
-		text-align: center;
-		vertical-align: middle;
+		padding-left: 5px;
 	  }
 	  
     </style>
@@ -233,6 +225,7 @@
           }
         );
         x.style.display = "flex";
+		$(".All").click();
       }
 
       function ToggleButtons(element) {
@@ -271,9 +264,9 @@
       $("div .btn").on("click", function () {
         var buttonText = this.innerText.replaceAll(' ','');
         if (buttonText == "All") {
-          $("[class$=App],.Printer").closest("tr").show();
+          $(".App,.Printer,.Server").closest("tr").show();
         } else {
-          $("[class$=App],.Printer").closest("tr").hide();
+          $(".App,.Printer,.Server").closest("tr").hide();
           $(`.${buttonText}`).closest("tr").toggle();
         }
       });
