@@ -76,7 +76,7 @@
       }
 
       #software-table {
-        display: flex;
+        display: block;
       }
 
       #printer-table {
@@ -179,6 +179,7 @@
             id="printer-table"
             class="table table-bordered border-dark table-hover mx-auto w-auto"
           >
+          <thead>
             <tr>
               <th scope="col" class="table-primary" colspan="2">
                 Printer Firmware [[printer-date]]
@@ -188,7 +189,10 @@
               <th scope="col" class="table-primary">Model</th>
               <th scope="col" class="table-primary">Firmware</th>
             </tr>
+          </thead>
+          <tbody>
             [printerHtml]
+          </tbody>
           </table>
         </div>
 
@@ -197,6 +201,7 @@
             id="server-table"
             class="table table-bordered border-dark table-hover mx-auto w-auto"
           >
+          <thead>
             <tr>
               <th scope="col" class="table-secondary" colspan="4">
                 Server Software
@@ -208,7 +213,10 @@
               <th scope="col" class="table-secondary">Latest Version</th>
               <th scope="col" class="table-secondary">Download Link</th>
             </tr>
+            </thead>
+            <tbody>
             [serverHtml]
+            </tbody>
           </table>
         </div>
       </div>
@@ -225,6 +233,16 @@
     ></script>
     <script src="https://cdn.datatables.net/2.3.1/js/dataTables.min.js"></script>
     <script>
+      var table;
+      
+      $(document).ready(function () {
+        table = new DataTable('#software-table');
+        $('#software-table').addClass('active');
+
+        var a = document.querySelector(".nav-link.active");
+        ToggleButtons(a);
+      });
+
       function Toggle(id) {
         var x = document.getElementById(id);
 
@@ -233,28 +251,30 @@
             element.style.display = "none";
           }
         );
-        x.style.display = "flex";
+        x.style.display = "block";
 		$(".All").click();
       }
 
       function ToggleButtons(element) {
         $(".btn:not(.All)").hide();
+        $('.table').removeClass('active');
+        table.destroy();
         if (element.classList.contains("Software")) {
           $(".btn.Software").show();
+          $('#software-table').addClass("active");
         } else if (element.classList.contains("Server")) {
           $(".btn.Server").show();
+          $('#server-table').addClass("active");
         } else if (element.classList.contains("Printer")) {
           $(".btn.Printer").show();
+          $('#printer-table').addClass("active");
         }
+          table = new DataTable('.table.active');
+
       }
 
-      $(document).ready(function () {
-        var a = document.querySelector(".nav-link.active");
-        ToggleButtons(a);
-      });
-
       $(".nav-item a").on("click", function () {
-		$("[class$=App],.Printer").closest("tr").show();
+		$(".App,.Printer").closest("tr").show();
 
         $(".nav-item a").removeClass("active");
         $(this).addClass("active");
@@ -271,13 +291,26 @@
       $("td span.nodate").closest("tr").addClass("table-warning");
 
       $("div .btn").on("click", function () {
+        
         var buttonText = this.innerText.replaceAll(' ','');
         if (buttonText == "All") {
-          $(".App,.Printer,.Server").closest("tr").show();
+          table.search.fixed('range',
+            function (settings, data, dataIndex) { return true; }
+          );
         } else {
-          $(".App,.Printer,.Server").closest("tr").hide();
-          $(`.${buttonText}`).closest("tr").toggle();
+          table.search.fixed('range',
+            function (settings, data, dataIndex) {
+              if ( $(table.row(dataIndex).node().querySelectorAll(`.${buttonText}`)).length > 0 ) {
+                return true; 
+              }
+              else { 
+                return false; 
+              }
+          });
         }
+
+        table.draw();
+
       });
     </script>
   </body>
