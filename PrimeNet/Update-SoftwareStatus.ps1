@@ -23,7 +23,7 @@ function New-Html {
 
     foreach ($software in $collection) { # loop over each line in the .csv
         $aryLinks = @()
-        $img, $checked = $null
+        $img, $checked, $tss = $null
 
         # get software title
         $softwareName = $software.SoftwareName
@@ -34,6 +34,11 @@ function New-Html {
         # get login required checkbox
         if ($software.LoginRequired -eq 1) { # login required to get to downloads. Show this displayed as a checked checkbox
             $checked = " checked" 
+        }
+
+        # get TSS credential ID
+        if ($software.TSS_ID) {
+            $tss = '<img height="25px" src="./images/tss.png" onclick="javascript:alert(''Get login credentials using Secret Server ID: {0}'');">' -f $software.TSS_ID
         }
 
         # set up img element
@@ -56,12 +61,12 @@ function New-Html {
         }
         else { # software versions table format
             $html += "<tr>
-                        <td class=`"{3} App`">$img{0}</td>
-                        <td id=`"{1}`" class=`"Version`">[{1}]</td>
-                        <td>
+                        <td class=`"{3} App align-middle`">$img{0}</td>
+                        <td id=`"{1}`" class=`"Version align-middle`">[{1}]</td>
+                        <td class=`"align-middle`">
                             {2}
                         </td>
-                        <td class=`"checkbox text-center align-middle`"><input type=`"checkbox`"$checked></td>
+                        <td class=`"checkbox text-center align-middle`"><input type=`"checkbox`"$checked>$tss</td>
                     </tr>" -f $softwareName, $software.Id, $strLinks, $software.Bin
         }
     }
