@@ -1,95 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Software Transfer Status</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
+      crossorigin="anonymous"
+    />
     <style>
-        header {
-            background-color: crimson;
-            color: white;
-            padding: 0px;
-            text-align: center;
-			border: 1px solid white;
-            width: 50%;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        margin: 0;
+        /* width: 95%; */
+      }
+      .container {
+        display: flex;
+      }
+      .btn-group {
+        display: flex;
+        align-items: flex-start;
+        width: auto;
+        position: absolute;
+        left: 0;
+      }
+      .table-container {
+        display: grid;
+        grid-template-columns: repeat(1, auto);
+        gap: 20px;
+        width: auto;
+      }
 
-        body {
-			font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            margin: 0;
-            /* width: 95%; */
-        }
+      .table {
+        width: auto;
+      }
 
-        .table-container {
-            display: grid;
-            grid-template-columns: repeat(1, auto);
-            gap: 20px;
-            width: 50%
-        }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
 
-        table, th, td {
-            border: 1px solid black;
-        }
-		
-		.new {
-			background-color: yellow
-		}
-		
-        th {
-            height: 40px;
-			font-size: 20px;
-			background-color: darkblue;
-			color:aliceblue;
-		}
-		
-		td {
-			padding: 3px;
-		}
-		
-		td.App {
-			width: 20%;
-		}
-		
-		td.Version {
-			width: 35%
-		}
-		
-		td.Printer {
-			width: 20%
-		}
+      th {
+        height: 40px;
+        font-size: 20px;
+        background-color: darkblue;
+        color: aliceblue;
+        text-align: center;
+      }
+
+      td {
+        padding: 3px;
+      }
+
+      td.App {
+        width: auto;
+      }
+
+      td.Version {
+        width: auto;
+      }
+	  	  
+      td.Printer {
+        width: 20%;
+      }
+
+      #software-table {
+        display: flex;
+      }
+
+      #printer-table {
+        display: none;
+      }
+
+      #server-table {
+        display: none;
+      }
+	  
+	  img {
+		padding-right: 5px;
+		padding-left: 5px;
+	  }
+	  
     </style>
-</head>
-<body>
-    <header>
-        <h1>Software Upload Status  [[date]]</h1>
+  </head>
+  <body>
+    <header
+      class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-secondary"
+    >
+      <nav class="container-fluid navbar navbar-expand-lg">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">
+            <img
+              src=".\images\NNPTC_Logo.jpg"
+              alt="NNPTC Logo"
+              height="40"
+              class="d-inline-block"
+            />
+            Software Upload Status
+          </a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarText"
+            aria-controls="navbarText"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a
+                  class="nav-link Software active"
+                  aria-current="page"
+                  href="#"
+                  onclick="Toggle('software-table')"
+                  >Software Versions</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link Printer" href="#" onclick="Toggle('printer-table')"
+                  >Printer Firmware</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link Server" href="#" onclick="Toggle('server-table')"
+                  >Server Software</a
+                >
+              </li>
+            </ul>
+            <span class="navbar-text"> Last Updated: [date] </span>
+          </div>
+        </div>
+      </nav>
     </header>
-    <div class="table-container">
-        <table class="table">
-			<th colspan="3">Applications
-				<tr><th>Software Title</th><th>Latest Version</th><th>Download Link</th></tr>
-			</th>
+    <div class="container">
+      <div class="btn-group d-grid gap-2 col-2 mx-auto">[buttonHtml]</div>
+      <div class="container-fluid table-container">
+        <div class="table-responsive">
+          <table
+            id="software-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+            <tr>
+              <th scope="col" class="table-success" colspan="4">
+                Applications
+              </th>
+            </tr>
+            <tr>
+              <th scope="col" class="table-success">Software Title</th>
+              <th scope="col" class="table-success">Latest Version</th>
+              <th scope="col" class="table-success">Download Link</th>
+			  <th scope="col" class="table-success">Login Required</th>
+            </tr>
             [softwareHtml]
-        </table>
-		
-		<table class="table">
-            <th colspan="2">Printer Firmware  [[printer-date]]
-				<tr><th>Model</th><th>Firmware</th></tr>
-			</th>
+          </table>
+        </div>
+
+        <div class="table-responsive">
+          <table
+            id="printer-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+            <tr>
+              <th scope="col" class="table-primary" colspan="2">
+                Printer Firmware [[printer-date]]
+              </th>
+            </tr>
+            <tr>
+              <th scope="col" class="table-primary">Model</th>
+              <th scope="col" class="table-primary">Firmware</th>
+            </tr>
             [printerHtml]
-		</table>
-		
-		<table class="table">
-            <th colspan="3">Server Software 
-				<tr><th>Server Model</th><th>Product Type</th><th>Latest Version</th></tr>
-			</th>
+          </table>
+        </div>
+
+        <div class="table-responsive">
+          <table
+            id="server-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+            <tr>
+              <th scope="col" class="table-secondary" colspan="4">
+                Server Software
+              </th>
+            </tr>
+            <tr>
+              <th scope="col" class="table-secondary">Server Model</th>
+              <th scope="col" class="table-secondary">Product Type</th>
+              <th scope="col" class="table-secondary">Latest Version</th>
+              <th scope="col" class="table-secondary">Download Link</th>
+            </tr>
             [serverHtml]
-		</table>
+          </table>
+        </div>
+      </div>
     </div>
-	<script> 
-	</script>
-</body>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      function Toggle(id) {
+        var x = document.getElementById(id);
+
+        Array.from(document.getElementsByClassName("table")).forEach(
+          (element) => {
+            element.style.display = "none";
+          }
+        );
+        x.style.display = "flex";
+		$(".All").click();
+      }
+
+      function ToggleButtons(element) {
+        $(".btn:not(.All)").hide();
+        if (element.classList.contains("Software")) {
+          $(".btn.Software").show();
+        } else if (element.classList.contains("Server")) {
+          $(".btn.Server").show();
+        } else if (element.classList.contains("Printer")) {
+          $(".btn.Printer").show();
+        }
+      }
+
+      $(document).ready(function () {
+        var a = document.querySelector(".nav-link.active");
+        ToggleButtons(a);
+      });
+
+      $(".nav-item a").on("click", function () {
+		$("[class$=App],.Printer").closest("tr").show();
+
+        $(".nav-item a").removeClass("active");
+        $(this).addClass("active");
+        ToggleButtons(this);
+
+        document
+          .querySelector(`[aria-current="page"]`)
+          .removeAttribute("aria-current");
+        $(this).attr("aria-current", "page");
+      });
+
+      $("td span.new").closest("tr").addClass("table-success");
+
+      $("td span.nodate").closest("tr").addClass("table-warning");
+
+      $("div .btn").on("click", function () {
+        var buttonText = this.innerText.replaceAll(' ','');
+        if (buttonText == "All") {
+          $(".App,.Printer,.Server").closest("tr").show();
+        } else {
+          $(".App,.Printer,.Server").closest("tr").hide();
+          $(`.${buttonText}`).closest("tr").toggle();
+        }
+      });
+    </script>
+  </body>
 </html>
