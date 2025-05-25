@@ -135,8 +135,10 @@ foreach ($printer in $printerModels) { # loop through each printer model
     
     $latestFirmware = $firmwares | Where-Object { $_ -match "M?$printer" } | Select-Object -Last 1
     $printer = [regex]::Match($latestFirmware, "M?$printer").Value
-    $html += "<tr><td class=`"Printer $printer`">$printer</td><td class=`"firmware`">$latestFirmware</td></tr>"
-    $buttons += $printer | Select-Object  @{n='Name';e={$_}}, @{n='Label';e={'Printer'}} -Unique
+    if ($printer[0] -match '\d') { $printer = "_$printer" }
+
+    $html += "<tr><td class=`"Printer $printer`">$($printer.replace('_',''))</td><td class=`"firmware`">$latestFirmware</td></tr>"
+    $buttons += $printer | Select-Object  @{n='Name';e={$_.replace('_','')}}, @{n='Label';e={'Printer'}} -Unique
 
 } # end foreach
 

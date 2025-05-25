@@ -291,8 +291,9 @@
       $("td span.nodate").closest("tr").addClass("table-warning");
 
       $("div .btn").on("click", function () {
-        
+
         var buttonText = this.innerText.replaceAll(' ','');
+        if (buttonText.match(/^\d/)) { buttonText = '_' + buttonText }
         if (buttonText == "All") {
           table.search.fixed('range',
             function (settings, data, dataIndex) { return true; }
