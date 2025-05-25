@@ -91,6 +91,10 @@
 		padding-right: 5px;
 		padding-left: 5px;
 	  }
+
+    .hidden {
+      display: none;
+    }
 	  
     </style>
   </head>
@@ -157,11 +161,12 @@
           >
           <thead>
             <tr>
-              <th scope="col" class="table-success" colspan="4">
+              <th scope="col" class="table-success" colspan="5">
                 Applications
               </th>
             </tr>
             <tr>
+              <th scope="col" class="table-success">SoftwareName</th>
               <th scope="col" class="table-success">Software Title</th>
               <th scope="col" class="table-success">Latest Version</th>
               <th scope="col" class="table-success">Download Link</th>
@@ -269,7 +274,19 @@
           $(".btn.Printer").show();
           $('#printer-table').addClass("active");
         }
-          table = new DataTable('.table.active');
+          table = new DataTable('.table.active', {
+            iDisplayLength: 10,
+            columnDefs: [
+              {
+                  target: 0,
+                  visible: false,
+                  searchable: true
+              }
+            ],
+            order: [
+              [0, 'asc']
+            ]
+          });
 
       }
 
@@ -311,8 +328,11 @@
         }
 
         table.draw();
-
       });
+
+      // output the object in the console
+      // console.log( table.row(':eq(0)').data() );
     </script>
   </body>
 </html>
+

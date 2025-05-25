@@ -61,6 +61,7 @@ function New-Html {
         }
         else { # software versions table format
             $html += "<tr>
+                        <td class=`"order`">$($software.SoftwareName)</td>
                         <td class=`"{3} App align-middle`">$img{0}</td>
                         <td id=`"{1}`" class=`"Version align-middle`">[{1}]</td>
                         <td class=`"align-middle`">
