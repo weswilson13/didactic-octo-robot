@@ -275,8 +275,8 @@
       var table;
       
       $(document).ready(function () {
-        table = new DataTable('#software-table');
         $('#software-table').addClass('active');
+        table = new DataTable('.table.active');
 
         var a = document.querySelector(".nav-link.active");
         ToggleButtons(a);
