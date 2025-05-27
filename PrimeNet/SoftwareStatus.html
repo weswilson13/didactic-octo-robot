@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Software Transfer Status</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
+      crossorigin="anonymous"
+    />
+    <link
+      href="./DataTables/DataTables.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        margin: 0;
+        /* width: 95%; */
+      }
+      .container {
+        display: flex;
+      }
+      .btn-group {
+        display: flex;
+        align-items: flex-start;
+        width: auto;
+        position: absolute;
+        left: 0;
+      }
+      .table-container {
+        display: grid;
+        grid-template-columns: repeat(1, auto);
+        gap: 20px;
+        width: auto;
+      }
+
+      .table {
+        width: auto;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+
+      th {
+        height: 40px;
+        font-size: 20px;
+        background-color: darkblue;
+        color: aliceblue;
+        text-align: center;
+      }
+
+      td {
+        padding: 3px;
+      }
+
+      td.App {
+        width: auto;
+      }
+
+      td.Version {
+        width: auto;
+      }
+	  	  
+      td.Printer {
+        width: 20%;
+      }
+
+      #software-table {
+        display: block;
+      }
+
+      #printer-table {
+        display: none;
+      }
+
+      #server-table {
+        display: none;
+      }
+	  
+	  img {
+		padding-right: 5px;
+		padding-left: 5px;
+	  }
+
+    .hidden {
+      display: none;
+    }
+	  
+    </style>
+  </head>
+  <body>
+    <header
+      class="container-fluid navbar navbar-expand-lg bd-navbar sticky-top bg-body-secondary"
+    >
+      <nav class="container-fluid navbar navbar-expand-lg">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">
+            <img
+              src=".\images\NNPTC_Logo.jpg"
+              alt="NNPTC Logo"
+              height="40"
+              class="d-inline-block"
+            />
+            Software Upload Status
+          </a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarText"
+            aria-controls="navbarText"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarText">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a
+                  class="nav-link Software active"
+                  aria-current="page"
+                  href="#"
+                  onclick="Toggle('software-table')"
+                  >Software Versions</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link Printer" href="#" onclick="Toggle('printer-table')"
+                  >Printer Firmware</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link Server" href="#" onclick="Toggle('server-table')"
+                  >Server Software</a
+                >
+              </li>
+            </ul>
+            <span class="navbar-text"> Last Updated: 05/27/2025 18:07 </span>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="container">
+      <div class="btn-group d-grid gap-2 col-2 mx-auto"><button class="btn btn-primary All" type="button">All</button>
+<button class="btn btn-primary Software" type="button">Adobe</button>
+<button class="btn btn-primary Software" type="button">Elastic</button>
+<button class="btn btn-primary Software" type="button">Developer</button>
+<button class="btn btn-primary Software" type="button">Browser</button>
+<button class="btn btn-primary Software" type="button">Virtualization</button>
+<button class="btn btn-primary Software" type="button">Utilities</button>
+<button class="btn btn-primary Software" type="button">iGel</button>
+<button class="btn btn-primary Software" type="button">Printshop</button>
+<button class="btn btn-primary Software" type="button">Other</button>
+<button class="btn btn-primary Server" type="button">Dell PowerEdge R640</button>
+<button class="btn btn-primary Server" type="button">Dell PowerEdge R760</button>
+<button class="btn btn-primary Printer" type="button">M506</button>
+<button class="btn btn-primary Printer" type="button">M551</button>
+<button class="btn btn-primary Printer" type="button">M577</button>
+<button class="btn btn-primary Printer" type="button">M578</button>
+<button class="btn btn-primary Printer" type="button">609</button>
+<button class="btn btn-primary Printer" type="button">612</button>
+<button class="btn btn-primary Printer" type="button">M652</button>
+<button class="btn btn-primary Printer" type="button">M776</button>
+<button class="btn btn-primary Printer" type="button">5700</button>
+<button class="btn btn-primary Printer" type="button">6800</button>
+<button class="btn btn-primary Printer" type="button">8500</button></div>
+      <div class="container-fluid table-container">
+        <div class="table-responsive">
+          <table
+            id="software-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+          <thead>
+            <tr>
+              <th scope="col" class="table-success" colspan="5">
+                Applications
+              </th>
+            </tr>
+            <tr>
+              <th scope="col" class="table-success">SoftwareName</th>
+              <th scope="col" class="table-success">Software Title</th>
+              <th scope="col" class="table-success">Latest Version</th>
+              <th scope="col" class="table-success">Download Link</th>
+			        <th scope="col" class="table-success">Login Required</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+                        <td class="order">Adobe</td>
+                        <td class="Adobe App align-middle"><img height="30px" src=".\images\adobe.png">Adobe</td>
+                        <td id="adobe" class="Version align-middle"><b>2500120432</b>  (3/11/2025 7:34)</td>
+                        <td class="align-middle">
+                            <a href="https://helpx.adobe.com/acrobat/kb/install-updates-reader-acrobat.html" target="_blank">Adobe Reader Update (Opens in Silo)</a><a href="https://www.adobe.com/devnet-docs/acrobatetk/tools/ReleaseNotesDC/index.html" target="_blank">Release Notes (Opens in Edge)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Elastic Beats</td>
+                        <td class="Elastic App align-middle"><img height="30px" src=".\images\beats.webp"></td>
+                        <td id="beats" class="Version align-middle"><b>9.0.0</b>  (<span class="nodate">???<span>)</td>
+                        <td class="align-middle">
+                            <a href="https://www.elastic.co/downloads/beats" target="_blank">Elastic Beats (Open in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Git for Windows</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\git.png">Git for Windows</td>
+                        <td id="git" class="Version align-middle"><b>2.49.0</b>  (3/18/2025 6:00)</td>
+                        <td class="align-middle">
+                            <a href="https://github.com/git-for-windows/git/releases" target="_blank">Git for Windows Download (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Google Chrome</td>
+                        <td class="Browser App align-middle"><img height="30px" src=".\images\chrome.png">Google Chrome</td>
+                        <td id="chrome" class="Version align-middle"><b>137.0.7151.41</b>  (5/22/2025 6:49)</td>
+                        <td class="align-middle">
+                            <a href="https://chromeenterprise.google/download/?modal-id=download-chrome" target="_blank">Google Chrome Enterprise Download (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">ClearCube</td>
+                        <td class="Virtualization App align-middle"><img height="30px" src=".\images\clearcube.webp"></td>
+                        <td id="clearcube" class="Version align-middle"></td>
+                        <td class="align-middle">
+                            <a href="" target="_blank"></a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">CommVault</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\Commvault.svg"></td>
+                        <td id="commvault" class="Version align-middle"></td>
+                        <td class="align-middle">
+                            <a href="" target="_blank"></a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">CredoID</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\credoid.png">CredoID</td>
+                        <td id="credoid" class="Version align-middle"><b>4.20.0</b>  (4/9/2025 6:21)</td>
+                        <td class="align-middle">
+                            <a href="https://download.credoid.com/" target="_blank">CredoID Downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">DevExpress</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\devexpress.png"></td>
+                        <td id="devexpress" class="Version align-middle"><b>24.1.5</b>  (9/13/2024 7:36)</td>
+                        <td class="align-middle">
+                            <a href="https://www.devexpress.com/Support/Versions.xml#supported" target="_blank">DevExpress Versions (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">iGel App - PointSharp NetID Client</td>
+                        <td class="iGel App align-middle"><img height="30px" src=".\images\igelNetID.svg">iGel App - PointSharp NetID Client</td>
+                        <td id="iGelNetID" class="Version align-middle"><b>1.3.0.22</b>  (<span class="nodate">???<span>)</td>
+                        <td class="align-middle">
+                            <a href="https://app.igel.com/netid/" target="_blank">iGel App Portal (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked></td>
+                    </tr><tr>
+                        <td class="order">iGel App - VMWare Horizon Client</td>
+                        <td class="iGel App align-middle"><img height="30px" src=".\images\igelhorizon.svg">iGel App - VMWare Horizon Client</td>
+                        <td id="iGelHorizon" class="Version align-middle"><b>24.0.6</b>  (<span class="nodate">???<span>)</td>
+                        <td class="align-middle">
+                            <a href="https://app.igel.com/horizon/" target="_blank">iGel App Portal (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked></td>
+                    </tr><tr>
+                        <td class="order">iGel OS Base System</td>
+                        <td class="iGel App align-middle"><img height="30px" src=".\images\igelbasesystem.webp">iGel OS Base System</td>
+                        <td id="iGelBaseSystem" class="Version align-middle"><b>12.6.1</b>  (<span class="nodate">???<span>)</td>
+                        <td class="align-middle">
+                            <a href="https://app.igel.com/base_system/" target="_blank">iGel App Portal (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked></td>
+                    </tr><tr>
+                        <td class="order">Cisco ISE</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\ISE.webp">Cisco ISE</td>
+                        <td id="ise" class="Version align-middle"></td>
+                        <td class="align-middle">
+                            <a href="" target="_blank"></a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked></td>
+                    </tr><tr>
+                        <td class="order">LINQPad5</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\LINQPad5.png">LINQPad5</td>
+                        <td id="linqpad5" class="Version align-middle"><b>8.8.9</b>  (4/25/2025 15:44)</td>
+                        <td class="align-middle">
+                            <a href="https://www.linqpad.net/Download.aspx" target="_blank">LINQPad downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">LINQPad8</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\LINQPad8.png">LINQPad8</td>
+                        <td id="linqpad8" class="Version align-middle"><b>5.52.01</b>  (4/25/2025 15:44)</td>
+                        <td class="align-middle">
+                            <a href="https://www.linqpad.net/Download.aspx" target="_blank">LINQPad downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Microsoft Edge</td>
+                        <td class="Browser App align-middle"><img height="30px" src=".\images\edge.png">Microsoft Edge</td>
+                        <td id="edge" class="Version align-middle"><b>136.0.3240.92</b>  (5/23/2025 15:40)</td>
+                        <td class="align-middle">
+                            <a href="https://www.microsoft.com/en-us/edge/business/download?form=MA13FJ" target="_blank">Edge Enterprise Download (Opens in Edge)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Elasticsearch</td>
+                        <td class="Elastic App align-middle"><img height="30px" src=".\images\Elasticsearch.png"></td>
+                        <td id="elasticsearch" class="Version align-middle"><b>9.0.0</b>  (<span class="nodate">???<span>)</td>
+                        <td class="align-middle">
+                            <a href="https://www.elastic.co/downloads/elasticsearch" target="_blank">Elasticsearch (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">FusionPro VDP</td>
+                        <td class="Printshop App align-middle"><img height="30px" src=".\images\FusionPro.svg">FusionPro VDP</td>
+                        <td id="fusionpro" class="Version align-middle"><b>13.1.8</b>  (8/1/2024 11:39)</td>
+                        <td class="align-middle">
+                            <a href="https://fusionpro.com/support/downloads/" target="_blank">FusionPro downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Mozilla Firefox</td>
+                        <td class="Browser App align-middle"><img height="30px" src=".\images\firefox.webp">Mozilla Firefox</td>
+                        <td id="firefox" class="Version align-middle"><b>137.0.2</b>  (4/20/2025 7:05)</td>
+                        <td class="align-middle">
+                            <a href="https://www.mozilla.org/en-US/firefox/all/#product-desktop-release" target="_blank">Mozilla Firefox Updates (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">jQWidgets</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\JQWidgets.webp"></td>
+                        <td id="jqwidgets" class="Version align-middle"><b>22.0.0</b>  (5/6/2025 7:38)</td>
+                        <td class="align-middle">
+                            <a href="https://www.jqwidgets.com/download/" target="_blank">jQWidgets Download (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">Kibana</td>
+                        <td class="Elastic App align-middle"><img height="30px" src=".\images\kibana.png"></td>
+                        <td id="kibana" class="Version align-middle"><b>9.0.0</b>  (<span class="nodate">???<span>)</td>
+                        <td class="align-middle">
+                            <a href="https://www.elastic.co/downloads/kibana" target="_blank">Kibana (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">MathType</td>
+                        <td class="Other App align-middle"><img height="30px" src=".\images\Mathtype.png"></td>
+                        <td id="mathtype" class="Version align-middle"><b>7.8.2.441</b>  (4/7/2025)</td>
+                        <td class="align-middle">
+                            <a href="https://docs.wiris.com/mathtype/en/mathtype-office-tools/mathtype-office-tools-release-notes.html" target="_blank">MathType Release Notes (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">Node.js</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\Nodejs.png"></td>
+                        <td id="nodejs" class="Version align-middle"><b>20.19.1</b>  (4/25/2025 15:48)</td>
+                        <td class="align-middle">
+                            <a href="https://nodejs.org/en/download" target="_blank">Node.js downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Notepad++</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\npp.png">Notepad++</td>
+                        <td id="npp" class="Version align-middle"><b>8.8.1</b>  (5/5/2025 6:44)</td>
+                        <td class="align-middle">
+                            <a href="https://github.com/notepad-plus-plus/notepad-plus-plus/releases/" target="_blank">Notepad++ downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Nutanix</td>
+                        <td class="Virtualization App align-middle"><img height="30px" src=".\images\nutanix.svg"></td>
+                        <td id="nutanix" class="Version align-middle"></td>
+                        <td class="align-middle">
+                            <a href="" target="_blank"></a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">Palo Alto</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\paloalto.svg"></td>
+                        <td id="paloalto" class="Version align-middle"></td>
+                        <td class="align-middle">
+                            <a href="" target="_blank"></a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">PRTG</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\PRTG.svg">PRTG</td>
+                        <td id="prtg" class="Version align-middle"><b>25.1.104.1946</b>  (4/3/2025 13:27)</td>
+                        <td class="align-middle">
+                            <a href="https://www.paessler.com/prtg/history/stable" target="_blank">PRTG Releases (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked></td>
+                    </tr><tr>
+                        <td class="order">pgAdmin</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\pgadmin.png">pgAdmin</td>
+                        <td id="pgadmin" class="Version align-middle"><b>9.3</b>  (5/13/2025 16:30)</td>
+                        <td class="align-middle">
+                            <a href="https://www.pgadmin.org/download/pgadmin-4-windows/" target="_blank">pgAdmin downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Powershell</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\powershell.png">Powershell</td>
+                        <td id="powershell" class="Version align-middle"><b>7.5.1</b>  (4/25/2025 7:04)</td>
+                        <td class="align-middle">
+                            <a href="https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.4&viewFallbackFrom=powershell-7.2#msi" target="_blank">Powershell 7 Updates (Opens in Edge)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">PuTTY</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\PuTTY.png">PuTTY</td>
+                        <td id="putty" class="Version align-middle"><b>0.83</b>  (4/7/2025 12:43)</td>
+                        <td class="align-middle">
+                            <a href="https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html" target="_blank">PuTTY (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Delinea Secret Server</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\secretserver.png">Delinea Secret Server</td>
+                        <td id="secretserver" class="Version align-middle"><b>11.7.61</b>  (<span class="nodate">???<span>)</td>
+                        <td class="align-middle">
+                            <a href="https://docs.delinea.com/online-help/secret-server/release-notes/ssvr-onprem-rn.htm" target="_blank">Secret Server Release Notes (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">SecureCRT</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\securecrt.png">SecureCRT</td>
+                        <td id="securecrt" class="Version align-middle"><b>9.6.2</b>  (<span class="nodate">???<span>)</td>
+                        <td class="align-middle">
+                            <a href="https://www.vandyke.com/cgi-bin/releases.php?product=securecrt" target="_blank">SecureCRT Downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">ServicePro</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\ServicePro.png"></td>
+                        <td id="servicepro" class="Version align-middle"><b>14.2.21</b>  (10/20/2023 8:51)</td>
+                        <td class="align-middle">
+                            <a href="" target="_blank"></a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked></td>
+                    </tr><tr>
+                        <td class="order">SQL Server Management Studio</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\ssms.png">SQL Server Management Studio</td>
+                        <td id="ssms" class="Version align-middle"><b>20.2.1</b>  (4/19/2025 13:59)</td>
+                        <td class="align-middle">
+                            <a href="https://learn.microsoft.com/en-us/ssms/download-sql-server-management-studio-ssms" target="_blank">SSMS Download (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Evaluate-STIG</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\stig.png">Evaluate-STIG</td>
+                        <td id="stig" class="Version align-middle"><b>1.2504.0</b>  (4/20/2025 17:10)</td>
+                        <td class="align-middle">
+                            <a href="https://intelshare.intelink.gov/sites/NAVSEA-RMF/Shared%20Documents/Tools/Evaluate-STIG" target="_blank">Evaluate-STIG Repository (Opens in Edge, Need CAC) </a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Management Console</td>
+                        <td class="Virtualization App align-middle"><img height="30px" src=".\images\teradici.webp"></td>
+                        <td id="teradici" class="Version align-middle"></td>
+                        <td class="align-middle">
+                            <a href="https://anyware.hp.com/find/product/management-console/current?subscriptionName=anyware-standard" target="_blank">teradici Management Console Download (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">Toad for Oracle</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\ToadOracle.png">Toad for Oracle</td>
+                        <td id="toadoracle" class="Version align-middle"><b>3.3.58.639</b>  (11/14/2024 16:12)</td>
+                        <td class="align-middle">
+                            <a href="https://support.quest.com/toad-for-oracle/" target="_blank">Toad for Oracle (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">Toad for SQL</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\ToadSQL.png">Toad for SQL</td>
+                        <td id="toadsql" class="Version align-middle"><b>3.3.5.555</b>  (11/14/2024 16:38)</td>
+                        <td class="align-middle">
+                            <a href="https://support.quest.com/toad-for-sql-server/" target="_blank">Toad SQL Server (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">Visual Studio Code</td>
+                        <td class="Developer App align-middle"><img height="30px" src=".\images\vscode.png">Visual Studio Code</td>
+                        <td id="vscode" class="Version align-middle"><b>1.100.2</b>  (5/19/2025 13:38)</td>
+                        <td class="align-middle">
+                            <a href="https://code.visualstudio.com/download#" target="_blank">VS Code Download (Opens in Edge)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">VMWare ESXi</td>
+                        <td class="Virtualization App align-middle"><img height="30px" src=".\images\vmware_esxi.png">VMWare ESXi</td>
+                        <td id="vmware_esxi" class="Version align-middle"><b>7u3v</b>  (??)</td>
+                        <td class="align-middle">
+                            <a href="https://knowledge.broadcom.com/external/article?legacyId=2143832" target="_blank">VMWare ESXi Updates (Opens in Edge)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">VMWare Horizon 8</td>
+                        <td class="Virtualization App align-middle"><img height="30px" src=".\images\vmware_horizon.webp">VMWare Horizon 8</td>
+                        <td id="vmware_horizon" class="Version align-middle"><b>2312.1</b>  (3/26/2025 9:49)</td>
+                        <td class="align-middle">
+                            <a href="https://customerconnect.omnissa.com/downloads/search?query=Horizon%208" target="_blank">Omnissa Horizon Downloads (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">VMWare Tools</td>
+                        <td class="Virtualization App align-middle"><img height="30px" src=".\images\vmware_tools.png">VMWare Tools</td>
+                        <td id="vmware_tools" class="Version align-middle"><b>12.5.2</b>  (5/13/2025 16:27)</td>
+                        <td class="align-middle">
+                            <a href="https://packages.vmware.com/tools/releases/latest/windows/x64/" target="_blank">VMWare Tools Releases (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">VMWare vCenter</td>
+                        <td class="Virtualization App align-middle"><img height="30px" src=".\images\vmware_vcenter.webp">VMWare vCenter</td>
+                        <td id="vmware_vcenter" class="Version align-middle"><b>7u3t</b>  (3/26/2025 9:49)</td>
+                        <td class="align-middle">
+                            <a href="https://knowledge.broadcom.com/external/article?legacyId=2143838" target="_blank">VMWare vCenter Server Updates (Opens in Edge)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">VMWare vSAN</td>
+                        <td class="Virtualization App align-middle"><img height="30px" src=".\images\vmware_vSAN.svg">VMWare vSAN</td>
+                        <td id="vmware_vsan" class="Version align-middle"><b>80:230.0.136.0-1OEM.800</b>  (4/26/2025 8:54)</td>
+                        <td class="align-middle">
+                            <a href="https://knowledge.broadcom.com/external/article?legacyId=2145116" target="_blank">VMWare vSAN Updates (Opens in Edge)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Windows Defender</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\defender.png">Windows Defender</td>
+                        <td id="defender" class="Version align-middle"></td>
+                        <td class="align-middle">
+                            <a href="" target="_blank">Defender Updates</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">Windows Terminal</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\Terminal.png">Windows Terminal</td>
+                        <td id="terminal" class="Version align-middle"><b>1.22.11141.0</b>  (4/25/2025 18:52)</td>
+                        <td class="align-middle">
+                            <a href="https://github.com/microsoft/terminal/releases" target="_blank">Windows Terminal Releases (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr><tr>
+                        <td class="order">HP Web Jetadmin</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\hpwja.jpg">HP Web Jetadmin</td>
+                        <td id="hpwja" class="Version align-middle"><b>10.5 SR8</b>  (1/4/2025)</td>
+                        <td class="align-middle">
+                            <a href="https://h30670.www3.hp.com/portal/swdepot/displayProductInfo.do?productNumber=J6052AA&lc=EN_US" target="_blank">HP Web JetAdmin Release (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox" checked><img height="25px" src="./images/tss.png" onclick="javascript:alert('Get login credentials using Secret Server ID: Update');"></td>
+                    </tr><tr>
+                        <td class="order">WinSCP</td>
+                        <td class="Utilities App align-middle"><img height="30px" src=".\images\winscp.png">WinSCP</td>
+                        <td id="winscp" class="Version align-middle"><b>6.5.1</b>  (5/5/2025 13:18)</td>
+                        <td class="align-middle">
+                            <a href="https://winscp.net/eng/download.php" target="_blank">WinSCP Download (Opens in Silo)</a>
+                        </td>
+                        <td class="checkbox text-center align-middle"><input type="checkbox"></td>
+                    </tr>
+          </tbody>
+          </table>
+        </div>
+
+        <div class="table-responsive">
+          <table
+            id="printer-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+          <thead>
+            <tr>
+              <th scope="col" class="table-primary" colspan="2">
+                Printer Firmware [05/25/2025 10:35:02]
+              </th>
+            </tr>
+            <tr>
+              <th scope="col" class="table-primary">Model</th>
+              <th scope="col" class="table-primary">Firmware</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="Printer M506">M506</td><td class="firmware">ljM506_fs3.9.16_2309118_002274.bdl</td></tr><tr><td class="Printer M551">M551</td><td class="firmware">cljM551_fs3.9.12_2309088_001479.bdl</td></tr><tr><td class="Printer M577">M577</td><td class="firmware">cljM577_fs5.8.1.2_2508402_000116.bdl</td></tr><tr><td class="Printer M578">M578</td><td class="firmware">cljM578_fs5.8.1.2_2508402_000116.bdl</td></tr><tr><td class="Printer _609">609</td><td class="firmware">ljM607_608_609_fs5.8.1.2_2508402_000053.bdl</td></tr><tr><td class="Printer _612">612</td><td class="firmware">ljM610_611_612_fs5.8.1.2_2508402_000053.bdl</td></tr><tr><td class="Printer M652">M652</td><td class="firmware">cljM652_653_fs5.8.1.2_2508402_000089.bdl</td></tr><tr><td class="Printer M776">M776</td><td class="firmware">cljM776_fs5.8.1.4_2508572_000004.bdl</td></tr><tr><td class="Printer _5700">5700</td><td class="firmware">clj5700_fs5.8.1.2_2508402_000058.bdl</td></tr><tr><td class="Printer _6800">6800</td><td class="firmware">clj6800_6801_fs5.8.1.2_2508402_000072.bdl</td></tr><tr><td class="Printer _8500">8500</td><td class="firmware">8500_fn1_fs3.9.12_2309088_001486.bdl</td></tr>
+          </tbody>
+          </table>
+        </div>
+
+        <div class="table-responsive">
+          <table
+            id="server-table"
+            class="table table-bordered border-dark table-hover mx-auto w-auto"
+          >
+          <thead>
+            <tr>
+              <th scope="col" class="table-secondary" colspan="4">
+                Server Software
+              </th>
+            </tr>
+            <tr>
+              <th scope="col" class="table-secondary">Server Model</th>
+              <th scope="col" class="table-secondary">Product Type</th>
+              <th scope="col" class="table-secondary">Latest Version</th>
+              <th scope="col" class="table-secondary">Download Link</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="DellPowerEdgeR640">
+                        <td class="ServerApp">Dell PowerEdge R640</td>
+                        <td>BIOS</td>
+                        <td id="r640bios" class="Version"></td>
+                        <td>
+                            <a href="https://www.dell.com/support/product-details/en-us/product/poweredge-r640/drivers" target="_blank">PowerEdge R640 Downloads (Opens in Edge)</a>
+                        </td>
+                    </tr><tr class="DellPowerEdgeR760">
+                        <td class="ServerApp">Dell PowerEdge R760</td>
+                        <td>BIOS</td>
+                        <td id="r760bios" class="Version"><b>2.5.4</b>  (4/19/2025 13:02)</td>
+                        <td>
+                            <a href="https://www.dell.com/support/product-details/en-us/product/poweredge-r760/drivers" target="_blank">PowerEdge R760 Downloads (Opens in Edge)</a>
+                        </td>
+                    </tr><tr class="DellPowerEdgeR760">
+                        <td class="ServerApp">Dell PowerEdge R760</td>
+                        <td>IDRAC</td>
+                        <td id="r760idrac" class="Version"><b>7.20.10.50, A00</b>  (4/20/2025 13:02)</td>
+                        <td>
+                            <a href="https://www.dell.com/support/product-details/en-us/product/poweredge-r760/drivers" target="_blank">PowerEdge R760 Downloads (Opens in Edge)</a>
+                        </td>
+                    </tr><tr class="DellPowerEdgeR760">
+                        <td class="ServerApp">Dell PowerEdge R760</td>
+                        <td>PERC12 H965i Front RAID Controller</td>
+                        <td id="r760raid" class="Version"><b>8.11.0.0.18-25, A09</b>  (4/21/2025 13:02)</td>
+                        <td>
+                            <a href="https://www.dell.com/support/product-details/en-us/product/poweredge-r760/drivers" target="_blank">PowerEdge R760 Downloads (Opens in Edge)</a>
+                        </td>
+                    </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <script src="./DataTables/DataTables.min.js"></script>
+    <script>
+      var table;
+      
+      $(document).ready(function () {
+        $('#software-table').addClass('active');
+        table = new DataTable('.table.active');
+
+        var a = document.querySelector(".nav-link.active");
+        ToggleButtons(a);
+      });
+
+      function Toggle(id) {
+        var x = document.getElementById(id);
+
+        Array.from(document.getElementsByClassName("table")).forEach(
+          (element) => {
+            element.style.display = "none";
+          }
+        );
+        x.style.display = "block";
+		$(".All").click();
+      }
+
+      function ToggleButtons(element) {
+        $(".btn:not(.All)").hide();
+        $('.table').removeClass('active');
+        table.destroy();
+        if (element.classList.contains("Software")) {
+          $(".btn.Software").show();
+          $('#software-table').addClass("active");
+        } else if (element.classList.contains("Server")) {
+          $(".btn.Server").show();
+          $('#server-table').addClass("active");
+        } else if (element.classList.contains("Printer")) {
+          $(".btn.Printer").show();
+          $('#printer-table').addClass("active");
+        }
+          table = new DataTable('.table.active', {
+            iDisplayLength: 10,
+            columnDefs: [
+              {
+                  target: 0,
+                  visible: false,
+                  searchable: true
+              }
+            ],
+            order: [
+              [0, 'asc']
+            ]
+          });
+
+      }
+
+      $(".nav-item a").on("click", function () {
+		$(".App,.Printer").closest("tr").show();
+
+        $(".nav-item a").removeClass("active");
+        $(this).addClass("active");
+        ToggleButtons(this);
+
+        document
+          .querySelector(`[aria-current="page"]`)
+          .removeAttribute("aria-current");
+        $(this).attr("aria-current", "page");
+      });
+
+      $("td span.new").closest("tr").addClass("table-success");
+
+      $("td span.nodate").closest("tr").addClass("table-warning");
+
+      $("div .btn").on("click", function () {
+
+        var buttonText = this.innerText.replaceAll(' ','');
+        if (buttonText.match(/^\d/)) { buttonText = '_' + buttonText }
+        if (buttonText == "All") {
+          table.search.fixed('range',
+            function (settings, data, dataIndex) { return true; }
+          );
+        } else {
+          table.search.fixed('range',
+            function (settings, data, dataIndex) {
+              if ( $(table.row(dataIndex).node().querySelectorAll(`.${buttonText}`)).length > 0 ) {
+                return true; 
+              }
+              else { 
+                return false; 
+              }
+          });
+        }
+
+        table.draw();
+      });
+
+      // output the object in the console
+      // console.log( table.row(':eq(0)').data() );
+    </script>
+  </body>
+</html>
+
