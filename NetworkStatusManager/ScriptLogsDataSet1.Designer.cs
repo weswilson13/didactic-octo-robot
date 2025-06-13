@@ -20,9 +20,9 @@ namespace NetworkStatusManager {
     [global::System.ComponentModel.DesignerCategoryAttribute("code")]
     [global::System.ComponentModel.ToolboxItem(true)]
     [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedDataSetSchema")]
-    [global::System.Xml.Serialization.XmlRootAttribute("ScriptLogsDataSet")]
+    [global::System.Xml.Serialization.XmlRootAttribute("ScriptLogsDataSet1")]
     [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.DataSet")]
-    public partial class ScriptLogsDataSet : global::System.Data.DataSet {
+    public partial class ScriptLogsDataSet1 : global::System.Data.DataSet {
         
         private NetworkStatusDataTable tableNetworkStatus;
         
@@ -32,7 +32,7 @@ namespace NetworkStatusManager {
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-        public ScriptLogsDataSet() {
+        public ScriptLogsDataSet1() {
             this.BeginInit();
             this.InitClass();
             global::System.ComponentModel.CollectionChangeEventHandler schemaChangedHandler = new global::System.ComponentModel.CollectionChangeEventHandler(this.SchemaChanged);
@@ -43,7 +43,7 @@ namespace NetworkStatusManager {
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-        protected ScriptLogsDataSet(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
+        protected ScriptLogsDataSet1(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
                 base(info, context, false) {
             if ((this.IsBinarySerialized(info, context) == true)) {
                 this.InitVars(false);
@@ -142,7 +142,7 @@ namespace NetworkStatusManager {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         public override global::System.Data.DataSet Clone() {
-            ScriptLogsDataSet cln = ((ScriptLogsDataSet)(base.Clone()));
+            ScriptLogsDataSet1 cln = ((ScriptLogsDataSet1)(base.Clone()));
             cln.InitVars();
             cln.SchemaSerializationMode = this.SchemaSerializationMode;
             return cln;
@@ -223,9 +223,9 @@ namespace NetworkStatusManager {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         private void InitClass() {
-            this.DataSetName = "ScriptLogsDataSet";
+            this.DataSetName = "ScriptLogsDataSet1";
             this.Prefix = "";
-            this.Namespace = "http://tempuri.org/ScriptLogsDataSet.xsd";
+            this.Namespace = "http://tempuri.org/ScriptLogsDataSet1.xsd";
             this.EnforceConstraints = true;
             this.SchemaSerializationMode = global::System.Data.SchemaSerializationMode.IncludeSchema;
             this.tableNetworkStatus = new NetworkStatusDataTable();
@@ -257,7 +257,7 @@ namespace NetworkStatusManager {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedDataSetSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
-            ScriptLogsDataSet ds = new ScriptLogsDataSet();
+            ScriptLogsDataSet1 ds = new ScriptLogsDataSet1();
             global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
             global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
             global::System.Xml.Schema.XmlSchemaAny any = new global::System.Xml.Schema.XmlSchemaAny();
@@ -314,6 +314,8 @@ namespace NetworkStatusManager {
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
         public partial class NetworkStatusDataTable : global::System.Data.TypedTableBase<NetworkStatusRow> {
             
+            private global::System.Data.DataColumn columnID;
+            
             private global::System.Data.DataColumn columnDeviceName;
             
             private global::System.Data.DataColumn columnPort;
@@ -323,8 +325,6 @@ namespace NetworkStatusManager {
             private global::System.Data.DataColumn columnNotes;
             
             private global::System.Data.DataColumn columnActive;
-            
-            private global::System.Data.DataColumn columnID;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
@@ -357,6 +357,14 @@ namespace NetworkStatusManager {
             protected NetworkStatusDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
                     base(info, context) {
                 this.InitVars();
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public global::System.Data.DataColumn IDColumn {
+                get {
+                    return this.columnID;
+                }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -401,14 +409,6 @@ namespace NetworkStatusManager {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn IDColumn {
-                get {
-                    return this.columnID;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -447,12 +447,12 @@ namespace NetworkStatusManager {
             public NetworkStatusRow AddNetworkStatusRow(string DeviceName, string Port, string Service, string Notes, string Active) {
                 NetworkStatusRow rowNetworkStatusRow = ((NetworkStatusRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
+                        null,
                         DeviceName,
                         Port,
                         Service,
                         Notes,
-                        Active,
-                        null};
+                        Active};
                 rowNetworkStatusRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowNetworkStatusRow);
                 return rowNetworkStatusRow;
@@ -482,17 +482,19 @@ namespace NetworkStatusManager {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             internal void InitVars() {
+                this.columnID = base.Columns["ID"];
                 this.columnDeviceName = base.Columns["DeviceName"];
                 this.columnPort = base.Columns["Port"];
                 this.columnService = base.Columns["Service"];
                 this.columnNotes = base.Columns["Notes"];
                 this.columnActive = base.Columns["Active"];
-                this.columnID = base.Columns["ID"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             private void InitClass() {
+                this.columnID = new global::System.Data.DataColumn("ID", typeof(int), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnID);
                 this.columnDeviceName = new global::System.Data.DataColumn("DeviceName", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnDeviceName);
                 this.columnPort = new global::System.Data.DataColumn("Port", typeof(string), null, global::System.Data.MappingType.Element);
@@ -503,21 +505,19 @@ namespace NetworkStatusManager {
                 base.Columns.Add(this.columnNotes);
                 this.columnActive = new global::System.Data.DataColumn("Active", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnActive);
-                this.columnID = new global::System.Data.DataColumn("ID", typeof(int), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnID);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
                                 this.columnID}, true));
-                this.columnDeviceName.MaxLength = 10;
-                this.columnPort.MaxLength = 10;
-                this.columnService.MaxLength = 10;
-                this.columnNotes.MaxLength = 10;
-                this.columnActive.MaxLength = 10;
                 this.columnID.AutoIncrement = true;
                 this.columnID.AutoIncrementSeed = -1;
                 this.columnID.AutoIncrementStep = -1;
                 this.columnID.AllowDBNull = false;
                 this.columnID.ReadOnly = true;
                 this.columnID.Unique = true;
+                this.columnDeviceName.MaxLength = 10;
+                this.columnPort.MaxLength = 10;
+                this.columnService.MaxLength = 10;
+                this.columnNotes.MaxLength = 10;
+                this.columnActive.MaxLength = 10;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -585,7 +585,7 @@ namespace NetworkStatusManager {
             public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
                 global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
                 global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
-                ScriptLogsDataSet ds = new ScriptLogsDataSet();
+                ScriptLogsDataSet1 ds = new ScriptLogsDataSet1();
                 global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
                 any1.Namespace = "http://www.w3.org/2001/XMLSchema";
                 any1.MinOccurs = new decimal(0);
@@ -895,7 +895,7 @@ namespace NetworkStatusManager {
             public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
                 global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
                 global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
-                ScriptLogsDataSet ds = new ScriptLogsDataSet();
+                ScriptLogsDataSet1 ds = new ScriptLogsDataSet1();
                 global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
                 any1.Namespace = "http://www.w3.org/2001/XMLSchema";
                 any1.MinOccurs = new decimal(0);
@@ -966,6 +966,17 @@ namespace NetworkStatusManager {
             internal NetworkStatusRow(global::System.Data.DataRowBuilder rb) : 
                     base(rb) {
                 this.tableNetworkStatus = ((NetworkStatusDataTable)(this.Table));
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public int ID {
+                get {
+                    return ((int)(this[this.tableNetworkStatus.IDColumn]));
+                }
+                set {
+                    this[this.tableNetworkStatus.IDColumn] = value;
+                }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1045,17 +1056,6 @@ namespace NetworkStatusManager {
                 }
                 set {
                     this[this.tableNetworkStatus.ActiveColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public int ID {
-                get {
-                    return ((int)(this[this.tableNetworkStatus.IDColumn]));
-                }
-                set {
-                    this[this.tableNetworkStatus.IDColumn] = value;
                 }
             }
             
@@ -1248,7 +1248,7 @@ namespace NetworkStatusManager {
         }
     }
 }
-namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
+namespace NetworkStatusManager.ScriptLogsDataSet1TableAdapters {
     
     
     /// <summary>
@@ -1372,12 +1372,12 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
             global::System.Data.Common.DataTableMapping tableMapping = new global::System.Data.Common.DataTableMapping();
             tableMapping.SourceTable = "Table";
             tableMapping.DataSetTable = "NetworkStatus";
+            tableMapping.ColumnMappings.Add("ID", "ID");
             tableMapping.ColumnMappings.Add("DeviceName", "DeviceName");
             tableMapping.ColumnMappings.Add("Port", "Port");
             tableMapping.ColumnMappings.Add("Service", "Service");
             tableMapping.ColumnMappings.Add("Notes", "Notes");
             tableMapping.ColumnMappings.Add("Active", "Active");
-            tableMapping.ColumnMappings.Add("ID", "ID");
             this._adapter.TableMappings.Add(tableMapping);
             this._adapter.DeleteCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.DeleteCommand.Connection = this.Connection;
@@ -1479,7 +1479,9 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
             this._adapter.InsertCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.InsertCommand.Connection = this.Connection;
             this._adapter.InsertCommand.CommandText = "INSERT INTO [dbo].[NetworkStatus] ([DeviceName], [Port], [Service], [Notes], [Act" +
-                "ive]) VALUES (@DeviceName, @Port, @Service, @Notes, @Active)";
+                "ive]) VALUES (@DeviceName, @Port, @Service, @Notes, @Active);\r\nSELECT ID, Device" +
+                "Name, Port, Service, Notes, Active FROM NetworkStatus WHERE (ID = SCOPE_IDENTITY" +
+                "())";
             this._adapter.InsertCommand.CommandType = global::System.Data.CommandType.Text;
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@DeviceName";
@@ -1518,7 +1520,8 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
             this._adapter.InsertCommand.Parameters.Add(param);
             this._adapter.UpdateCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.UpdateCommand.Connection = this.Connection;
-            this._adapter.UpdateCommand.CommandText = @"UPDATE [dbo].[NetworkStatus] SET [DeviceName] = @DeviceName, [Port] = @Port, [Service] = @Service, [Notes] = @Notes, [Active] = @Active WHERE (([ID] = @Original_ID) AND ((@IsNull_DeviceName = 1 AND [DeviceName] IS NULL) OR ([DeviceName] = @Original_DeviceName)) AND ((@IsNull_Port = 1 AND [Port] IS NULL) OR ([Port] = @Original_Port)) AND ((@IsNull_Service = 1 AND [Service] IS NULL) OR ([Service] = @Original_Service)) AND ((@IsNull_Notes = 1 AND [Notes] IS NULL) OR ([Notes] = @Original_Notes)) AND ((@IsNull_Active = 1 AND [Active] IS NULL) OR ([Active] = @Original_Active)))";
+            this._adapter.UpdateCommand.CommandText = @"UPDATE [dbo].[NetworkStatus] SET [DeviceName] = @DeviceName, [Port] = @Port, [Service] = @Service, [Notes] = @Notes, [Active] = @Active WHERE (([ID] = @Original_ID) AND ((@IsNull_DeviceName = 1 AND [DeviceName] IS NULL) OR ([DeviceName] = @Original_DeviceName)) AND ((@IsNull_Port = 1 AND [Port] IS NULL) OR ([Port] = @Original_Port)) AND ((@IsNull_Service = 1 AND [Service] IS NULL) OR ([Service] = @Original_Service)) AND ((@IsNull_Notes = 1 AND [Notes] IS NULL) OR ([Notes] = @Original_Notes)) AND ((@IsNull_Active = 1 AND [Active] IS NULL) OR ([Active] = @Original_Active)));
+SELECT ID, DeviceName, Port, Service, Notes, Active FROM NetworkStatus WHERE (ID = @ID)";
             this._adapter.UpdateCommand.CommandType = global::System.Data.CommandType.Text;
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@DeviceName";
@@ -1648,6 +1651,14 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
             param.SourceColumn = "Active";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
             this._adapter.UpdateCommand.Parameters.Add(param);
+            param = new global::Microsoft.Data.SqlClient.SqlParameter();
+            param.ParameterName = "@ID";
+            param.DbType = global::System.Data.DbType.Int32;
+            param.SqlDbType = global::System.Data.SqlDbType.Int;
+            param.Size = 4;
+            param.IsNullable = true;
+            param.SourceColumn = "ID";
+            this._adapter.UpdateCommand.Parameters.Add(param);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1663,7 +1674,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
             this._commandCollection = new global::Microsoft.Data.SqlClient.SqlCommand[1];
             this._commandCollection[0] = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = "SELECT * FROM dbo.NetworkStatus";
+            this._commandCollection[0].CommandText = "SELECT ID, DeviceName, Port, Service, Notes, Active FROM dbo.NetworkStatus";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
         }
         
@@ -1671,7 +1682,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Fill, true)]
-        public virtual int Fill(ScriptLogsDataSet.NetworkStatusDataTable dataTable) {
+        public virtual int Fill(ScriptLogsDataSet1.NetworkStatusDataTable dataTable) {
             this.Adapter.SelectCommand = this.CommandCollection[0];
             if ((this.ClearBeforeFill == true)) {
                 dataTable.Clear();
@@ -1684,9 +1695,9 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Select, true)]
-        public virtual ScriptLogsDataSet.NetworkStatusDataTable GetData() {
+        public virtual ScriptLogsDataSet1.NetworkStatusDataTable GetData() {
             this.Adapter.SelectCommand = this.CommandCollection[0];
-            ScriptLogsDataSet.NetworkStatusDataTable dataTable = new ScriptLogsDataSet.NetworkStatusDataTable();
+            ScriptLogsDataSet1.NetworkStatusDataTable dataTable = new ScriptLogsDataSet1.NetworkStatusDataTable();
             this.Adapter.Fill(dataTable);
             return dataTable;
         }
@@ -1694,14 +1705,14 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
-        public virtual int Update(ScriptLogsDataSet.NetworkStatusDataTable dataTable) {
+        public virtual int Update(ScriptLogsDataSet1.NetworkStatusDataTable dataTable) {
             return this.Adapter.Update(dataTable);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
-        public virtual int Update(ScriptLogsDataSet dataSet) {
+        public virtual int Update(ScriptLogsDataSet1 dataSet) {
             return this.Adapter.Update(dataSet, "NetworkStatus");
         }
         
@@ -1837,7 +1848,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
-        public virtual int Update(string DeviceName, string Port, string Service, string Notes, string Active, int Original_ID, string Original_DeviceName, string Original_Port, string Original_Service, string Original_Notes, string Original_Active) {
+        public virtual int Update(string DeviceName, string Port, string Service, string Notes, string Active, int Original_ID, string Original_DeviceName, string Original_Port, string Original_Service, string Original_Notes, string Original_Active, int ID) {
             if ((DeviceName == null)) {
                 this.Adapter.UpdateCommand.Parameters[0].Value = global::System.DBNull.Value;
             }
@@ -1909,6 +1920,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
                 this.Adapter.UpdateCommand.Parameters[14].Value = ((object)(0));
                 this.Adapter.UpdateCommand.Parameters[15].Value = ((string)(Original_Active));
             }
+            this.Adapter.UpdateCommand.Parameters[16].Value = ((int)(ID));
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.UpdateCommand.Connection.State;
             if (((this.Adapter.UpdateCommand.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {
@@ -1923,6 +1935,14 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
                     this.Adapter.UpdateCommand.Connection.Close();
                 }
             }
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+        [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
+        [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
+        public virtual int Update(string DeviceName, string Port, string Service, string Notes, string Active, int Original_ID, string Original_DeviceName, string Original_Port, string Original_Service, string Original_Notes, string Original_Active) {
+            return this.Update(DeviceName, Port, Service, Notes, Active, Original_ID, Original_DeviceName, Original_Port, Original_Service, Original_Notes, Original_Active, Original_ID);
         }
     }
     
@@ -2143,7 +2163,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
             this._commandCollection = new global::Microsoft.Data.SqlClient.SqlCommand[1];
             this._commandCollection[0] = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = "SELECT * FROM dbo.ScriptConfig";
+            this._commandCollection[0].CommandText = "SELECT Section, [Key], Value, Id FROM dbo.ScriptConfig";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
         }
         
@@ -2151,7 +2171,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Fill, true)]
-        public virtual int Fill(ScriptLogsDataSet.ScriptConfigDataTable dataTable) {
+        public virtual int Fill(ScriptLogsDataSet1.ScriptConfigDataTable dataTable) {
             this.Adapter.SelectCommand = this.CommandCollection[0];
             if ((this.ClearBeforeFill == true)) {
                 dataTable.Clear();
@@ -2164,9 +2184,9 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Select, true)]
-        public virtual ScriptLogsDataSet.ScriptConfigDataTable GetData() {
+        public virtual ScriptLogsDataSet1.ScriptConfigDataTable GetData() {
             this.Adapter.SelectCommand = this.CommandCollection[0];
-            ScriptLogsDataSet.ScriptConfigDataTable dataTable = new ScriptLogsDataSet.ScriptConfigDataTable();
+            ScriptLogsDataSet1.ScriptConfigDataTable dataTable = new ScriptLogsDataSet1.ScriptConfigDataTable();
             this.Adapter.Fill(dataTable);
             return dataTable;
         }
@@ -2174,14 +2194,14 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
-        public virtual int Update(ScriptLogsDataSet.ScriptConfigDataTable dataTable) {
+        public virtual int Update(ScriptLogsDataSet1.ScriptConfigDataTable dataTable) {
             return this.Adapter.Update(dataTable);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
-        public virtual int Update(ScriptLogsDataSet dataSet) {
+        public virtual int Update(ScriptLogsDataSet1 dataSet) {
             return this.Adapter.Update(dataSet, "ScriptConfig");
         }
         
@@ -2425,7 +2445,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         ///</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-        private int UpdateUpdatedRows(ScriptLogsDataSet dataSet, global::System.Collections.Generic.List<global::System.Data.DataRow> allChangedRows, global::System.Collections.Generic.List<global::System.Data.DataRow> allAddedRows) {
+        private int UpdateUpdatedRows(ScriptLogsDataSet1 dataSet, global::System.Collections.Generic.List<global::System.Data.DataRow> allChangedRows, global::System.Collections.Generic.List<global::System.Data.DataRow> allAddedRows) {
             int result = 0;
             if ((this._networkStatusTableAdapter != null)) {
                 global::System.Data.DataRow[] updatedRows = dataSet.NetworkStatus.Select(null, null, global::System.Data.DataViewRowState.ModifiedCurrent);
@@ -2453,7 +2473,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         ///</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-        private int UpdateInsertedRows(ScriptLogsDataSet dataSet, global::System.Collections.Generic.List<global::System.Data.DataRow> allAddedRows) {
+        private int UpdateInsertedRows(ScriptLogsDataSet1 dataSet, global::System.Collections.Generic.List<global::System.Data.DataRow> allAddedRows) {
             int result = 0;
             if ((this._networkStatusTableAdapter != null)) {
                 global::System.Data.DataRow[] addedRows = dataSet.NetworkStatus.Select(null, null, global::System.Data.DataViewRowState.Added);
@@ -2479,7 +2499,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         ///</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-        private int UpdateDeletedRows(ScriptLogsDataSet dataSet, global::System.Collections.Generic.List<global::System.Data.DataRow> allChangedRows) {
+        private int UpdateDeletedRows(ScriptLogsDataSet1 dataSet, global::System.Collections.Generic.List<global::System.Data.DataRow> allChangedRows) {
             int result = 0;
             if ((this._scriptConfigTableAdapter != null)) {
                 global::System.Data.DataRow[] deletedRows = dataSet.ScriptConfig.Select(null, null, global::System.Data.DataViewRowState.Deleted);
@@ -2529,7 +2549,7 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters {
         ///</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-        public virtual int UpdateAll(ScriptLogsDataSet dataSet) {
+        public virtual int UpdateAll(ScriptLogsDataSet1 dataSet) {
             if ((dataSet == null)) {
                 throw new global::System.ArgumentNullException("dataSet");
             }

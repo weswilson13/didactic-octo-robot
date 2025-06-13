@@ -176,6 +176,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ScriptLogsDataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="ScriptLogsDataSet1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScriptLogsDataSet1.xsd</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -208,6 +213,17 @@
     </None>
     <None Include="ScriptLogsDataSet.xss">
       <DependentUpon>ScriptLogsDataSet.xsd</DependentUpon>
+    </None>
+    <None Include="ScriptLogsDataSet1.xsc">
+      <DependentUpon>ScriptLogsDataSet1.xsd</DependentUpon>
+    </None>
+    <None Include="ScriptLogsDataSet1.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ScriptLogsDataSet1.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ScriptLogsDataSet1.xss">
+      <DependentUpon>ScriptLogsDataSet1.xsd</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>
