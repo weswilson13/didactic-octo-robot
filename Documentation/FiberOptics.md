@@ -73,3 +73,6 @@
  * These wavelenghts belong to the Infrared spectrum
 
  * The larger the wavelength, the smaller the fiber - smaller fiber translates to better performance
+
+ * it is important to match up the transmitters, receivers, and cabling to ensure compatibility. 
+   - question - can multimode cabling be used with single mode transmitters/receivers?

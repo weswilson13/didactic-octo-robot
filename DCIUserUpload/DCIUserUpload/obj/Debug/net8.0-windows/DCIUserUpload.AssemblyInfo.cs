@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DCIUserUpload")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+02433d3f8f39abc3ef289be623e65ba0024ef464")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bd10581c0f59db57807cffe22a968a303a1d0eb9")]
 [assembly: System.Reflection.AssemblyProductAttribute("DCIUserUpload")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DCIUserUpload")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

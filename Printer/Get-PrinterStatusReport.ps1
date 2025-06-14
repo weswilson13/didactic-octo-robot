@@ -75,7 +75,7 @@ function Send-UpdateMessage {
         Credential = $credentials
         ErrorAction = "Stop"
     }
-    Send-MailMessage @messageAttr -
+    Send-MailMessage @messageAttr
 }
 
 $csv = "Z:\Temp\PrinterStatus.csv"

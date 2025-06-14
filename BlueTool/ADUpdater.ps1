@@ -246,7 +246,7 @@ Import-Module ActiveDirectory,PSIni
 Import-Module SqlServer -MinimumVersion 22.0.0
 
 #load config
-$script:ini = Get-IniContent .\config.ini
+$script:ini = Get-IniContent $PSScriptRoot\config.ini
 
 #region font objects
 $TitleFont = New-Object System.Drawing.Font("Calibri",24,[Drawing.FontStyle]::Bold)
@@ -1579,6 +1579,9 @@ $objParams = @{
         ClientSize = $System_Drawing_Size
         BackColor = "LightBlue"
         Icon = $formIcon
+        MinimizeBox = $false
+        MaximizeBox = $false
+        HelpButton = $true
         MaximumSize = New-Object System.Drawing.Size($maxScreenSize)
         # AutoScaleDimensions =  New-Object System.Drawing.SizeF(96, 96)
         # AutoScaleMode  = [System.Windows.Forms.AutoScaleMode]::Dpi
@@ -1587,6 +1590,7 @@ $objParams = @{
 }
 $form = New-Object @objParams
 $form.Add_FormClosed({handler_formclose})
+$form.Add_HelpButtonClicked({notepad.exe})
 $form.SuspendLayout()
 
 $form.DataBindings.DefaultDataSourceUpdateMode = 0

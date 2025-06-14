@@ -4,3 +4,4 @@ bin/
 *.exe
 */Documentation/*.html
 */Archive
+!*/bin/Release/*
