@@ -30,12 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.deviceNameDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.portDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.serviceDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.notesDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.activeDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.iDDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.networkStatusBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.scriptLogsDataSet = new NetworkStatusManager.ScriptLogsDataSet();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -49,6 +43,11 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.networkStatusTableAdapter = new NetworkStatusManager.ScriptLogsDataSetTableAdapters.NetworkStatusTableAdapter();
             this.scriptConfigTableAdapter = new NetworkStatusManager.ScriptLogsDataSetTableAdapters.ScriptConfigTableAdapter();
+            this.deviceNameDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.portDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.serviceDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.notesDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.activeDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.networkStatusBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scriptLogsDataSet)).BeginInit();
@@ -69,8 +68,7 @@
             this.portDataGridViewTextBoxColumn1,
             this.serviceDataGridViewTextBoxColumn1,
             this.notesDataGridViewTextBoxColumn1,
-            this.activeDataGridViewTextBoxColumn1,
-            this.iDDataGridViewTextBoxColumn1});
+            this.activeDataGridViewTextBoxColumn1});
             this.dataGridView1.DataSource = this.networkStatusBindingSource;
             this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView1.Location = new System.Drawing.Point(3, 3);
@@ -80,54 +78,6 @@
             this.dataGridView1.TabIndex = 0;
             this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             this.dataGridView1.RowValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_RowValidated);
-            // 
-            // deviceNameDataGridViewTextBoxColumn1
-            // 
-            this.deviceNameDataGridViewTextBoxColumn1.DataPropertyName = "DeviceName";
-            this.deviceNameDataGridViewTextBoxColumn1.HeaderText = "DeviceName";
-            this.deviceNameDataGridViewTextBoxColumn1.Name = "deviceNameDataGridViewTextBoxColumn1";
-            this.deviceNameDataGridViewTextBoxColumn1.ReadOnly = true;
-            this.deviceNameDataGridViewTextBoxColumn1.Width = 94;
-            // 
-            // portDataGridViewTextBoxColumn1
-            // 
-            this.portDataGridViewTextBoxColumn1.DataPropertyName = "Port";
-            this.portDataGridViewTextBoxColumn1.HeaderText = "Port";
-            this.portDataGridViewTextBoxColumn1.Name = "portDataGridViewTextBoxColumn1";
-            this.portDataGridViewTextBoxColumn1.ReadOnly = true;
-            this.portDataGridViewTextBoxColumn1.Width = 51;
-            // 
-            // serviceDataGridViewTextBoxColumn1
-            // 
-            this.serviceDataGridViewTextBoxColumn1.DataPropertyName = "Service";
-            this.serviceDataGridViewTextBoxColumn1.HeaderText = "Service";
-            this.serviceDataGridViewTextBoxColumn1.Name = "serviceDataGridViewTextBoxColumn1";
-            this.serviceDataGridViewTextBoxColumn1.ReadOnly = true;
-            this.serviceDataGridViewTextBoxColumn1.Width = 68;
-            // 
-            // notesDataGridViewTextBoxColumn1
-            // 
-            this.notesDataGridViewTextBoxColumn1.DataPropertyName = "Notes";
-            this.notesDataGridViewTextBoxColumn1.HeaderText = "Notes";
-            this.notesDataGridViewTextBoxColumn1.Name = "notesDataGridViewTextBoxColumn1";
-            this.notesDataGridViewTextBoxColumn1.ReadOnly = true;
-            this.notesDataGridViewTextBoxColumn1.Width = 60;
-            // 
-            // activeDataGridViewTextBoxColumn1
-            // 
-            this.activeDataGridViewTextBoxColumn1.DataPropertyName = "Active";
-            this.activeDataGridViewTextBoxColumn1.HeaderText = "Active";
-            this.activeDataGridViewTextBoxColumn1.Name = "activeDataGridViewTextBoxColumn1";
-            this.activeDataGridViewTextBoxColumn1.ReadOnly = true;
-            this.activeDataGridViewTextBoxColumn1.Width = 62;
-            // 
-            // iDDataGridViewTextBoxColumn1
-            // 
-            this.iDDataGridViewTextBoxColumn1.DataPropertyName = "ID";
-            this.iDDataGridViewTextBoxColumn1.HeaderText = "ID";
-            this.iDDataGridViewTextBoxColumn1.Name = "iDDataGridViewTextBoxColumn1";
-            this.iDDataGridViewTextBoxColumn1.ReadOnly = true;
-            this.iDDataGridViewTextBoxColumn1.Width = 43;
             // 
             // networkStatusBindingSource
             // 
@@ -145,7 +95,6 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.tabControl1.Location = new System.Drawing.Point(0, 30);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -243,6 +192,46 @@
             // 
             this.scriptConfigTableAdapter.ClearBeforeFill = true;
             // 
+            // deviceNameDataGridViewTextBoxColumn1
+            // 
+            this.deviceNameDataGridViewTextBoxColumn1.DataPropertyName = "DeviceName";
+            this.deviceNameDataGridViewTextBoxColumn1.HeaderText = "DeviceName";
+            this.deviceNameDataGridViewTextBoxColumn1.Name = "deviceNameDataGridViewTextBoxColumn1";
+            this.deviceNameDataGridViewTextBoxColumn1.ReadOnly = true;
+            this.deviceNameDataGridViewTextBoxColumn1.Width = 94;
+            // 
+            // portDataGridViewTextBoxColumn1
+            // 
+            this.portDataGridViewTextBoxColumn1.DataPropertyName = "Port";
+            this.portDataGridViewTextBoxColumn1.HeaderText = "Port";
+            this.portDataGridViewTextBoxColumn1.Name = "portDataGridViewTextBoxColumn1";
+            this.portDataGridViewTextBoxColumn1.ReadOnly = true;
+            this.portDataGridViewTextBoxColumn1.Width = 51;
+            // 
+            // serviceDataGridViewTextBoxColumn1
+            // 
+            this.serviceDataGridViewTextBoxColumn1.DataPropertyName = "Service";
+            this.serviceDataGridViewTextBoxColumn1.HeaderText = "Service";
+            this.serviceDataGridViewTextBoxColumn1.Name = "serviceDataGridViewTextBoxColumn1";
+            this.serviceDataGridViewTextBoxColumn1.ReadOnly = true;
+            this.serviceDataGridViewTextBoxColumn1.Width = 68;
+            // 
+            // notesDataGridViewTextBoxColumn1
+            // 
+            this.notesDataGridViewTextBoxColumn1.DataPropertyName = "Notes";
+            this.notesDataGridViewTextBoxColumn1.HeaderText = "Notes";
+            this.notesDataGridViewTextBoxColumn1.Name = "notesDataGridViewTextBoxColumn1";
+            this.notesDataGridViewTextBoxColumn1.ReadOnly = true;
+            this.notesDataGridViewTextBoxColumn1.Width = 60;
+            // 
+            // activeDataGridViewTextBoxColumn1
+            // 
+            this.activeDataGridViewTextBoxColumn1.DataPropertyName = "Active";
+            this.activeDataGridViewTextBoxColumn1.HeaderText = "Active";
+            this.activeDataGridViewTextBoxColumn1.Name = "activeDataGridViewTextBoxColumn1";
+            this.activeDataGridViewTextBoxColumn1.ReadOnly = true;
+            this.activeDataGridViewTextBoxColumn1.Width = 62;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -280,17 +269,16 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.DataGridView dataGridView2;
         private ScriptLogsDataSetTableAdapters.ScriptConfigTableAdapter scriptConfigTableAdapter;
-        private System.Windows.Forms.DataGridViewTextBoxColumn deviceNameDataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn portDataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn serviceDataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn notesDataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn activeDataGridViewTextBoxColumn1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn iDDataGridViewTextBoxColumn1;
         private System.Windows.Forms.BindingSource scriptConfigBindingSource;
         private System.Windows.Forms.DataGridViewTextBoxColumn sectionDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn keyDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn valueDataGridViewTextBoxColumn;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn deviceNameDataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn portDataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn serviceDataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn notesDataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn activeDataGridViewTextBoxColumn1;
     }
 }
 

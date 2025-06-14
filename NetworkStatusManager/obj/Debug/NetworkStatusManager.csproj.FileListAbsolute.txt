@@ -94,3 +94,8 @@ F:\repos\NetworkStatusManager\obj\Debug\NetworkStatusManager.csproj.CoreCompileI
 F:\repos\NetworkStatusManager\obj\Debug\NetworkS.020C8B56.Up2Date
 F:\repos\NetworkStatusManager\obj\Debug\NetworkStatusManager.exe
 F:\repos\NetworkStatusManager\obj\Debug\NetworkStatusManager.pdb
+F:\repos\NetworkStatusManager\obj\Debug\NetworkStatusManager.exe.config
+F:\repos\NetworkStatusManager\bin\Debug\NetworkStatusManager.exe.manifest
+F:\repos\NetworkStatusManager\bin\Debug\NetworkStatusManager.application
+F:\repos\NetworkStatusManager\obj\Debug\NetworkStatusManager.exe.manifest
+F:\repos\NetworkStatusManager\obj\Debug\NetworkStatusManager.application

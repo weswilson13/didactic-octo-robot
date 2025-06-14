@@ -94,9 +94,11 @@ namespace NetworkStatusManager
             // set tabControlsize
             tabControl.Width = maxWidth + tabControl.Padding.X * 2;
             tabControl.Height = maxHeight + tabControl.ItemSize.Height + tabControl.Padding.Y * 2;
+            Console.WriteLine("Checkbox Height: " + this.checkBox1.Height.ToString());
             int y = this.checkBox1.Height + 5;
             int x = tabControl.Location.X;
             tabControl.Location = new Point(x, y);
+            Console.WriteLine($"New tabControl Location: {{{x},{y}}}");
             Console.WriteLine(tabControl.Name + ":" + tabControl.Location.ToString());
 
             // update form size
