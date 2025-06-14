@@ -1,4 +1,4 @@
-﻿namespace NetworkStatusManager
+namespace ScriptManager
 {
 
 
@@ -10,7 +10,7 @@
     }
 }
 
-namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters
+namespace ScriptManager.ScriptLogsDataSetTableAdapters
 {
     partial class ScriptConfigTableAdapter
     {
@@ -19,3 +19,4 @@ namespace NetworkStatusManager.ScriptLogsDataSetTableAdapters
     public partial class NetworkStatusTableAdapter {
     }
 }
+

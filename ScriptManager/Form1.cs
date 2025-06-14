@@ -1,4 +1,4 @@
-﻿using NetworkStatusManager.Properties;
+using ScriptManager.Properties;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using static Azure.Core.HttpHeader;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
-namespace NetworkStatusManager
+namespace ScriptManager
 {
     public partial class Form1 : Form
     {
@@ -114,3 +114,4 @@ namespace NetworkStatusManager
 
     }
 }
+

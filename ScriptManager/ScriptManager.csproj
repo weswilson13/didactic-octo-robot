@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A7A0FA10-1CE4-41BC-A8E7-4BB7C48DCDBD}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>NetworkStatusManager</RootNamespace>
-    <AssemblyName>NetworkStatusManager</AssemblyName>
+    <RootNamespace>ScriptManager</RootNamespace>
+    <AssemblyName>ScriptManager</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -15,7 +15,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>z:\NetworkStatusManager\</PublishUrl>
+    <PublishUrl>z:\ScriptManager\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Unc</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -25,7 +25,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>\\mydomain\dfs\Stuff\NetworkStatusManager\</InstallUrl>
+    <InstallUrl>\\mydomain\dfs\Stuff\ScriptManager\</InstallUrl>
     <ApplicationRevision>1</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
@@ -55,7 +55,7 @@
     <ManifestCertificateThumbprint>37CB0DB9B5D145590B642584CE831DEF04B2AE2A</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>NetworkStatusManager_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>ScriptManager_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -205,6 +205,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ScriptLogsDataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="ScriptLogsDataSet1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScriptLogsDataSet1.xsd</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -217,7 +222,18 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="NetworkStatusManager_TemporaryKey.pfx" />
+    <None Include="ScriptLogsDataSet1.xsc">
+      <DependentUpon>ScriptLogsDataSet1.xsd</DependentUpon>
+    </None>
+    <None Include="ScriptLogsDataSet1.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>ScriptLogsDataSet1.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ScriptLogsDataSet1.xss">
+      <DependentUpon>ScriptLogsDataSet1.xsd</DependentUpon>
+    </None>
+    <None Include="ScriptManager_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

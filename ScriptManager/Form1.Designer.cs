@@ -1,4 +1,4 @@
-﻿namespace NetworkStatusManager
+namespace ScriptManager
 {
     partial class Form1
     {
@@ -41,7 +41,7 @@
             this.notesDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.activeDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.networkStatusBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.scriptLogsDataSet = new NetworkStatusManager.ScriptLogsDataSet();
+            this.scriptLogsDataSet = new ScriptManager.ScriptLogsDataSet();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
@@ -51,8 +51,8 @@
             this.scriptConfigBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.networkStatusTableAdapter = new NetworkStatusManager.ScriptLogsDataSetTableAdapters.NetworkStatusTableAdapter();
-            this.scriptConfigTableAdapter = new NetworkStatusManager.ScriptLogsDataSetTableAdapters.ScriptConfigTableAdapter();
+            this.networkStatusTableAdapter = new ScriptManager.ScriptLogsDataSetTableAdapters.NetworkStatusTableAdapter();
+            this.scriptConfigTableAdapter = new ScriptManager.ScriptLogsDataSetTableAdapters.ScriptConfigTableAdapter();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.networkStatusBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scriptLogsDataSet)).BeginInit();
@@ -326,4 +326,5 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn activeDataGridViewTextBoxColumn1;
     }
 }
+
 
