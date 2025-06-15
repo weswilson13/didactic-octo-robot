@@ -1,7 +1,53 @@
+using System;
+using System.Data;
+using System.Security.Principal;
+using System.Windows.Forms;
+
 namespace ScriptManager
 {
     partial class Form1
     {
+        public enum Severity
+        {
+            INFORMATION=0,
+            WARNING=1,
+            ERROR=2
+        }
+        public void WriteLog(string severity, string message)
+        {
+            DateTime now = DateTime.Now;
+            string username = WindowsIdentity.GetCurrent().Name;
+            string application = global::ScriptManager.Properties.Settings.Default.ApplicationName;
+            string tablename = string.Empty;
+            string operation = string.Empty;
+
+            try
+            {
+                Console.WriteLine("Writing to ChangeLog");
+                this.changeLogTableAdapter.Insert(now, tablename, application, username, severity, operation, message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        
+        public void WriteLog(string tablename, string severity, string message, string operation = "")
+        {
+            DateTime now = DateTime.Now;
+            string username = WindowsIdentity.GetCurrent().Name;
+            string application = global::ScriptManager.Properties.Settings.Default.ApplicationName;
+
+            try
+            {
+                Console.WriteLine("Writing to ChangeLog");
+                this.changeLogTableAdapter.Insert(now, tablename, application, username, severity, operation, message);
+            }
+            catch (Exception ex) 
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -53,6 +99,8 @@ namespace ScriptManager
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.networkStatusTableAdapter = new ScriptManager.ScriptLogsDataSetTableAdapters.NetworkStatusTableAdapter();
             this.scriptConfigTableAdapter = new ScriptManager.ScriptLogsDataSetTableAdapters.ScriptConfigTableAdapter();
+            this.changeLogBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.changeLogTableAdapter = new ScriptManager.ScriptLogsDataSetTableAdapters.ChangeLogTableAdapter();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.networkStatusBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scriptLogsDataSet)).BeginInit();
@@ -61,6 +109,7 @@ namespace ScriptManager
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scriptConfigBindingSource)).BeginInit();
             this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.changeLogBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // dataGridView1
@@ -97,7 +146,6 @@ namespace ScriptManager
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.Size = new System.Drawing.Size(470, 549);
             this.dataGridView1.TabIndex = 0;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             this.dataGridView1.RowValidated += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_RowValidated);
             // 
             // deviceNameDataGridViewTextBoxColumn1
@@ -145,7 +193,6 @@ namespace ScriptManager
             this.networkStatusBindingSource.DataMember = "NetworkStatus";
             this.networkStatusBindingSource.DataSource = this.scriptLogsDataSet;
             this.networkStatusBindingSource.Sort = "DeviceName";
-            this.networkStatusBindingSource.CurrentChanged += new System.EventHandler(this.bindingSource1_CurrentChanged);
             // 
             // scriptLogsDataSet
             // 
@@ -277,6 +324,15 @@ namespace ScriptManager
             // 
             this.scriptConfigTableAdapter.ClearBeforeFill = true;
             // 
+            // changeLogBindingSource
+            // 
+            this.changeLogBindingSource.DataMember = "ChangeLog";
+            this.changeLogBindingSource.DataSource = this.scriptLogsDataSet;
+            // 
+            // changeLogTableAdapter
+            // 
+            this.changeLogTableAdapter.ClearBeforeFill = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -289,6 +345,7 @@ namespace ScriptManager
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "NNPTC Script Configuration Manager";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.networkStatusBindingSource)).EndInit();
@@ -298,6 +355,7 @@ namespace ScriptManager
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.scriptConfigBindingSource)).EndInit();
             this.tabPage1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.changeLogBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -324,6 +382,8 @@ namespace ScriptManager
         private System.Windows.Forms.DataGridViewTextBoxColumn serviceDataGridViewTextBoxColumn1;
         private System.Windows.Forms.DataGridViewTextBoxColumn notesDataGridViewTextBoxColumn1;
         private System.Windows.Forms.DataGridViewTextBoxColumn activeDataGridViewTextBoxColumn1;
+        private BindingSource changeLogBindingSource;
+        private ScriptLogsDataSetTableAdapters.ChangeLogTableAdapter changeLogTableAdapter;
     }
 }
 

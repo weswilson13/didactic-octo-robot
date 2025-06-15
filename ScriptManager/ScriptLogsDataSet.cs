@@ -1,14 +1,12 @@
 namespace ScriptManager
 {
-
-
-    partial class ScriptLogsDataSet
+    public partial class ScriptLogsDataSet
     {
-        partial class NetworkStatusDataTable
+        public partial class NetworkStatusDataTable
         {
         }
 
-        partial class ScriptConfigDataTable
+        public partial class ScriptConfigDataTable
         {
         }
     }
@@ -16,11 +14,11 @@ namespace ScriptManager
 
 namespace ScriptManager.ScriptLogsDataSetTableAdapters
 {
-    partial class ScriptConfigTableAdapter
+    public partial class ScriptConfigTableAdapter
     {
     }
 
-    public partial class NetworkStatusTableAdapter {
+    public partial class NetworkStatusTableAdapter
+    {
     }
 }
-
