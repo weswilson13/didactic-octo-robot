@@ -1,7 +1,7 @@
 USE [ScriptLogs]
 GO
 
-/****** Object:  Trigger [config].[trgScriptConfig]    Script Date: 6/14/2025 10:13:03 PM ******/
+/****** Object:  Trigger [config].[trgScriptConfig]    Script Date: 6/14/2025 10:43:10 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -38,8 +38,8 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'UPDATE',
-			  'ID: ' + CAST(u.[Id] as varchar) + ' | SECTION: ' + u.[Section] + ' | Key: ' + u.[Key] + ' | Value: ' + u.[Value]
-			  FROM deleted as u
+			  '{"Old":{"Id":"' + CAST(o.[Id] as varchar) + '","Section":"' + o.[Section] + '","Key":"' + o.[Key] + '","Value":"' + o.[Value] + '"},"New":{"Id":"' + CAST(n.[Id] as varchar) + '","Section":"' + n.[Section] + '","Key":"' + n.[Key] + '","Value":"' + n.[Value] + '"}}'
+			  FROM deleted as o inner join inserted as n on o.Id = n.Id
 		   END
 		ELSE -- RECORD WAS DELETED
 		   BEGIN
@@ -56,7 +56,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'DELETE',
-			  'ID: ' + CAST(d.[Id] as varchar) + ' | SECTION: ' + d.[Section] + ' | Key: ' + d.[Key] + ' | Value: ' + d.[Value]
+			  '{"Id":"' + CAST(d.[Id] as varchar) + '","Section":"' + d.[Section] + '","Key":"' + d.[Key] + '","Value":"' + d.[Value] + '"}'
 			  FROM deleted as d
 		   END
 		END
@@ -75,11 +75,10 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'INSERT',
-			  'ID: ' + CAST(i.[Id] as varchar) + ' | SECTION: ' + i.[Section] + ' | Key: ' + i.[Key] + ' | Value: ' + i.[Value]
+			  '{"Id":"' + CAST(i.[Id] as varchar) + '","Section":"' + i.[Section] + '","Key":"' + i.[Key] + '","Value":"' + i.[Value] + '"}'
 		  FROM inserted as i
 	   END   
 GO
 
 ALTER TABLE [config].[ScriptConfig] ENABLE TRIGGER [trgScriptConfig]
 GO
-
