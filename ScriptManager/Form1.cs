@@ -1,16 +1,9 @@
-using ScriptManager.Properties;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Design;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static Azure.Core.HttpHeader;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace ScriptManager
 {
@@ -21,18 +14,12 @@ namespace ScriptManager
             InitializeComponent();
         }
 
-        private void bindingSource1_CurrentChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
         private void Form1_Load(object sender, EventArgs e)
         {
+            WriteLog(string.Empty, Severity.INFORMATION.ToString(), "Begin new session.", "LOGON");
+
+            // TODO: This line of code loads data into the 'scriptLogsDataSet.ChangeLog' table. You can move, or remove it, as needed.
+            this.changeLogTableAdapter.Fill(this.scriptLogsDataSet.ChangeLog);
             // TODO: This line of code loads data into the 'scriptLogsDataSet.ScriptConfig' table. You can move, or remove it, as needed.
             this.scriptConfigTableAdapter.Fill(this.scriptLogsDataSet.ScriptConfig);
             // TODO: This line of code loads data into the 'scriptLogsDataSet.NetworkStatus' table. You can move, or remove it, as needed.
@@ -51,19 +38,37 @@ namespace ScriptManager
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (this.changeLogTableAdapter.Connection.State == ConnectionState.Open)
+                {
+                    WriteLog("NetworkStatus", Severity.ERROR.ToString(), ex.Message);
+                }
             }
         }
+
         private void dataGridView2_RowValidated(object sender, DataGridViewCellEventArgs e)
         {
-            try { 
+            try
+            {
                 Console.WriteLine("RowValidated");
                 this.Validate();
                 this.scriptConfigBindingSource.EndEdit();
                 this.scriptConfigTableAdapter.Update(this.scriptLogsDataSet.ScriptConfig);
             }
+            catch (SqlException ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (this.changeLogTableAdapter.Connection.State == ConnectionState.Open)
+                {
+                    WriteLog("ScriptConfig", Severity.ERROR.ToString(), ex.Message);
+                }
+            }
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (this.changeLogTableAdapter.Connection.State == ConnectionState.Open)
+                {
+                    WriteLog("ScriptConfig", Severity.ERROR.ToString(), ex.Message);
+                }
             }
         }
 
@@ -111,9 +116,22 @@ namespace ScriptManager
 
         private void tabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            AutoSizeTabControl((TabControl)sender);
-        }      
+            TabControl tabControl = (TabControl)sender;
+            var selectedIndex = tabControl.SelectedIndex;
 
+            var tabName = tabControl.TabPages[selectedIndex].Text;
+
+            var severity = Severity.INFORMATION.ToString();
+            var message = $"Accessed {tabName}";
+
+            WriteLog(severity, message);
+
+            AutoSizeTabControl((TabControl)sender);
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            WriteLog(string.Empty, Severity.INFORMATION.ToString(), "End session.", "LOGOFF");
+        }
     }
 }
-
