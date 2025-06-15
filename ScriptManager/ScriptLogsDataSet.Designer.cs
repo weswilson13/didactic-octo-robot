@@ -2067,8 +2067,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.InsertCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.InsertCommand.Connection = this.Connection;
             this._adapter.InsertCommand.CommandText = "INSERT INTO [config].[ScriptConfig] ([Section], [Key], [Value]) VALUES (@Section," +
-                " @Key, @Value);\r\nSELECT Section, [Key], Value, Id FROM ScriptConfig WHERE (Id = " +
-                "SCOPE_IDENTITY())";
+                " @Key, @Value)";
             this._adapter.InsertCommand.CommandType = global::System.Data.CommandType.Text;
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Section";
