@@ -44,6 +44,7 @@ namespace ScriptManager
             try
             {
                 Console.WriteLine("RowValidated");
+                this.Validate();
                 this.networkStatusBindingSource.EndEdit();
                 this.networkStatusTableAdapter.Update(this.scriptLogsDataSet.NetworkStatus);
             }
@@ -56,6 +57,7 @@ namespace ScriptManager
         {
             try { 
                 Console.WriteLine("RowValidated");
+                this.Validate();
                 this.scriptConfigBindingSource.EndEdit();
                 this.scriptConfigTableAdapter.Update(this.scriptLogsDataSet.ScriptConfig);
             }
