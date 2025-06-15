@@ -4,6 +4,10 @@ namespace ScriptManager
 
     partial class ScriptLogsDataSet
     {
+        partial class NetworkStatusDataTable
+        {
+        }
+
         partial class ScriptConfigDataTable
         {
         }
