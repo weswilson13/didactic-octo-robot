@@ -668,13 +668,13 @@
       <dsig:DigestValue>Fu+nbyIOIxZqlYc7qu1DiZGRRwwThIyUSmef8r9ayUE=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="ScriptManager.exe.config" size="3173">
+  <file name="ScriptManager.exe.config" size="3205">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>XNitGqA6t9C2x2XXVwLUgDLpf4M4w0A1gO56oQq8kVI=</dsig:DigestValue>
+      <dsig:DigestValue>zSW7nhAl9+YUbasStxyyg8ELAd+Nb5W4uo9gBKc/i24=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

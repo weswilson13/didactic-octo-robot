@@ -1,7 +1,7 @@
 USE [ScriptLogs]
 GO
 
-/****** Object:  Trigger [config].[trgNetworkStatus]    Script Date: 6/14/2025 10:49:49 PM ******/
+/****** Object:  Trigger [config].[trgNetworkStatus]    Script Date: 6/15/2025 9:03:45 AM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -13,7 +13,7 @@ GO
 -- Create date: <Create Date,,>
 -- Description:	<Description,,>
 -- =============================================
-CREATE OR ALTER   TRIGGER [config].[trgNetworkStatus] 
+CREATE OR ALTER     TRIGGER [config].[trgNetworkStatus] 
    ON  [config].[NetworkStatus] 
    FOR INSERT, DELETE, UPDATE
 AS 
@@ -28,6 +28,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  INSERT  INTO log.ChangeLog
 			  ( LogTime,
 				TableName,
+				Application,
 				Username,
 				Severity,
 				Operation,
@@ -35,6 +36,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  )
 			  SELECT  @now,
 			  'NetworkStatus',
+			  APP_NAME(),
 			  @username,
 			  'INFORMATION',
 			  'UPDATE',
@@ -46,6 +48,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  INSERT  INTO log.ChangeLog
 			  ( LogTime,
 				TableName,
+				Application,
 				Username,
 				Severity,
 				Operation,
@@ -53,6 +56,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  )
 			  SELECT  @now,
 			  'NetworkStatus',
+			  APP_NAME(),
 			  @username,
 			  'INFORMATION',
 			  'DELETE',
@@ -65,6 +69,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 		  INSERT  INTO log.ChangeLog
 			  ( LogTime,
 				TableName,
+				Application,
 				Username,
 				Severity,
 				Operation,
@@ -72,6 +77,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  )
 		  SELECT  @now,
 			  'NetworkStatus',
+			  APP_NAME(),
 			  @username,
 			  'INFORMATION',
 			  'INSERT',
@@ -82,3 +88,5 @@ GO
 
 ALTER TABLE [config].[NetworkStatus] ENABLE TRIGGER [trgNetworkStatus]
 GO
+
+

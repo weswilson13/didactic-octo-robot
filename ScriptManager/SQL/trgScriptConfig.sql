@@ -29,6 +29,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  INSERT  INTO log.ChangeLog
 			  ( LogTime,
 				TableName,
+				Application,
 				Username,
 				Severity,
 				Operation,
@@ -36,6 +37,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  )
 			  SELECT  @now,
 			  'ScriptConfig',
+			  APP_NAME(),
 			  @username,
 			  'INFORMATION',
 			  'UPDATE',
@@ -47,6 +49,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  INSERT  INTO log.ChangeLog
 			  ( LogTime,
 				TableName,
+				Application,
 				Username,
 				Severity,
 				Operation,
@@ -54,6 +57,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  )
 			  SELECT  @now,
 			  'ScriptConfig',
+			  APP_NAME(),
 			  @username,
 			  'INFORMATION',
 			  'DELETE',
@@ -66,6 +70,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 		  INSERT  INTO log.ChangeLog
 			  ( LogTime,
 				TableName,
+				Application,
 				Username,
 				Severity,
 				Operation,
@@ -73,6 +78,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  )
 		  SELECT  @now,
 			  'ScriptConfig',
+			  APP_NAME(),
 			  @username,
 			  'INFORMATION',
 			  'INSERT',
