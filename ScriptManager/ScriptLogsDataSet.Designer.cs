@@ -314,6 +314,8 @@ namespace ScriptManager {
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
         public partial class NetworkStatusDataTable : global::System.Data.TypedTableBase<NetworkStatusRow> {
             
+            private global::System.Data.DataColumn columnId;
+            
             private global::System.Data.DataColumn columnDeviceName;
             
             private global::System.Data.DataColumn columnPort;
@@ -323,8 +325,6 @@ namespace ScriptManager {
             private global::System.Data.DataColumn columnNotes;
             
             private global::System.Data.DataColumn columnActive;
-            
-            private global::System.Data.DataColumn columnID;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
@@ -357,6 +357,14 @@ namespace ScriptManager {
             protected NetworkStatusDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
                     base(info, context) {
                 this.InitVars();
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public global::System.Data.DataColumn IdColumn {
+                get {
+                    return this.columnId;
+                }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -401,14 +409,6 @@ namespace ScriptManager {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn IDColumn {
-                get {
-                    return this.columnID;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -447,12 +447,12 @@ namespace ScriptManager {
             public NetworkStatusRow AddNetworkStatusRow(string DeviceName, string Port, string Service, string Notes, string Active) {
                 NetworkStatusRow rowNetworkStatusRow = ((NetworkStatusRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
+                        null,
                         DeviceName,
                         Port,
                         Service,
                         Notes,
-                        Active,
-                        null};
+                        Active};
                 rowNetworkStatusRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowNetworkStatusRow);
                 return rowNetworkStatusRow;
@@ -460,9 +460,9 @@ namespace ScriptManager {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public NetworkStatusRow FindByID(int ID) {
+            public NetworkStatusRow FindById(int Id) {
                 return ((NetworkStatusRow)(this.Rows.Find(new object[] {
-                            ID})));
+                            Id})));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -482,17 +482,19 @@ namespace ScriptManager {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             internal void InitVars() {
+                this.columnId = base.Columns["Id"];
                 this.columnDeviceName = base.Columns["DeviceName"];
                 this.columnPort = base.Columns["Port"];
                 this.columnService = base.Columns["Service"];
                 this.columnNotes = base.Columns["Notes"];
                 this.columnActive = base.Columns["Active"];
-                this.columnID = base.Columns["ID"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             private void InitClass() {
+                this.columnId = new global::System.Data.DataColumn("Id", typeof(int), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnId);
                 this.columnDeviceName = new global::System.Data.DataColumn("DeviceName", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnDeviceName);
                 this.columnPort = new global::System.Data.DataColumn("Port", typeof(string), null, global::System.Data.MappingType.Element);
@@ -503,21 +505,19 @@ namespace ScriptManager {
                 base.Columns.Add(this.columnNotes);
                 this.columnActive = new global::System.Data.DataColumn("Active", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnActive);
-                this.columnID = new global::System.Data.DataColumn("ID", typeof(int), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnID);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
-                                this.columnID}, true));
-                this.columnDeviceName.MaxLength = 10;
-                this.columnPort.MaxLength = 10;
-                this.columnService.MaxLength = 10;
-                this.columnNotes.MaxLength = 10;
-                this.columnActive.MaxLength = 10;
-                this.columnID.AutoIncrement = true;
-                this.columnID.AutoIncrementSeed = -1;
-                this.columnID.AutoIncrementStep = -1;
-                this.columnID.AllowDBNull = false;
-                this.columnID.ReadOnly = true;
-                this.columnID.Unique = true;
+                                this.columnId}, true));
+                this.columnId.AutoIncrement = true;
+                this.columnId.AutoIncrementSeed = -1;
+                this.columnId.AutoIncrementStep = -1;
+                this.columnId.AllowDBNull = false;
+                this.columnId.ReadOnly = true;
+                this.columnId.Unique = true;
+                this.columnDeviceName.MaxLength = 50;
+                this.columnPort.MaxLength = 50;
+                this.columnService.MaxLength = 50;
+                this.columnNotes.MaxLength = 255;
+                this.columnActive.MaxLength = 5;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -651,13 +651,13 @@ namespace ScriptManager {
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
         public partial class ScriptConfigDataTable : global::System.Data.TypedTableBase<ScriptConfigRow> {
             
+            private global::System.Data.DataColumn columnId;
+            
             private global::System.Data.DataColumn columnSection;
             
             private global::System.Data.DataColumn columnKey;
             
             private global::System.Data.DataColumn columnValue;
-            
-            private global::System.Data.DataColumn columnId;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
@@ -694,6 +694,14 @@ namespace ScriptManager {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public global::System.Data.DataColumn IdColumn {
+                get {
+                    return this.columnId;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public global::System.Data.DataColumn SectionColumn {
                 get {
                     return this.columnSection;
@@ -713,14 +721,6 @@ namespace ScriptManager {
             public global::System.Data.DataColumn ValueColumn {
                 get {
                     return this.columnValue;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public global::System.Data.DataColumn IdColumn {
-                get {
-                    return this.columnId;
                 }
             }
             
@@ -764,10 +764,10 @@ namespace ScriptManager {
             public ScriptConfigRow AddScriptConfigRow(string Section, string Key, string Value) {
                 ScriptConfigRow rowScriptConfigRow = ((ScriptConfigRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
+                        null,
                         Section,
                         Key,
-                        Value,
-                        null};
+                        Value};
                 rowScriptConfigRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowScriptConfigRow);
                 return rowScriptConfigRow;
@@ -797,37 +797,37 @@ namespace ScriptManager {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             internal void InitVars() {
+                this.columnId = base.Columns["Id"];
                 this.columnSection = base.Columns["Section"];
                 this.columnKey = base.Columns["Key"];
                 this.columnValue = base.Columns["Value"];
-                this.columnId = base.Columns["Id"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             private void InitClass() {
+                this.columnId = new global::System.Data.DataColumn("Id", typeof(int), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnId);
                 this.columnSection = new global::System.Data.DataColumn("Section", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnSection);
                 this.columnKey = new global::System.Data.DataColumn("Key", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnKey);
                 this.columnValue = new global::System.Data.DataColumn("Value", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnValue);
-                this.columnId = new global::System.Data.DataColumn("Id", typeof(int), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnId);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
                                 this.columnId}, true));
-                this.columnSection.AllowDBNull = false;
-                this.columnSection.MaxLength = 2147483647;
-                this.columnKey.AllowDBNull = false;
-                this.columnKey.MaxLength = 2147483647;
-                this.columnValue.AllowDBNull = false;
-                this.columnValue.MaxLength = 2147483647;
                 this.columnId.AutoIncrement = true;
                 this.columnId.AutoIncrementSeed = -1;
                 this.columnId.AutoIncrementStep = -1;
                 this.columnId.AllowDBNull = false;
                 this.columnId.ReadOnly = true;
                 this.columnId.Unique = true;
+                this.columnSection.AllowDBNull = false;
+                this.columnSection.MaxLength = 2147483647;
+                this.columnKey.AllowDBNull = false;
+                this.columnKey.MaxLength = 2147483647;
+                this.columnValue.AllowDBNull = false;
+                this.columnValue.MaxLength = 2147483647;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -970,6 +970,17 @@ namespace ScriptManager {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public int Id {
+                get {
+                    return ((int)(this[this.tableNetworkStatus.IdColumn]));
+                }
+                set {
+                    this[this.tableNetworkStatus.IdColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public string DeviceName {
                 get {
                     try {
@@ -1050,17 +1061,6 @@ namespace ScriptManager {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public int ID {
-                get {
-                    return ((int)(this[this.tableNetworkStatus.IDColumn]));
-                }
-                set {
-                    this[this.tableNetworkStatus.IDColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public bool IsDeviceNameNull() {
                 return this.IsNull(this.tableNetworkStatus.DeviceNameColumn);
             }
@@ -1136,6 +1136,17 @@ namespace ScriptManager {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+            public int Id {
+                get {
+                    return ((int)(this[this.tableScriptConfig.IdColumn]));
+                }
+                set {
+                    this[this.tableScriptConfig.IdColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
             public string Section {
                 get {
                     return ((string)(this[this.tableScriptConfig.SectionColumn]));
@@ -1164,17 +1175,6 @@ namespace ScriptManager {
                 }
                 set {
                     this[this.tableScriptConfig.ValueColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
-            public int Id {
-                get {
-                    return ((int)(this[this.tableScriptConfig.IdColumn]));
-                }
-                set {
-                    this[this.tableScriptConfig.IdColumn] = value;
                 }
             }
         }
@@ -1372,23 +1372,23 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             global::System.Data.Common.DataTableMapping tableMapping = new global::System.Data.Common.DataTableMapping();
             tableMapping.SourceTable = "Table";
             tableMapping.DataSetTable = "NetworkStatus";
+            tableMapping.ColumnMappings.Add("Id", "Id");
             tableMapping.ColumnMappings.Add("DeviceName", "DeviceName");
             tableMapping.ColumnMappings.Add("Port", "Port");
             tableMapping.ColumnMappings.Add("Service", "Service");
             tableMapping.ColumnMappings.Add("Notes", "Notes");
             tableMapping.ColumnMappings.Add("Active", "Active");
-            tableMapping.ColumnMappings.Add("ID", "ID");
             this._adapter.TableMappings.Add(tableMapping);
             this._adapter.DeleteCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.DeleteCommand.Connection = this.Connection;
-            this._adapter.DeleteCommand.CommandText = @"DELETE FROM [config].[NetworkStatus] WHERE (([ID] = @Original_ID) AND ((@IsNull_DeviceName = 1 AND [DeviceName] IS NULL) OR ([DeviceName] = @Original_DeviceName)) AND ((@IsNull_Port = 1 AND [Port] IS NULL) OR ([Port] = @Original_Port)) AND ((@IsNull_Service = 1 AND [Service] IS NULL) OR ([Service] = @Original_Service)) AND ((@IsNull_Notes = 1 AND [Notes] IS NULL) OR ([Notes] = @Original_Notes)) AND ((@IsNull_Active = 1 AND [Active] IS NULL) OR ([Active] = @Original_Active)))";
+            this._adapter.DeleteCommand.CommandText = @"DELETE FROM [config].[NetworkStatus] WHERE (([Id] = @Original_Id) AND ((@IsNull_DeviceName = 1 AND [DeviceName] IS NULL) OR ([DeviceName] = @Original_DeviceName)) AND ((@IsNull_Port = 1 AND [Port] IS NULL) OR ([Port] = @Original_Port)) AND ((@IsNull_Service = 1 AND [Service] IS NULL) OR ([Service] = @Original_Service)) AND ((@IsNull_Notes = 1 AND [Notes] IS NULL) OR ([Notes] = @Original_Notes)) AND ((@IsNull_Active = 1 AND [Active] IS NULL) OR ([Active] = @Original_Active)))";
             this._adapter.DeleteCommand.CommandType = global::System.Data.CommandType.Text;
             global::Microsoft.Data.SqlClient.SqlParameter param = new global::Microsoft.Data.SqlClient.SqlParameter();
-            param.ParameterName = "@Original_ID";
+            param.ParameterName = "@Original_Id";
             param.DbType = global::System.Data.DbType.Int32;
             param.SqlDbType = global::System.Data.SqlDbType.Int;
             param.IsNullable = true;
-            param.SourceColumn = "ID";
+            param.SourceColumn = "Id";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
             this._adapter.DeleteCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
@@ -1402,8 +1402,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.DeleteCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_DeviceName";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "DeviceName";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1419,8 +1418,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.DeleteCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_Port";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Port";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1436,8 +1434,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.DeleteCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_Service";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Service";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1453,8 +1450,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.DeleteCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_Notes";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Notes";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1470,8 +1466,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.DeleteCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_Active";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Active";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1479,88 +1474,81 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.InsertCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.InsertCommand.Connection = this.Connection;
             this._adapter.InsertCommand.CommandText = "INSERT INTO [config].[NetworkStatus] ([DeviceName], [Port], [Service], [Notes], [" +
-                "Active]) VALUES (@DeviceName, @Port, @Service, @Notes, @Active)";
+                "Active]) VALUES (@DeviceName, @Port, @Service, @Notes, @Active);\r\nSELECT Id, Dev" +
+                "iceName, Port, Service, Notes, Active FROM config.NetworkStatus WHERE (Id = SCOP" +
+                "E_IDENTITY())";
             this._adapter.InsertCommand.CommandType = global::System.Data.CommandType.Text;
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@DeviceName";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "DeviceName";
             this._adapter.InsertCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Port";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Port";
             this._adapter.InsertCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Service";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Service";
             this._adapter.InsertCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Notes";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Notes";
             this._adapter.InsertCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Active";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Active";
             this._adapter.InsertCommand.Parameters.Add(param);
             this._adapter.UpdateCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.UpdateCommand.Connection = this.Connection;
-            this._adapter.UpdateCommand.CommandText = @"UPDATE [config].[NetworkStatus] SET [DeviceName] = @DeviceName, [Port] = @Port, [Service] = @Service, [Notes] = @Notes, [Active] = @Active WHERE (([ID] = @Original_ID) AND ((@IsNull_DeviceName = 1 AND [DeviceName] IS NULL) OR ([DeviceName] = @Original_DeviceName)) AND ((@IsNull_Port = 1 AND [Port] IS NULL) OR ([Port] = @Original_Port)) AND ((@IsNull_Service = 1 AND [Service] IS NULL) OR ([Service] = @Original_Service)) AND ((@IsNull_Notes = 1 AND [Notes] IS NULL) OR ([Notes] = @Original_Notes)) AND ((@IsNull_Active = 1 AND [Active] IS NULL) OR ([Active] = @Original_Active)))";
+            this._adapter.UpdateCommand.CommandText = @"UPDATE [config].[NetworkStatus] SET [DeviceName] = @DeviceName, [Port] = @Port, [Service] = @Service, [Notes] = @Notes, [Active] = @Active WHERE (([Id] = @Original_Id) AND ((@IsNull_DeviceName = 1 AND [DeviceName] IS NULL) OR ([DeviceName] = @Original_DeviceName)) AND ((@IsNull_Port = 1 AND [Port] IS NULL) OR ([Port] = @Original_Port)) AND ((@IsNull_Service = 1 AND [Service] IS NULL) OR ([Service] = @Original_Service)) AND ((@IsNull_Notes = 1 AND [Notes] IS NULL) OR ([Notes] = @Original_Notes)) AND ((@IsNull_Active = 1 AND [Active] IS NULL) OR ([Active] = @Original_Active)));
+SELECT Id, DeviceName, Port, Service, Notes, Active FROM config.NetworkStatus WHERE (Id = @Id)";
             this._adapter.UpdateCommand.CommandType = global::System.Data.CommandType.Text;
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@DeviceName";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "DeviceName";
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Port";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Port";
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Service";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Service";
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Notes";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Notes";
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Active";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Active";
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
-            param.ParameterName = "@Original_ID";
+            param.ParameterName = "@Original_Id";
             param.DbType = global::System.Data.DbType.Int32;
             param.SqlDbType = global::System.Data.SqlDbType.Int;
             param.IsNullable = true;
-            param.SourceColumn = "ID";
+            param.SourceColumn = "Id";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
@@ -1574,8 +1562,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_DeviceName";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "DeviceName";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1591,8 +1578,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_Port";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Port";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1608,8 +1594,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_Service";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Service";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1625,8 +1610,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_Notes";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Notes";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
@@ -1642,11 +1626,18 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.UpdateCommand.Parameters.Add(param);
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Original_Active";
-            param.DbType = global::System.Data.DbType.StringFixedLength;
-            param.SqlDbType = global::System.Data.SqlDbType.NChar;
+            param.SqlDbType = global::System.Data.SqlDbType.NVarChar;
             param.IsNullable = true;
             param.SourceColumn = "Active";
             param.SourceVersion = global::System.Data.DataRowVersion.Original;
+            this._adapter.UpdateCommand.Parameters.Add(param);
+            param = new global::Microsoft.Data.SqlClient.SqlParameter();
+            param.ParameterName = "@Id";
+            param.DbType = global::System.Data.DbType.Int32;
+            param.SqlDbType = global::System.Data.SqlDbType.Int;
+            param.Size = 4;
+            param.IsNullable = true;
+            param.SourceColumn = "Id";
             this._adapter.UpdateCommand.Parameters.Add(param);
         }
         
@@ -1663,7 +1654,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._commandCollection = new global::Microsoft.Data.SqlClient.SqlCommand[1];
             this._commandCollection[0] = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = "SELECT * FROM config.NetworkStatus";
+            this._commandCollection[0].CommandText = "SELECT Id, DeviceName, Port, Service, Notes, Active FROM config.NetworkStatus";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
         }
         
@@ -1724,8 +1715,8 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Delete, true)]
-        public virtual int Delete(int Original_ID, string Original_DeviceName, string Original_Port, string Original_Service, string Original_Notes, string Original_Active) {
-            this.Adapter.DeleteCommand.Parameters[0].Value = ((int)(Original_ID));
+        public virtual int Delete(int Original_Id, string Original_DeviceName, string Original_Port, string Original_Service, string Original_Notes, string Original_Active) {
+            this.Adapter.DeleteCommand.Parameters[0].Value = ((int)(Original_Id));
             if ((Original_DeviceName == null)) {
                 this.Adapter.DeleteCommand.Parameters[1].Value = ((object)(1));
                 this.Adapter.DeleteCommand.Parameters[2].Value = global::System.DBNull.Value;
@@ -1837,7 +1828,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
-        public virtual int Update(string DeviceName, string Port, string Service, string Notes, string Active, int Original_ID, string Original_DeviceName, string Original_Port, string Original_Service, string Original_Notes, string Original_Active) {
+        public virtual int Update(string DeviceName, string Port, string Service, string Notes, string Active, int Original_Id, string Original_DeviceName, string Original_Port, string Original_Service, string Original_Notes, string Original_Active, int Id) {
             if ((DeviceName == null)) {
                 this.Adapter.UpdateCommand.Parameters[0].Value = global::System.DBNull.Value;
             }
@@ -1868,7 +1859,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             else {
                 this.Adapter.UpdateCommand.Parameters[4].Value = ((string)(Active));
             }
-            this.Adapter.UpdateCommand.Parameters[5].Value = ((int)(Original_ID));
+            this.Adapter.UpdateCommand.Parameters[5].Value = ((int)(Original_Id));
             if ((Original_DeviceName == null)) {
                 this.Adapter.UpdateCommand.Parameters[6].Value = ((object)(1));
                 this.Adapter.UpdateCommand.Parameters[7].Value = global::System.DBNull.Value;
@@ -1909,6 +1900,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
                 this.Adapter.UpdateCommand.Parameters[14].Value = ((object)(0));
                 this.Adapter.UpdateCommand.Parameters[15].Value = ((string)(Original_Active));
             }
+            this.Adapter.UpdateCommand.Parameters[16].Value = ((int)(Id));
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.UpdateCommand.Connection.State;
             if (((this.Adapter.UpdateCommand.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {
@@ -1923,6 +1915,14 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
                     this.Adapter.UpdateCommand.Connection.Close();
                 }
             }
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+        [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
+        [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
+        public virtual int Update(string DeviceName, string Port, string Service, string Notes, string Active, int Original_Id, string Original_DeviceName, string Original_Port, string Original_Service, string Original_Notes, string Original_Active) {
+            return this.Update(DeviceName, Port, Service, Notes, Active, Original_Id, Original_DeviceName, Original_Port, Original_Service, Original_Notes, Original_Active, Original_Id);
         }
     }
     
@@ -2047,10 +2047,10 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             global::System.Data.Common.DataTableMapping tableMapping = new global::System.Data.Common.DataTableMapping();
             tableMapping.SourceTable = "Table";
             tableMapping.DataSetTable = "ScriptConfig";
+            tableMapping.ColumnMappings.Add("Id", "Id");
             tableMapping.ColumnMappings.Add("Section", "Section");
             tableMapping.ColumnMappings.Add("Key", "Key");
             tableMapping.ColumnMappings.Add("Value", "Value");
-            tableMapping.ColumnMappings.Add("Id", "Id");
             this._adapter.TableMappings.Add(tableMapping);
             this._adapter.DeleteCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.DeleteCommand.Connection = this.Connection;
@@ -2067,7 +2067,8 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.InsertCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.InsertCommand.Connection = this.Connection;
             this._adapter.InsertCommand.CommandText = "INSERT INTO [config].[ScriptConfig] ([Section], [Key], [Value]) VALUES (@Section," +
-                " @Key, @Value)";
+                " @Key, @Value);\r\nSELECT Id, Section, [Key], Value FROM config.ScriptConfig WHERE" +
+                " (Id = SCOPE_IDENTITY())";
             this._adapter.InsertCommand.CommandType = global::System.Data.CommandType.Text;
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Section";
@@ -2090,8 +2091,8 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._adapter.UpdateCommand = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._adapter.UpdateCommand.Connection = this.Connection;
             this._adapter.UpdateCommand.CommandText = "UPDATE [config].[ScriptConfig] SET [Section] = @Section, [Key] = @Key, [Value] = " +
-                "@Value WHERE (([Id] = @Original_Id));\r\nSELECT Section, [Key], Value, Id FROM Scr" +
-                "iptConfig WHERE (Id = @Id)";
+                "@Value WHERE (([Id] = @Original_Id));\r\nSELECT Id, Section, [Key], Value FROM con" +
+                "fig.ScriptConfig WHERE (Id = @Id)";
             this._adapter.UpdateCommand.CommandType = global::System.Data.CommandType.Text;
             param = new global::Microsoft.Data.SqlClient.SqlParameter();
             param.ParameterName = "@Section";
@@ -2142,7 +2143,7 @@ namespace ScriptManager.ScriptLogsDataSetTableAdapters {
             this._commandCollection = new global::Microsoft.Data.SqlClient.SqlCommand[1];
             this._commandCollection[0] = new global::Microsoft.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = "SELECT * FROM config.ScriptConfig";
+            this._commandCollection[0].CommandText = "SELECT Id, Section, [Key], Value FROM config.ScriptConfig";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
         }
         

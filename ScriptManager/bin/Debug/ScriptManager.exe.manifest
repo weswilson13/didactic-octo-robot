@@ -426,14 +426,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ScriptManager.exe" size="64976">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ScriptManager.exe" size="65488">
       <assemblyIdentity name="ScriptManager" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>Qlvdc99YmbIXMMNd2I99nleEaY+YvSYZ2Kej+a8Nxr8=</dsig:DigestValue>
+        <dsig:DigestValue>PGmTd9cU8OacznkYMsTXRx1kVVdXz7sWdW86+bZ+b24=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
