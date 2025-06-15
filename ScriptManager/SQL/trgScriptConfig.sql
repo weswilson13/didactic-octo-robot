@@ -1,19 +1,20 @@
 USE [ScriptLogs]
 GO
 
-/****** Object:  Trigger [config].[trgScriptConfig]    Script Date: 6/14/2025 10:43:10 PM ******/
+/****** Object:  Trigger [config].[trgScriptConfig]    Script Date: 6/15/2025 8:46:57 AM ******/
 SET ANSI_NULLS ON
 GO
 
 SET QUOTED_IDENTIFIER ON
 GO
 
+
 -- =============================================
 -- Author:		<Author,,Name>
 -- Create date: <Create Date,,>
 -- Description:	<Description,,>
 -- =============================================
-CREATE OR ALTER TRIGGER [config].[trgScriptConfig] 
+CREATE OR ALTER   TRIGGER [config].[trgScriptConfig] 
    ON  [config].[ScriptConfig] 
    FOR INSERT, DELETE, UPDATE
 AS 
@@ -38,7 +39,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'UPDATE',
-			  '{"Old":{"Id":"' + CAST(o.[Id] as varchar) + '","Section":"' + o.[Section] + '","Key":"' + o.[Key] + '","Value":"' + o.[Value] + '"},"New":{"Id":"' + CAST(n.[Id] as varchar) + '","Section":"' + n.[Section] + '","Key":"' + n.[Key] + '","Value":"' + n.[Value] + '"}}'
+			  '{"Old":{"Id":"' + CAST(o.[Id] as varchar) + '","Section":"' + ISNULL(o.[Section],'') + '","Key":"' + ISNULL(o.[Key],'') + '","Value":"' + ISNULL(o.[Value],'') + '"},"New":{"Id":"' + CAST(n.[Id] as varchar) + '","Section":"' + ISNULL(n.[Section],'') + '","Key":"' + ISNULL(n.[Key],'') + '","Value":"' + ISNULL(n.[Value],'') + '"}}'
 			  FROM deleted as o inner join inserted as n on o.Id = n.Id
 		   END
 		ELSE -- RECORD WAS DELETED
@@ -56,7 +57,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'DELETE',
-			  '{"Id":"' + CAST(d.[Id] as varchar) + '","Section":"' + d.[Section] + '","Key":"' + d.[Key] + '","Value":"' + d.[Value] + '"}'
+			  '{"Id":"' + CAST(d.[Id] as varchar) + '","Section":"' + ISNULL(d.[Section],'') + '","Key":"' + ISNULL(d.[Key],'') + '","Value":"' + ISNULL(d.[Value],'') + '"}'
 			  FROM deleted as d
 		   END
 		END
@@ -75,10 +76,14 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'INSERT',
-			  '{"Id":"' + CAST(i.[Id] as varchar) + '","Section":"' + i.[Section] + '","Key":"' + i.[Key] + '","Value":"' + i.[Value] + '"}'
+			  '{"Id":"' + CAST(i.[Id] as varchar) + '","Section":"' + ISNULL(i.[Section],'') + '","Key":"' + ISNULL(i.[Key],'') + '","Value":"' + ISNULL(i.[Value],'') + '"}'
 		  FROM inserted as i
 	   END   
 GO
 
 ALTER TABLE [config].[ScriptConfig] ENABLE TRIGGER [trgScriptConfig]
 GO
+
+
+-- This trigger logs changes to the ScriptConfig table in the ChangeLog table.
+-- It captures INSERT, UPDATE, and DELETE operations.

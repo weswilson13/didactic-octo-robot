@@ -38,7 +38,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'UPDATE',
-			  '{"Old":{"Id":"' + CAST(o.[Id] as varchar) + '","DeviceName":"' + o.[DeviceName] + '","Port":"' + o.[Port] + '","Service":"' + o.[Service] + '","Notes":"' + o.[Notes] + '","Active":"' + o.[Active] + '"},"New":{"Id":"' + CAST(n.[Id] as varchar) + '","DeviceName":"' + n.[DeviceName] + '","Port":"' + n.[Port] + '","Service":"' + n.[Service] + '","Notes":"' + n.[Notes] + '","Active":"' + n.[Active] + '"}}'
+			  '{"Old":{"Id":"' + CAST(o.[Id] as varchar) + '","DeviceName":"' + ISNULL(o.[DeviceName],'') + '","Port":"' + ISNULL(o.[Port],'') + '","Service":"' + ISNULL(o.[Service],'') + '","Notes":"' + ISNULL(o.[Notes],'') + '","Active":"' + ISNULL(o.[Active],'') + '"},"New":{"Id":"' + CAST(n.[Id] as varchar) + '","DeviceName":"' + ISNULL(n.[DeviceName],'') + '","Port":"' + ISNULL(n.[Port],'') + '","Service":"' + ISNULL(n.[Service],'') + '","Notes":"' + ISNULL(n.[Notes],'') + '","Active":"' + ISNULL(n.[Active],'') + '"}}'
 			  FROM deleted as o inner join inserted as n on o.Id = n.ID
 		   END
 		ELSE -- RECORD WAS DELETED
@@ -56,7 +56,7 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'DELETE',
-			  '{"Id":"' + CAST(d.[Id] as varchar) + '","DeviceName":"' + d.[DeviceName] + '","Port":"' + d.[Port] + '","Service":"' + d.[Service] + '","Notes":"' + d.[Notes] + '","Active":"' + d.[Active] + '"}'
+			  '{"Id":"' + CAST(d.[Id] as varchar) + '","DeviceName":"' + ISNULL(d.[DeviceName],'') + '","Port":"' + ISNULL(d.[Port],'') + '","Service":"' + ISNULL(d.[Service],'') + '","Notes":"' + ISNULL(d.[Notes],'') + '","Active":"' + ISNULL(d.[Active],'') + '"}'
 			  FROM deleted as d
 		   END
 		END
@@ -75,9 +75,9 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'INSERT',
-			  '{"Id":"' + CAST(i.[Id] as varchar) + '","DeviceName":"' + i.[DeviceName] + '","Port":"' + i.[Port] + '","Service":"' + i.[Service] + '","Notes":"' + i.[Notes] + '","Active":"' + i.[Active] + '"}'
+			  '{"Id":"' + CAST(i.[Id] as varchar) + '","DeviceName":"' + ISNULL(i.[DeviceName],'') + '","Port":"' + ISNULL(i.[Port],'') + '","Service":"' + ISNULL(i.[Service],'') + '","Notes":"' + ISNULL(i.[Notes],'') + '","Active":"' + ISNULL(i.[Active],'') + '"}'
 		  FROM inserted as i
-	   END   
+	   END
 GO
 
 ALTER TABLE [config].[NetworkStatus] ENABLE TRIGGER [trgNetworkStatus]
