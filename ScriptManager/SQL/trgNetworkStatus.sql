@@ -1,33 +1,25 @@
--- ================================================
--- Template generated from Template Explorer using:
--- Create Trigger (New Menu).SQL
---
--- Use the Specify Values for Template Parameters 
--- command (Ctrl-Shift-M) to fill in the parameter 
--- values below.
---
--- See additional Create Trigger templates for more
--- examples of different Trigger statements.
---
--- This block of comments will not be included in
--- the definition of the function.
--- ================================================
+USE [ScriptLogs]
+GO
+
+/****** Object:  Trigger [config].[trgNetworkStatus]    Script Date: 6/14/2025 10:49:49 PM ******/
 SET ANSI_NULLS ON
 GO
+
 SET QUOTED_IDENTIFIER ON
 GO
+
 -- =============================================
 -- Author:		<Author,,Name>
 -- Create date: <Create Date,,>
 -- Description:	<Description,,>
 -- =============================================
-CREATE OR ALTER TRIGGER config.trgNetworkStatus 
-   ON  config.NetworkStatus 
+CREATE OR ALTER   TRIGGER [config].[trgNetworkStatus] 
+   ON  [config].[NetworkStatus] 
    FOR INSERT, DELETE, UPDATE
 AS 
 
 DECLARE @now datetime = GETDATE();
-DECLARE @username varchar(15) = SUSER_NAME();
+DECLARE @username varchar(50) = SUSER_NAME();
 
 IF EXISTS ( SELECT 0 FROM Deleted )
 	BEGIN
@@ -46,8 +38,8 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 			  @username,
 			  'INFORMATION',
 			  'UPDATE',
-			  'ID: ' + CAST(u.[Id] as varchar) + ' | Devicename: ' + u.[DeviceName] + ' | Port: ' + u.[Port] + ' | Service: ' + u.[Service] + ' | Notes: ' + u.[Notes] + ' | Active: ' + u.[Active]
-			  FROM deleted as u
+			  '{"Old":{"Id":"' + CAST(o.[Id] as varchar) + '","DeviceName":"' + o.[DeviceName] + '","Port":"' + o.[Port] + '","Service":"' + o.[Service] + '","Notes":"' + o.[Notes] + '","Active":"' + o.[Active] + '"},"New":{"Id":"' + CAST(n.[Id] as varchar) + '","DeviceName":"' + n.[DeviceName] + '","Port":"' + n.[Port] + '","Service":"' + n.[Service] + '","Notes":"' + n.[Notes] + '","Active":"' + n.[Active] + '"}}'
+			  FROM deleted as o inner join inserted as n on o.Id = n.ID
 		   END
 		ELSE -- RECORD WAS DELETED
 		   BEGIN
@@ -60,11 +52,11 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 				Message
 			  )
 			  SELECT  @now,
-			  'ScriptConfig',
+			  'NetworkStatus',
 			  @username,
 			  'INFORMATION',
 			  'DELETE',
-			  'ID: ' + CAST(d.[Id] as varchar) + ' | Devicename: ' + d.[DeviceName] + ' | Port: ' + d.[Port] + ' | Service: ' + d.[Service] + ' | Notes: ' + d.[Notes] + ' | Active: ' + d.[Active]
+			  '{"Id":"' + CAST(d.[Id] as varchar) + '","DeviceName":"' + d.[DeviceName] + '","Port":"' + d.[Port] + '","Service":"' + d.[Service] + '","Notes":"' + d.[Notes] + '","Active":"' + d.[Active] + '"}'
 			  FROM deleted as d
 		   END
 		END
@@ -79,11 +71,14 @@ IF EXISTS ( SELECT 0 FROM Deleted )
 				Message
 			  )
 		  SELECT  @now,
-			  'ScriptConfig',
+			  'NetworkStatus',
 			  @username,
 			  'INFORMATION',
 			  'INSERT',
-			  'ID: ' + CAST(i.[Id] as varchar) + ' | Devicename: ' + i.[DeviceName] + ' | Port: ' + i.[Port] + ' | Service: ' + i.[Service] + ' | Notes: ' + i.[Notes] + ' | Active: ' + i.[Active]
+			  '{"Id":"' + CAST(i.[Id] as varchar) + '","DeviceName":"' + i.[DeviceName] + '","Port":"' + i.[Port] + '","Service":"' + i.[Service] + '","Notes":"' + i.[Notes] + '","Active":"' + i.[Active] + '"}'
 		  FROM inserted as i
 	   END   
+GO
+
+ALTER TABLE [config].[NetworkStatus] ENABLE TRIGGER [trgNetworkStatus]
 GO

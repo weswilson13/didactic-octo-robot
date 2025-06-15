@@ -19,7 +19,7 @@ CREATE OR ALTER TRIGGER [config].[trgScriptConfig]
 AS 
 
 DECLARE @now datetime = GETDATE();
-DECLARE @username varchar(15) = SUSER_NAME();
+DECLARE @username varchar(50) = SUSER_NAME();
 
 IF EXISTS ( SELECT 0 FROM Deleted )
 	BEGIN
