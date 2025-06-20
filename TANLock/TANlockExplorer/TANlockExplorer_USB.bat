@@ -1,0 +1,1 @@
+.\bin\TANlockExplorer.exe --view-all-tty
