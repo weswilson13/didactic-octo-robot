@@ -45,6 +45,20 @@ begin{
         return $appSettings
     }
 
+    function Invoke-TrustAllCertificates { # This function is used to bypass SSL certificate validation
+
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+
+        switch ($PSVersionTable.PSEdition) {
+            'Core' {
+                [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
+            }
+            'Desktop' {
+                Add-Type -TypeDefinition ""
+            }
+        }
+    }
+
     $appSettings = Get-AppSettings
 
     $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
@@ -52,6 +66,8 @@ begin{
 
     $apiKey = $appSettings.ApiKey
     Write-Verbose "Using API Key: $apiKey"
+    
+    Invoke-TrustAllCertificates
 }
 
 process {
