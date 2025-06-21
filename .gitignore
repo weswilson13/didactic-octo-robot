@@ -5,3 +5,6 @@ bin/
 */Documentation/*.html
 */Archive
 !*/bin/Release/*
+TANlockExplorer
+USB-TAN3-Driver
+*.zip
