@@ -46,6 +46,11 @@ function Invoke-TANLockWebRequest {
     Write-Verbose "Sending request to $Uri"
     try {
         $response = Invoke-WebRequest @webRequestParams
+        
+        # TANLock documentation directs using curl; however, we use Invoke-WebRequest in PowerShell.
+        # Uncomment the line below if you want to use curl instead (requires curl installed and available in PATH).
+        # $response = curl -k $Uri
+
         Write-Host "Response: $($response.StatusCode) - $($response.StatusDescription)"
     }
     catch {
