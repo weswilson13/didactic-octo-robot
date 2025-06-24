@@ -32,8 +32,7 @@ begin{
     function Get-AppSettings {
         $configPath = "$PSScriptRoot\App.config"
         if (-not (Test-Path $configPath)) {
-            Write-Error "Configuration file not found at path: $configPath"
-            return
+            throw "Configuration file not found at path: $configPath"
         }
 
         [xml]$config = Get-Content $configPath
@@ -59,7 +58,8 @@ begin{
         }
     }
 
-    $appSettings = Get-AppSettings
+    try { $appSettings = Get-AppSettings }
+    catch { $PSCmdlet.ThrowTerminatingError($_) }
 
     $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
     $rackMapping | Out-String | Write-Verbose

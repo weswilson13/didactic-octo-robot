@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [ValidateSet(
         'Rack1',
         'Rack2',
@@ -32,8 +32,7 @@ begin{
     function Get-AppSettings {
         $configPath = "$PSScriptRoot\App.config"
         if (-not (Test-Path $configPath)) {
-            Write-Error "Configuration file not found at path: $configPath"
-            return
+            throw "Configuration file not found at path: $configPath"
         }
 
         [xml]$config = Get-Content $configPath
@@ -59,7 +58,8 @@ begin{
         }
     }
 
-    $appSettings = Get-AppSettings
+    try { $appSettings = Get-AppSettings }
+    catch { $PSCmdlet.ThrowTerminatingError($_) }
 
     $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
     $rackMapping | Out-String | Write-Verbose
@@ -69,7 +69,7 @@ begin{
     
     Invoke-TrustAllCertificates
 
-    $body = @{"state"="$State"}
+    $body = @{state=$State}
 }
 
 process {
@@ -89,7 +89,7 @@ process {
         $uri = 'https://{0}/{1}/status' -f $rack.IPAddress, $apiKey
         Write-Host "Setting state to $State for Lock on $($rack.Location) at IP: $($rack.IPAddress)"
         
-        Write-Verbose "Command: Invoke-WebRequest -Uri $uri -Method Post -Body $body -ContentType 'application/json'"
+        Write-Verbose "Command: Invoke-WebRequest -Uri $uri -Method Post -Body $($body | Out-String) -ContentType 'application/json'"
         try {
             $response = Invoke-WebRequest -Uri $uri -Method Post -Body $body -ContentType 'application/json' -ErrorAction Stop
             Write-Host "Response: $($response.StatusCode) - $($response.StatusDescription)"
