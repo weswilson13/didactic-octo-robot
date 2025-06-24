@@ -138,6 +138,119 @@ function Get-TANLockLog {
         
     }
 }
+function Get-TANLockState {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateSet(
+            'Rack1',
+            'Rack2',
+            'Rack3',
+            'Rack4',
+            'Rack5',
+            'Rack6',
+            'Rack7',
+            'Rack8',
+            'Rack9',
+            'Rack10',
+            'Rack11',
+            'Rack12',
+            'Rack13',
+            'Rack14'
+        )]
+        [string[]]$Location
+    )
+
+    begin{
+        $appSettings = Get-AppSettings
+
+        $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
+        $rackMapping | Out-String | Write-Verbose
+
+        $apiKey = $appSettings.ApiKey
+        Write-Verbose "Using API Key: $apiKey"
+        
+        Invoke-TrustAllCertificates
+    }
+
+    process {
+        
+    }
+}
+function Set-TANLockState {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet(
+            'Rack1',
+            'Rack2',
+            'Rack3',
+            'Rack4',
+            'Rack5',
+            'Rack6',
+            'Rack7',
+            'Rack8',
+            'Rack9',
+            'Rack10',
+            'Rack11',
+            'Rack12',
+            'Rack13',
+            'Rack14'
+        )]
+        [string[]]$Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet(
+            'locked',
+            'unlocked',
+            'open'
+        )]
+        [string]$State
+    )
+
+    begin{
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
+
+        $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
+        $rackMapping | Out-String | Write-Verbose
+
+        $apiKey = $appSettings.ApiKey
+        Write-Verbose "Using API Key: $apiKey"
+        
+        Invoke-TrustAllCertificates
+
+        $body = @{state=$State}
+    }
+
+    process {
+        if ($Location) {
+            Write-Verbose "Filtering racks for specified locations: $($Location -join ', ')"
+            $racksToUpdate = $rackMapping | Where-Object {$_.Location -in $Location}
+        }
+        else {
+            Write-Verbose "No specific locations provided, updating all racks."
+            $racksToUpdate = $rackMapping
+        }
+
+        foreach ($rack in $racksToUpdate)
+        {
+            Write-Verbose "Processing Rack: $($rack.Location) at IP: $($rack.IPAddress)"
+
+            $uri = 'https://{0}/{1}/status' -f $rack.IPAddress, $apiKey
+            Write-Host "Setting state to $State for Lock on $($rack.Location) at IP: $($rack.IPAddress)"
+            
+            Write-Verbose "Command: Invoke-WebRequest -Uri $uri -Method Post -Body $($body | Out-String) -ContentType 'application/json'"
+            try {
+                $response = Invoke-WebRequest -Uri $uri -Method Post -Body $body -ContentType 'application/json' -ErrorAction Stop
+                Write-Host "Response: $($response.StatusCode) - $($response.StatusDescription)"
+            }
+            catch {
+                Write-Error "Failed to set state on Rack: $($rack.Location). Error: $_"
+            }
+        }
+    }
+}
 function Get-TANLockUser {
     [CmdletBinding()]
     param (
@@ -317,5 +430,77 @@ function Remove-TANLockUser {
             }
             
         }  
+    }
+}
+function Add-RFIDCardToTANLock {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateSet(
+            'Rack1',
+            'Rack2',
+            'Rack3',
+            'Rack4',
+            'Rack5',
+            'Rack6',
+            'Rack7',
+            'Rack8',
+            'Rack9',
+            'Rack10',
+            'Rack11',
+            'Rack12',
+            'Rack13',
+            'Rack14'
+        )]
+        [string[]]$Location,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrWhiteSpace()]
+        [string]$UserId,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrWhiteSpace()]
+        [string]$PIN
+    )
+
+    begin{
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
+
+        $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
+        $rackMapping | Out-String | Write-Verbose
+
+        $apiKey = $appSettings.ApiKey
+        Write-Verbose "Using API Key: $apiKey"
+        
+        Invoke-TrustAllCertificates
+    }
+
+    process {
+        if ($Location) {
+            Write-Verbose "Filtering racks for specified locations: $($Location -join ', ')"
+            $racksToUpdate = $rackMapping | Where-Object {$_.Location -in $Location}
+        }
+        else {
+            Write-Verbose "No specific locations provided, updating all racks."
+            $racksToUpdate = $rackMapping
+        }
+
+        foreach ($rack in $racksToUpdate)
+        {
+            Write-Verbose "Processing Rack: $($rack.Location) at IP: $($rack.IPAddress)"
+
+            $uri = 'https://{0}/{1}/user/create/{2}/{3}' -f $rack.IPAddress, $apiKey, $UserId, $PIN
+            Write-Host "Adding RFID card for UserId: $UserId to Lock on $($rack.Location) at IP: $($rack.IPAddress)"
+            
+            Write-Verbose "Command: Invoke-WebRequest -Uri $uri"
+            try {
+                $response = Invoke-WebRequest -Uri $uri -ErrorAction Stop
+                Write-Host "Response: $($response.StatusCode) - $($response.StatusDescription)"
+            }
+            catch {
+                Write-Error "Failed to add RFID card for UserId: $UserId on Rack: $($rack.Location). Error: $_"
+            }
+        }
     }
 }
