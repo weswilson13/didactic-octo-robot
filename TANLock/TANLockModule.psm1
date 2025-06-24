@@ -52,7 +52,22 @@ function Invoke-TANLockWebRequest {
         throw "Failed to send request to $Uri. Error: $_"
     }
 }
-function Get-TANLockHelp {
+function Get-TANLockInfo {
+    <#
+        .SYNOPSIS
+        Retrieves information about TANLock devices.
+
+        .DESCRIPTION
+        This function retrieves information about TANLock devices based on the provided location.
+        It uses the API key and rack mapping from the application settings.
+
+        .PARAMETER Location
+        Specifies the location of the TANLock devices to retrieve information for.
+        Valid values are 'Rack1', 'Rack2', ..., 'Rack14'.
+
+        .EXAMPLE
+        Get-TANLockInfo -Location 'Rack1', 'Rack2'
+    #>
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
@@ -72,21 +87,15 @@ function Get-TANLockHelp {
             'Rack13',
             'Rack14'
         )]
-        [string[]]$Location,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrWhiteSpace()]
-        [string]$UserId,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrWhiteSpace()]
-        [string]$PIN
+        [string]$Location
     )
 
     begin{
-        $appSettings = Get-AppSettings
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
 
-        $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
+        $rackMapping = $appSettings.RackMapping | Where-Object { $_.Location -eq $Location } | ConvertFrom-Json
+        Write-Verbose "Rack Mapping for Location '$Location':"
         $rackMapping | Out-String | Write-Verbose
 
         $apiKey = $appSettings.ApiKey
@@ -96,7 +105,57 @@ function Get-TANLockHelp {
     }
 
     process {
+        $uri = 'https://{0}/{1}/info' -f $rackMapping.IPAddress, $apiKey
+        try { Invoke-TANLockWebRequest -Uri $uri }
+        catch {
+            throw "Failed to retrieve TANLock information for location '$Location'. Error: $_"
+        }
+    }
+}
+function Get-TANLockHelp {
+    <#
+        .SYNOPSIS
+
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [ValidateSet(
+            'Rack1',
+            'Rack2',
+            'Rack3',
+            'Rack4',
+            'Rack5',
+            'Rack6',
+            'Rack7',
+            'Rack8',
+            'Rack9',
+            'Rack10',
+            'Rack11',
+            'Rack12',
+            'Rack13',
+            'Rack14'
+        )]
+        [string]$Location
+    )
+
+    begin{
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
+
+        $rackMapping = $appSettings.RackMapping | Where-Object { $_.Location -eq $Location } | ConvertFrom-Json
+        Write-Verbose "Rack Mapping for Location '$Location':"
+        $rackMapping | Out-String | Write-Verbose
         
+        Invoke-TrustAllCertificates
+    }
+
+    process {
+        $uri = 'https://{0}/help' -f $rackMapping.IPAddress
+        try { Invoke-TANLockWebRequest -Uri $uri }
+        catch {
+            throw "Failed to retrieve TANLock help for location '$Location'. Error: $_"
+        }
     }
 }
 function Get-TANLockLog {
@@ -119,11 +178,12 @@ function Get-TANLockLog {
             'Rack13',
             'Rack14'
         )]
-        [string[]]$Location
+        [string]$Location
     )
 
     begin{
-        $appSettings = Get-AppSettings
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
 
         $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
         $rackMapping | Out-String | Write-Verbose
@@ -162,7 +222,8 @@ function Get-TANLockState {
     )
 
     begin{
-        $appSettings = Get-AppSettings
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
 
         $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
         $rackMapping | Out-String | Write-Verbose
@@ -174,7 +235,30 @@ function Get-TANLockState {
     }
 
     process {
-        
+        if ($Location) {
+            Write-Verbose "Filtering racks for specified locations: $($Location -join ', ')"
+            $racksToUpdate = $rackMapping | Where-Object {$_.Location -in $Location}
+        }
+        else {
+            Write-Verbose "No specific locations provided, updating all racks."
+            $racksToUpdate = $rackMapping
+        }
+
+        foreach ($rack in $racksToUpdate)
+        {
+            Write-Verbose "Processing Rack: $($rack.Location) at IP: $($rack.IPAddress)"
+
+            $uri = 'https://{0}/{1}/status' -f $rack.IPAddress, $apiKey
+            Write-Host "Getting state for Lock on $($rack.Location) at IP: $($rack.IPAddress)"
+            
+            try {
+                Invoke-TANLockWebRequest -Uri $uri -Method 'GET'
+                Write-Host "State retrieved successfully for Rack: $($rack.Location)"
+            }
+            catch {
+                Write-Error "Failed to get state on Rack: $($rack.Location). Error: $_"
+            }
+        }
     }
 }
 function Set-TANLockState {
@@ -271,19 +355,12 @@ function Get-TANLockUser {
             'Rack13',
             'Rack14'
         )]
-        [string[]]$Location,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrWhiteSpace()]
-        [string]$UserId,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrWhiteSpace()]
-        [string]$PIN
+        [string[]]$Location
     )
 
     begin{
-        $appSettings = Get-AppSettings
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
 
         $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
         $rackMapping | Out-String | Write-Verbose
@@ -295,7 +372,30 @@ function Get-TANLockUser {
     }
 
     process {
-        
+        if ($Location) {
+            Write-Verbose "Filtering racks for specified locations: $($Location -join ', ')"
+            $racksToUpdate = $rackMapping | Where-Object {$_.Location -in $Location}
+        }
+        else {
+            Write-Verbose "No specific locations provided, returning users for all racks."
+            $racksToUpdate = $rackMapping
+        }
+
+        foreach ($rack in $racksToUpdate)
+        {
+            Write-Verbose "Processing Rack: $($rack.Location) at IP: $($rack.IPAddress)"
+
+            $uri = 'https://{0}/{1}/user/list' -f $rack.IPAddress, $apiKey
+            Write-Host "Getting users registered for Lock on $($rack.Location) at IP: $($rack.IPAddress)"
+            
+            try {
+                Invoke-TANLockWebRequest -Uri $uri -Method 'GET'
+                Write-Host "Users retrieved successfully for Rack: $($rack.Location)"
+            }
+            catch {
+                Write-Error "Failed to get users on Rack: $($rack.Location). Error: $_"
+            }
+        }
     }
 }
 function New-TANLockUser {
@@ -330,7 +430,8 @@ function New-TANLockUser {
     )
 
     begin{
-        $appSettings = Get-AppSettings
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
 
         $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
         $rackMapping | Out-String | Write-Verbose
@@ -342,7 +443,30 @@ function New-TANLockUser {
     }
 
     process {
-        
+        if ($Location) {
+            Write-Verbose "Filtering racks for specified locations: $($Location -join ', ')"
+            $racksToUpdate = $rackMapping | Where-Object {$_.Location -in $Location}
+        }
+        else {
+            Write-Verbose "No specific locations provided, updating all racks."
+            $racksToUpdate = $rackMapping
+        }
+
+        foreach ($rack in $racksToUpdate)
+        {
+            Write-Verbose "Processing Rack: $($rack.Location) at IP: $($rack.IPAddress)"
+
+            $uri = 'https://{0}/{1}/user/create/{2}/{3}' -f $rack.IPAddress, $apiKey, $UserId, $PIN
+            Write-Host "Creating user for Lock on $($rack.Location) at IP: $($rack.IPAddress)"
+
+            try {
+                Invoke-TANLockWebRequest -Uri $uri -Method 'GET'
+                Write-Host "User created successfully for Rack: $($rack.Location)"
+            }
+            catch {
+                Write-Error "Failed to create user on Rack: $($rack.Location). Error: $_"
+            }
+        }
     }
 }
 function Remove-TANLockUser {
@@ -383,7 +507,8 @@ function Remove-TANLockUser {
             throw "You cannot use -All and -UserId together. Please choose one option."
         }
         Write-Verbose "Retrieving application settings from App.config"
-        $appSettings = Get-AppSettings
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
 
         $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
         $rackMapping | Out-String | Write-Verbose
