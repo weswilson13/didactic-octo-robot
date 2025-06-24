@@ -28,62 +28,7 @@ param (
 )
 
 begin{
-    function Get-AppSettings {
-        $configPath = "$PSScriptRoot\App.config"
-        if (-not (Test-Path $configPath)) {
-            Write-Error "Configuration file not found at path: $configPath"
-            return
-        }
-
-        [xml]$config = Get-Content $configPath
-        $appSettings = New-Object psobject
-        $config.Configuration.appSettings.add | ForEach-Object {
-            Add-Member -InputObject $appSettings -NotePropertyName $_.key.Trim() -NotePropertyValue $_.value.Trim()
-        }
-
-        return $appSettings
-    }
-
-    function Invoke-TrustAllCertificates { # This function is used to bypass SSL certificate validation
-
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-
-        switch ($PSVersionTable.PSEdition) {
-            'Core' {
-                [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
-            }
-            'Desktop' {
-                Add-Type -TypeDefinition ""
-            }
-        }
-    }
-    function Invoke-TANLockWebRequest {
-        param (
-            [string]$Uri,
-            [string]$Method = 'GET',
-            [hashtable]$Body
-        )
-
-        $webRequestParams = @{
-            Uri         = $Uri
-            Method      = $Method
-            ContentType = 'application/json'
-            ErrorAction = 'Stop'
-        }
-        if ($Body) {
-            $webRequestParams['Body'] = $Body | ConvertTo-Json -Depth 10
-        }
-
-        Write-Verbose "Sending request to $Uri"
-        try {
-            $response = Invoke-WebRequest @webRequestParams
-            Write-Host "Response: $($response.StatusCode) - $($response.StatusDescription)"
-        }
-        catch {
-            throw "Failed to send request to $Uri. Error: $_"
-        }
-    }
-
+    
     if (!$All.IsPresent -and !$UserId) {
         throw "You must specify either -All to clear all users or -UserId to specify specific users to remove."
     }
@@ -117,15 +62,24 @@ process {
         if ($All.IsPresent) {
             Write-Verbose "Clearing all users from Rack: $($rack.Location)"
             $uri = 'https://{0}/{1}/user/clear' -f $rack.IPAddress, $apiKey
-            Invoke-TANLockWebRequest -Uri $uri
+            try {
+                Invoke-TANLockWebRequest -Uri $uri
+            }
+            catch {
+                Write-Error "Failed to clear users from Rack: $($rack.Location). Error: $_"
+            }
         }
         else {
             foreach ($user in $UserId) {
                 Write-Verbose "Removing User: $user from Rack: $($rack.Location)"
                 $uri = 'https://{0}/{1}/user/delete/{2}' -f $rack.IPAddress, $apiKey, $user
-                Invoke-TANLockWebRequest -Uri $uri
+                try {
+                    Invoke-TANLockWebRequest -Uri $uri
+                }
+                catch {
+                    Write-Error "Failed to remove User: $user from Rack: $($rack.Location). Error: $_"
+                }
             }
         }
-        
     }  
 }
