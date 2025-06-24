@@ -185,7 +185,8 @@ function Get-TANLockLog {
         try { $appSettings = Get-AppSettings }
         catch { $PSCmdlet.ThrowTerminatingError($_) }
 
-        $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
+        $rackMapping = $appSettings.RackMapping | Where-Object { $_.Location -eq $Location } | ConvertFrom-Json
+        Write-Verbose "Rack Mapping for Location '$Location':"
         $rackMapping | Out-String | Write-Verbose
 
         $apiKey = $appSettings.ApiKey
@@ -195,7 +196,11 @@ function Get-TANLockLog {
     }
 
     process {
-        
+        $uri = 'https://{0}/{1}/log/read' -f $rackMapping.IPAddress, $apiKey
+        try { Invoke-TANLockWebRequest -Uri $uri }
+        catch {
+            throw "Failed to retrieve TANLock log for location '$Location'. Error: $_"
+        }
     }
 }
 function Get-TANLockState {
