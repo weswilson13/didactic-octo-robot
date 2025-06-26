@@ -271,80 +271,6 @@ function Get-TANLockState {
         }
     }
 }
-function Set-TANLockState {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet(
-            'Rack1',
-            'Rack2',
-            'Rack3',
-            'Rack4',
-            'Rack5',
-            'Rack6',
-            'Rack7',
-            'Rack8',
-            'Rack9',
-            'Rack10',
-            'Rack11',
-            'Rack12',
-            'Rack13',
-            'Rack14'
-        )]
-        [string[]]$Location,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet(
-            'locked',
-            'unlocked',
-            'open'
-        )]
-        [string]$State
-    )
-
-    begin{
-        try { $appSettings = Get-AppSettings }
-        catch { $PSCmdlet.ThrowTerminatingError($_) }
-
-        $rackMapping = $appSettings.RackMapping | ConvertFrom-Json
-        $rackMapping | Out-String | Write-Verbose
-
-        $apiKey = $appSettings.ApiKey
-        Write-Verbose "Using API Key: $apiKey"
-        
-        Invoke-TrustAllCertificates
-
-        $body = @{state=$State}
-    }
-
-    process {
-        if ($Location) {
-            Write-Verbose "Filtering racks for specified locations: $($Location -join ', ')"
-            $racksToUpdate = $rackMapping | Where-Object {$_.Location -in $Location}
-        }
-        else {
-            Write-Verbose "No specific locations provided, updating all racks."
-            $racksToUpdate = $rackMapping
-        }
-
-        foreach ($rack in $racksToUpdate)
-        {
-            Write-Verbose "Processing Rack: $($rack.Location) at IP: $($rack.IPAddress)"
-
-            $uri = 'https://{0}/{1}/status' -f $rack.IPAddress, $apiKey
-            Write-Host "Setting state to $State for Lock on $($rack.Location) at IP: $($rack.IPAddress)"
-            
-            Write-Verbose "Command: Invoke-WebRequest -Uri $uri -Method Post -Body $($body | Out-String) -ContentType 'application/json'"
-            try {
-                $response = Invoke-WebRequest -Uri $uri -Method Post -Body $body -ContentType 'application/json' -ErrorAction Stop
-                Write-Host "Response: $($response.StatusCode) - $($response.StatusDescription)"
-            }
-            catch {
-                Write-Error "Failed to set state on Rack: $($rack.Location). Error: $_"
-            }
-        }
-    }
-}
 function Get-TANLockUser {
     [CmdletBinding()]
     param (
@@ -638,4 +564,88 @@ function Add-RFIDCardToTANLock {
             }
         }
     }
+}
+function Invoke-OpenTANLock {
+    <#
+        .SYNOPSIS
+        Opens the TANLock device at the specified location.
+
+        .DESCRIPTION
+        This function opens the TANLock device at the specified location by sending a request to the device's API.
+
+        .PARAMETER Location
+        Specifies the location of the TANLock device to open.
+        Valid values are 'Rack1', 'Rack2', ..., 'Rack14'.
+
+        .EXAMPLE
+        Invoke-OpenTANLock -Location 'Rack1'
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet(
+            'Rack1',
+            'Rack2',
+            'Rack3',
+            'Rack4',
+            'Rack5',
+            'Rack6',
+            'Rack7',
+            'Rack8',
+            'Rack9',
+            'Rack10',
+            'Rack11',
+            'Rack12',
+            'Rack13',
+            'Rack14'
+        )]
+        [string]$Location,
+
+        [Parameter(Mandatory = $true)]
+        [string]$UserId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$PIN,
+
+        # [Parameter(Mandatory = $false)]
+        # [switch]$PrepareOpen = $true,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Open
+    )
+
+    begin{
+        try { $appSettings = Get-AppSettings }
+        catch { $PSCmdlet.ThrowTerminatingError($_) }
+
+        $rackMapping = $appSettings.RackMapping | Where-Object { $_.Location -eq $Location } | ConvertFrom-Json
+        Write-Verbose "Rack Mapping for Location '$Location':"
+        $rackMapping | Out-String | Write-Verbose
+
+        $apiKey = $appSettings.ApiKey
+        Write-Verbose "Using API Key: $apiKey"
+        
+        Invoke-TrustAllCertificates
+
+        if ($Open.IsPresent) {
+            Write-Verbose "Opening TANLock device at specified location: $Location"
+            $uri = 'https://{0}/{1}/input/{2}/{3}' -f $rackMapping.IPAddress, $apiKey, $UserId, $PIN
+        }
+        else {
+            Write-Verbose "Preparing to open TANLock devices at specified location: $Location"
+            $uri = 'https://{0}/{1}/prepareopen/{2}/{3}' -f $rackMapping.IPAddress, $apiKey, $UserId, $PIN
+        }
+    }
+
+    process {
+            Write-Verbose "Processing Rack: $($rack.Location) at IP: $($rack.IPAddress)"
+
+            try {
+                $response = Invoke-TANLockWebRequest -Uri $uri -Method 'GET'
+                Write-Host "Response: $($response.StatusCode) - $($response.StatusDescription)"
+            }
+            catch {
+                Write-Error "Failed to send command to TANLock on Rack: $($rack.Location). Error: $_"
+            }
+        }
 }
