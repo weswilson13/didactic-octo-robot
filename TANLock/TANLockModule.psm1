@@ -578,11 +578,11 @@ function Invoke-OpenTANLock {
         Valid values are 'Rack1', 'Rack2', ..., 'Rack14'.
 
         .EXAMPLE
-        Invoke-OpenTANLock -Location 'Rack1'
+        Invoke-OpenTANLock -Location 'Rack1' -UserId 'user123' -PIN '1234'
     #>
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet(
             'Rack1',
             'Rack2',
@@ -601,10 +601,10 @@ function Invoke-OpenTANLock {
         )]
         [string]$Location,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$UserId,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$PIN,
 
         # [Parameter(Mandatory = $false)]
@@ -631,7 +631,7 @@ function Invoke-OpenTANLock {
             Write-Verbose "Opening TANLock device at specified location: $Location"
             $uri = 'https://{0}/{1}/input/{2}/{3}' -f $rackMapping.IPAddress, $apiKey, $UserId, $PIN
         }
-        else {
+        else { # default behavior is to prepareopen, requiring user input at the lock 
             Write-Verbose "Preparing to open TANLock devices at specified location: $Location"
             $uri = 'https://{0}/{1}/prepareopen/{2}/{3}' -f $rackMapping.IPAddress, $apiKey, $UserId, $PIN
         }

@@ -208,24 +208,26 @@ function Reset-GroupLists {
     $objPrincipal.MemberOf.ForEach({$ADGroupMembershipBox.Items.Add((Get-ADGroup $PSItem).SamAccountName)})
 }
 
+Import-Module "$PSScriptRoot\Functions\ADFunctions.psm1" -Force
+
 #dot sourced functions
 . "$PSScriptRoot\menustrip.ps1"
-. "$PSScriptRoot\Functions\Event-Handlers.ps1"
-. "$PSScriptRoot\Functions\Clear-NTKGroups.ps1"
-. "$PSScriptRoot\Functions\Set-NTKGroups.ps1"
-. "$PSScriptRoot\Functions\Write-Log.ps1"
-. "$PSScriptRoot\Functions\Get-DisabledComputers.ps1"
-. "$PSScriptRoot\Functions\Get-DomainControllers.ps1"
-. "$PSScriptRoot\Functions\Get-InactiveComputers.ps1"
-. "$PSScriptRoot\Functions\Get-InactiveUsers.ps1"
-. "$PSScriptRoot\Functions\Get-LockedOutUsers.ps1"
-. "$PSScriptRoot\Functions\Get-UsersNeverLoggedOn.ps1"
-. "$PSScriptRoot\Functions\Get-UsersRecentlyCreated.ps1"
-. "$PSScriptRoot\Functions\Get-UsersRecentlyDeleted.ps1"
-. "$PSScriptRoot\Functions\Get-UsersRecentlyModified.ps1"
-. "$PSScriptRoot\Functions\Get-UsersWithoutManager.ps1"
-. "$PSScriptRoot\Functions\Set-AccountPassword.ps1"
-. "$PSScriptRoot\Functions\Unlock-UserAccount.ps1"
+# . "$PSScriptRoot\Functions\Event-Handlers.ps1"
+# . "$PSScriptRoot\Functions\Clear-NTKGroups.ps1"
+# . "$PSScriptRoot\Functions\Set-NTKGroups.ps1"
+# . "$PSScriptRoot\Functions\Write-Log.ps1"
+# . "$PSScriptRoot\Functions\Get-DisabledComputers.ps1"
+# . "$PSScriptRoot\Functions\Get-DomainControllers.ps1"
+# . "$PSScriptRoot\Functions\Get-InactiveComputers.ps1"
+# . "$PSScriptRoot\Functions\Get-InactiveUsers.ps1"
+# . "$PSScriptRoot\Functions\Get-LockedOutUsers.ps1"
+# . "$PSScriptRoot\Functions\Get-UsersNeverLoggedOn.ps1"
+# . "$PSScriptRoot\Functions\Get-UsersRecentlyCreated.ps1"
+# . "$PSScriptRoot\Functions\Get-UsersRecentlyDeleted.ps1"
+# . "$PSScriptRoot\Functions\Get-UsersRecentlyModified.ps1"
+# . "$PSScriptRoot\Functions\Get-UsersWithoutManager.ps1"
+# . "$PSScriptRoot\Functions\Set-AccountPassword.ps1"
+# . "$PSScriptRoot\Functions\Unlock-UserAccount.ps1"
 #endregion
 
 Add-Type -AssemblyName System.Windows.Forms
