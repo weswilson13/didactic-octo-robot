@@ -1,4 +1,7 @@
 Function New-LDAPUser {
+    <#
+        https://petri.com/creating-active-directory-user-accounts-adsi-powershell/
+    #>
     [cmdletbinding()]
     Param(
         [parameter(Position = 0, Mandatory)]
