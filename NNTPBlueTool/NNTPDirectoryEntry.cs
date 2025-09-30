@@ -1,28 +1,44 @@
+using System.Configuration;
 using System.DirectoryServices;
 class NNTPDirectoryEntry {
-    public System.DirectoryServices.DirectoryEntry DirectoryEntry;
-    private string Domain = "dc03.mydomain.local";
-    public NNTPDirectoryEntry(string Username, System.DirectoryServices.DirectoryEntry RootDirectoryEntry)
+    public DirectoryEntry DirectoryEntry;
+    private string Domain = ConfigurationManager.AppSettings["Domain"];
+    private string Username;
+    private string Password;
+    public NNTPDirectoryEntry(string Username, DirectoryEntry RootDirectoryEntry)
     {
+        this.Username = Username;
         var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={Username})");
         var searchResult = directorySearcher.FindOne();
-        var userEntry = new System.DirectoryServices.DirectoryEntry();
+        var userEntry = new DirectoryEntry();
+        var userDomain = string.Empty;
 
         if (searchResult != null)
         {
             userEntry = searchResult.GetDirectoryEntry();
+            userDomain = userEntry.Properties["userPrincipalName"].Value.ToString().Split('@')[1];
         }
 
         DirectoryEntry = userEntry;
-        Domain = userEntry.Properties["userPrincipalName"].Value.ToString().Split('@')[1];
+        Domain = userDomain;
     }
-    public NNTPDirectoryEntry(string NewUsername)
+    public NNTPDirectoryEntry(string NewUsername, string Password, DirectoryEntry RootDirectoryEntry)
     {
         // test for existing user
-        DirectoryEntry directoryEntry = new System.DirectoryServices.DirectoryEntry($"WinNT://{Domain}/{NewUsername},user");
-        if (!string.IsNullOrWhiteSpace(directoryEntry.Path))
+        try
         {
-            throw new Exception($"User {NewUsername} already exists in domain {Domain}");
+            DirectoryEntry directoryEntry = new DirectoryEntry($"WinNT://{Domain}/{NewUsername},user");
+            if (!string.IsNullOrWhiteSpace(directoryEntry.Path))
+            {
+                throw new Exception($"User {NewUsername} already exists in domain {Domain}");
+            }
+        }
+        catch (Exception)
+        {
+            // user does not exist, continue
+            this.Username = NewUsername;
+            this.Password = Password;
+            DirectoryEntry = RootDirectoryEntry;
         }
     }
     public void UnlockAccount()
@@ -69,18 +85,18 @@ class NNTPDirectoryEntry {
             throw;
         }
     }
-    public void CreateUser(string NewUsername, string Password)
+    public void CreateUser()
     {
-        using (var newUser = DirectoryEntry.Children.Add($"CN={NewUsername}", "user"))
+        using (var newUser = DirectoryEntry.Children.Add($"CN={Username}", "user"))
         {
-            newUser.Properties["sAMAccountName"].Value = NewUsername;
+            newUser.Properties["sAMAccountName"].Value = Username;
             newUser.CommitChanges();
             newUser.Invoke("SetPassword", Password);
             int userAccountControl = (int)newUser.Properties["userAccountControl"].Value;
             // newUser.Properties["userAccountControl"].Value = userAccountControl & ~(int)UserAccountControl.ACCOUNTDISABLE;
             // newUser.Properties["pwdLastSet"].Value = 0; // Force password change at next logon
             newUser.CommitChanges();
-            Console.WriteLine($"Created user {NewUsername} in domain {Domain}");
+            Console.WriteLine($"Created user {Username} in domain {Domain}");
         }
     }
     [Flags]
