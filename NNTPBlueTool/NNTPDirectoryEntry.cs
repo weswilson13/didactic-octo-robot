@@ -1,10 +1,17 @@
 using System.Configuration;
 using System.DirectoryServices;
+using System.Threading.Tasks.Dataflow;
 class NNTPDirectoryEntry {
     public DirectoryEntry DirectoryEntry;
     private string Domain = ConfigurationManager.AppSettings["Domain"];
     private string Username;
     private string Password;
+    private string Firstname;
+    private string Lastname;
+    private string Email;
+    private string sAMAccountName;
+    private string UserPrincipalName;
+    private string DisplayName;
     public NNTPDirectoryEntry(string Username, DirectoryEntry RootDirectoryEntry)
     {
         this.Username = Username;
@@ -87,16 +94,24 @@ class NNTPDirectoryEntry {
     }
     public void CreateUser()
     {
-        using (var newUser = DirectoryEntry.Children.Add($"CN={Username}", "user"))
-        {
-            newUser.Properties["sAMAccountName"].Value = Username;
+       using (var parent = new DirectoryEntry($"LDAP://{DirectoryEntry.Path}/Users"))
+       {
+
+            var newUser = parent.Children.Add($"CN={Username}", "user");
+            string domain = string.Join('.', DirectoryEntry.Properties["distinguishedName"].Value.ToString().Replace("DC=", "").Split(','));
+            newUser.Properties["sAMAccountName"].Value = sAMAccountName ?? Username;
             newUser.CommitChanges();
+            newUser.Properties["userPrincipalName"].Value = UserPrincipalName ?? $"{Username}@{domain}";
+            newUser.CommitChanges();
+            newUser.Properties["givenName"].Value = Firstname;
+            newUser.Properties["sn"].Value = Lastname;
+            newUser.Properties["displayName"].Value = DisplayName ?? $"{Firstname} {Lastname}" ?? Username;
+            newUser.Properties["mail"].Value = Email ?? $"{Username}@{domain}";
+            newUser.CommitChanges();
+
             newUser.Invoke("SetPassword", Password);
-            int userAccountControl = (int)newUser.Properties["userAccountControl"].Value;
-            // newUser.Properties["userAccountControl"].Value = userAccountControl & ~(int)UserAccountControl.ACCOUNTDISABLE;
-            // newUser.Properties["pwdLastSet"].Value = 0; // Force password change at next logon
             newUser.CommitChanges();
-            Console.WriteLine($"Created user {Username} in domain {Domain}");
+            Console.WriteLine($"Created user {Username} in domain {domain}");
         }
     }
     [Flags]

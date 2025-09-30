@@ -43,6 +43,7 @@ var usernameChoice = Console.ReadLine();
 if (!new[] { "1", "2" }.Contains(usernameChoice)) // use badge id to lookup username
 {
     user = dbContext.PrsnlPeople.FirstOrDefault(u => u.BadgeId == usernameChoice)?.UserName;
+        
     if (string.IsNullOrWhiteSpace(user))
     {
         Console.WriteLine($"No user found with Badge ID {usernameChoice}");
