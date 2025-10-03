@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NNTPBlueTool.Models;
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 void ClearConsole()
 
@@ -10,6 +11,18 @@ void ClearConsole()
     if (Console.IsOutputRedirected == false && Console.IsInputRedirected == false)
     {
         Console.Clear();
+    }
+}
+
+string GetFileHash(string filePath)
+{
+    using (var sha256 = SHA256.Create())
+    {
+        using (var stream = File.OpenRead(filePath))
+        {
+            var hashBytes = sha256.ComputeHash(stream);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToUpperInvariant();
+        }
     }
 }
 
@@ -25,7 +38,6 @@ string password = config["AppSettings:Password"] ?? throw new Exception("Passwor
 string user = string.Empty;
 string choice, usernameChoice = string.Empty;
 bool searchForUser = false;
-
 var optionsBuilder = new DbContextOptionsBuilder<dbContext>();
 optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
 
@@ -99,7 +111,7 @@ else if (usernameChoice == "3") // search for a user
     var startInfo = new ProcessStartInfo()
     {
         FileName = "powershell.exe",
-        Arguments = $"-NoProfile -ExecutionPolicy ByPass -File \"GetUsers.ps1\" -Domain {domain}",
+        Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetUsers.ps1\" -Domain {domain}",
         UseShellExecute = false,
         RedirectStandardOutput = true
     };

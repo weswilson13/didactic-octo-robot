@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NNTPBlueTool")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e07a0e292d7df3939f5ea50b9f395f33fc135475")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3e3431b96c659c66da67aa536b4361b991c9d205")]
 [assembly: System.Reflection.AssemblyProductAttribute("NNTPBlueTool")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NNTPBlueTool")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
