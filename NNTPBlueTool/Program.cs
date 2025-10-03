@@ -2,10 +2,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NNTPBlueTool.Models;
-using System.DirectoryServices;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
-using System.Linq;
+using System.Diagnostics;
+
+void ClearConsole()
+
+{
+    if (Console.IsOutputRedirected == false && Console.IsInputRedirected == false)
+    {
+        Console.Clear();
+    }
+}
 
 // Build configuration
 var builder = new ConfigurationBuilder();
@@ -17,7 +23,7 @@ string domain = config["AppSettings:Domain"] ?? throw new Exception("Domain is e
 string domainUser = config["AppSettings:DomainUser"] ?? throw new Exception("DomainUser is empty");
 string password = config["AppSettings:Password"] ?? throw new Exception("Password is empty");
 string user = string.Empty;
-string choice = string.Empty;
+string choice, usernameChoice = string.Empty;
 bool searchForUser = false;
 
 var optionsBuilder = new DbContextOptionsBuilder<dbContext>();
@@ -27,23 +33,31 @@ var dbContext = new dbContext(optionsBuilder.Options);
 
 while (true)
 {
-    string message = "What would you like to do?\n" +
+    string message = "What would you like to do?\n\n" +
                     "1. Unlock and reset password for existing user\n" +
                     "2. Enable an existing user\n" +
-                    "3. Create new user\n" +
+                    "3. Create new user\n\n" +
                     "Enter 1, 2, or 3: ";
     Console.WriteLine(message);
     choice = Console.ReadLine();
     if (new[] { "1", "2", "3" }.Contains(choice)) { break; }
+    ClearConsole();
 }
+ClearConsole();
 
-string enterUsernameMessage = "Scan the users NNPTC badge, or choose from the list below.\n" +
-                             "1. Enter DoD ID\n" +
-                             "2. Enter username (sAMAccountName)\n" +
-                             "3. Search for a user"; 
+while (true)
+{
+    string enterUsernameMessage = "Scan the users NNPTC badge, or choose from the list below.\n" +
+                                 "1. Enter DoD ID\n" +
+                                 "2. Enter username (sAMAccountName)\n" +
+                                 "3. Search for a user";
 
-Console.WriteLine(enterUsernameMessage);
-var usernameChoice = Console.ReadLine();
+    Console.WriteLine(enterUsernameMessage);
+    usernameChoice = Console.ReadLine();
+    if (!string.IsNullOrWhiteSpace(usernameChoice)) { break; }
+    ClearConsole();
+}
+ClearConsole();
 
 if (!new[] { "1", "2", "3" }.Contains(usernameChoice)) // use badge id to lookup username
 {
@@ -81,6 +95,23 @@ else if (usernameChoice == "2") // enter username directly
 else if (usernameChoice == "3") // search for a user
 {
     searchForUser = true;
+
+    var startInfo = new ProcessStartInfo()
+    {
+        FileName = "powershell.exe",
+        Arguments = $"-NoProfile -ExecutionPolicy ByPass -File \"GetUsers.ps1\" -Domain {domain}",
+        UseShellExecute = false,
+        RedirectStandardOutput = true
+    };
+    var proc = Process.Start(startInfo);
+    proc.WaitForExit();
+    user = proc.StandardOutput.ReadToEnd().ReplaceLineEndings().Trim();
+
+    if (string.IsNullOrWhiteSpace(user))
+    {
+        Console.WriteLine("No user selected");
+        return;
+    }
 }
 
 // Trim any whitespace from the username
