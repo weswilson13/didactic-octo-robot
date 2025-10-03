@@ -71,6 +71,10 @@
               "target": "Package",
               "version": "[9.0.9, )"
             },
+            "System.Management.Automation": {
+              "target": "Package",
+              "version": "[7.5.3, )"
+            },
             "Thycotic.SecretServer.Sdk.Extensions.Integration": {
               "target": "Package",
               "version": "[1.5.9, )"

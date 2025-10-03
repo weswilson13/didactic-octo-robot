@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NNTPBlueTool.Models;
 using System.DirectoryServices;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.Linq;
 
 // Build configuration
@@ -11,11 +13,12 @@ builder.SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 IConfiguration config = builder.Build();
 
-string domain = config["AppSettings:Domain"];
-string domainUser = config["AppSettings:DomainUser"];
-string password = config["AppSettings:Password"];
+string domain = config["AppSettings:Domain"] ?? throw new Exception("Domain is empty");
+string domainUser = config["AppSettings:DomainUser"] ?? throw new Exception("DomainUser is empty");
+string password = config["AppSettings:Password"] ?? throw new Exception("Password is empty");
 string user = string.Empty;
 string choice = string.Empty;
+bool searchForUser = false;
 
 var optionsBuilder = new DbContextOptionsBuilder<dbContext>();
 optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
@@ -36,14 +39,16 @@ while (true)
 
 string enterUsernameMessage = "Scan the users NNPTC badge, or choose from the list below.\n" +
                              "1. Enter DoD ID\n" +
-                             "2. Enter username (sAMAccountName)\n"; 
+                             "2. Enter username (sAMAccountName)\n" +
+                             "3. Search for a user"; 
+
 Console.WriteLine(enterUsernameMessage);
 var usernameChoice = Console.ReadLine();
 
-if (!new[] { "1", "2" }.Contains(usernameChoice)) // use badge id to lookup username
+if (!new[] { "1", "2", "3" }.Contains(usernameChoice)) // use badge id to lookup username
 {
     user = dbContext.PrsnlPeople.FirstOrDefault(u => u.BadgeId == usernameChoice)?.UserName;
-        
+
     if (string.IsNullOrWhiteSpace(user))
     {
         Console.WriteLine($"No user found with Badge ID {usernameChoice}");
@@ -73,6 +78,10 @@ else if (usernameChoice == "2") // enter username directly
         return;
     }
 }
+else if (usernameChoice == "3") // search for a user
+{
+    searchForUser = true;
+}
 
 // Trim any whitespace from the username
 user = user.Trim();
@@ -96,6 +105,7 @@ using (var rootEntry = new System.DirectoryServices.DirectoryEntry($"LDAP://{dom
     }
     else if (choice == "2") // Enable only
     {
+        userEntry.UnlockAccount();
         userEntry.EnableAccount();
         return;
     }

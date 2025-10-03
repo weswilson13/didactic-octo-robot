@@ -8,3 +8,5 @@ bin/
 TANlockExplorer
 USB-TAN3-Driver
 *.zip
+!NNTPBlueTool/bin
+.fake
