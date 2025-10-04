@@ -1,9 +1,12 @@
 using System.Configuration;
 using System.DirectoryServices;
+using System.Diagnostics;
+using System.Management.Automation;
 using System.Threading.Tasks.Dataflow;
 class NNTPDirectoryEntry
 {
     public DirectoryEntry DirectoryEntry;
+    public DirectoryEntry TargetEntry;
     private string Domain = ConfigurationManager.AppSettings["Domain"];
     private string Username;
     private string Password;
@@ -27,7 +30,8 @@ class NNTPDirectoryEntry
             userDomain = userEntry.Properties["userPrincipalName"].Value.ToString().Split('@')[1];
         }
 
-        DirectoryEntry = userEntry;
+        DirectoryEntry = RootDirectoryEntry;
+        TargetEntry = userEntry;
         Domain = userDomain;
     }
     public NNTPDirectoryEntry(string NewUsername, string Password, DirectoryEntry RootDirectoryEntry)
@@ -51,17 +55,17 @@ class NNTPDirectoryEntry
     }
     public void UnlockAccount()
     {
-        DirectoryEntry.Properties["lockoutTime"].Value = 0;
-        DirectoryEntry.CommitChanges();
+        TargetEntry.Properties["lockoutTime"].Value = 0;
+        TargetEntry.CommitChanges();
     }
     public void EnableAccount()
     {
-        int oldUAC = (int)DirectoryEntry.Properties["userAccountControl"].Value;
+        int oldUAC = (int)TargetEntry.Properties["userAccountControl"].Value;
         bool enableAccount = (oldUAC & (int)UserAccountControl.ACCOUNTDISABLE) != 0;
         if (enableAccount)
         {
-            DirectoryEntry.Properties["userAccountControl"].Value = oldUAC & ~(int)UserAccountControl.ACCOUNTDISABLE;
-            DirectoryEntry.CommitChanges();
+            TargetEntry.Properties["userAccountControl"].Value = oldUAC & ~(int)UserAccountControl.ACCOUNTDISABLE;
+            TargetEntry.CommitChanges();
             Console.WriteLine($"Enabled account {DirectoryEntry.Properties["distinguishedName"].Value}");
         }
     }
@@ -69,13 +73,13 @@ class NNTPDirectoryEntry
     {
         if (string.IsNullOrWhiteSpace(NewPassword))
         {
-            string username = DirectoryEntry.Name;
+            string username = TargetEntry.Name;
             string lastThree = username.Substring(username.Length - 3);
             NewPassword = $"Gonavybeatarmy{lastThree}!";
         }
         try
         {
-            DirectoryEntry.Invoke("SetPassword", NewPassword);
+            TargetEntry.Invoke("SetPassword", NewPassword);
         }
         catch
         {
@@ -86,13 +90,55 @@ class NNTPDirectoryEntry
     {
         try
         {
-            DirectoryEntry.Properties["pwdLastSet"].Value = 0;
-            DirectoryEntry.CommitChanges();
+            TargetEntry.Properties["pwdLastSet"].Value = 0;
+            TargetEntry.CommitChanges();
         }
         catch
         {
             throw;
         }
+    }
+    public void MoveUser(string NewParentOU = null)
+    {
+        string nfasStudents = "OU=NFAS-Students,OU=NNTP Users,DC=NNTP,DC=GOV";
+        string npsStudents = "OU=NPS-Students,OU=NNTP Users,DC=NNTP,DC=GOV";
+        string nfasInstructors = "OU=NFAS-Instructors,OU=NNTP Users,DC=NNTP,DC=GOV";
+        string npsInstructors = "OU=NPS-Instructors,OU=NNTP Users,DC=NNTP,DC=GOV";
+        string message = "Choose from one of the following destination OUs:\n\n" +
+                         $"1. NFAS-Students ({nfasStudents})\n" +
+                         $"2. NPS-Students ({npsStudents})\n" +
+                         $"3. NFAS-Instructors ({nfasInstructors})\n" +
+                         $"4. NPS-Instructors ({npsInstructors})\n" +
+                         "5. Other\n\n" +
+                         "Enter 1, 2, 3, 4, or 5: ";
+
+        Console.WriteLine(message);
+        string choice = Console.ReadLine();
+        string targetOU = choice switch
+        {
+            "1" => nfasStudents,
+            "2" => npsStudents,
+            "3" => nfasInstructors,
+            "4" => npsInstructors,
+            "5" => FindOU(),
+            _ => throw new Exception("Invalid choice. Must be 1, 2, 3, 4, or 5.")
+        };
+        Console.WriteLine($"Moving user {Username} to OU {targetOU}");
+
+        // find the parent OU in the context of the root directory entry
+        DirectorySearcher parentSearcher = new DirectorySearcher(DirectoryEntry, $"(distinguishedName={targetOU})");
+        var parentResult = parentSearcher.FindOne();
+        var parentEntry = parentResult.GetDirectoryEntry();
+
+        // move the user to the new OU
+        TargetEntry.MoveTo(parentEntry);
+        TargetEntry.CommitChanges();
+
+        Console.WriteLine($"Moved user {Username} to OU {targetOU} successfully");
+
+        // clean up
+        parentSearcher.Dispose();
+        parentEntry.Dispose();
     }
     public void CreateUser(string ParentOU = null)
     {
@@ -138,6 +184,27 @@ class NNTPDirectoryEntry
         // clean up
         parentSearcher.Dispose();
         parentEntry.Dispose();
+    }
+    public string FindOU()
+    {
+        string domain = DirectoryEntry.Path.Split('/')[2];
+
+        var startInfo = new ProcessStartInfo()
+        {
+            FileName = "powershell.exe",
+            Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetOUs.ps1\" -Domain {domain}",
+            UseShellExecute = false,
+            RedirectStandardOutput = true
+        };
+        var proc = Process.Start(startInfo);
+        proc.WaitForExit();
+        var ou = proc.StandardOutput.ReadToEnd().ReplaceLineEndings().Trim();
+
+        if (string.IsNullOrWhiteSpace(ou))
+        {
+            throw new Exception("No OU selected");
+        }
+        return ou;
     }
     [Flags]
     public enum UserAccountControl

@@ -14,17 +14,7 @@ void ClearConsole()
     }
 }
 
-string GetFileHash(string filePath)
-{
-    using (var sha256 = SHA256.Create())
-    {
-        using (var stream = File.OpenRead(filePath))
-        {
-            var hashBytes = sha256.ComputeHash(stream);
-            return BitConverter.ToString(hashBytes).Replace("-", "").ToUpperInvariant();
-        }
-    }
-}
+Logo.PrintLogo();
 
 // Build configuration
 var builder = new ConfigurationBuilder();
@@ -46,13 +36,14 @@ var dbContext = new dbContext(optionsBuilder.Options);
 while (true)
 {
     string message = "What would you like to do?\n\n" +
-                    "1. Unlock and reset password for existing user\n" +
-                    "2. Enable an existing user\n" +
-                    "3. Create new user\n\n" +
-                    "Enter 1, 2, or 3: ";
+                    "1. Reset password for existing user\n" +
+                    "2. Unlock and enable an existing user\n" +
+                    "3. Move user to different OU (not implemented)\n" +
+                    "4. Create new user\n\n" +
+                    "Enter 1, 2, 3, or 4: ";
     Console.WriteLine(message);
     choice = Console.ReadLine();
-    if (new[] { "1", "2", "3" }.Contains(choice)) { break; }
+    if (new[] { "1", "2", "3", "4" }.Contains(choice)) { break; }
     ClearConsole();
 }
 ClearConsole();
@@ -152,7 +143,12 @@ using (var rootEntry = new System.DirectoryServices.DirectoryEntry($"LDAP://{dom
         userEntry.EnableAccount();
         return;
     }
-    else if (choice == "3") // Create new user
+    else if (choice == "3") // Move user to different OU
+    {
+        userEntry.MoveUser();
+        return;
+    }
+    else if (choice == "4") // Create new user
     {
         try
         {
