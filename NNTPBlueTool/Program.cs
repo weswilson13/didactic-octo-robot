@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NNTPBlueTool.Models;
 using System.Diagnostics;
+using System.DirectoryServices;
 using System.Security.Cryptography;
 
 void ClearConsole()
@@ -27,23 +28,30 @@ string domainUser = config["AppSettings:DomainUser"] ?? throw new Exception("Dom
 string password = config["AppSettings:Password"] ?? throw new Exception("Password is empty");
 string user = string.Empty;
 string choice, usernameChoice = string.Empty;
-bool searchForUser = false;
+
 var optionsBuilder = new DbContextOptionsBuilder<dbContext>();
 optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
 
+var logOptionsBuilder = new DbContextOptionsBuilder<LogContext>();
+logOptionsBuilder.UseSqlServer(config.GetConnectionString("LogConnection"));
+
 var dbContext = new dbContext(optionsBuilder.Options);
+var logContext = new LogContext(logOptionsBuilder.Options);
+
+Logger logger = new Logger(logContext, domainUser);
 
 while (true)
 {
     string message = "What would you like to do?\n\n" +
                     "1. Reset password for existing user\n" +
                     "2. Unlock and enable an existing user\n" +
-                    "3. Move user to different OU (not implemented)\n" +
-                    "4. Create new user\n\n" +
-                    "Enter 1, 2, 3, or 4: ";
+                    "3. Move user to different OU\n" +
+                    "4. Create new user\n" +
+                    "5. View User\n\n" +
+                    "Enter 1, 2, 3, 4, or 5: ";
     Console.WriteLine(message);
     choice = Console.ReadLine();
-    if (new[] { "1", "2", "3", "4" }.Contains(choice)) { break; }
+    if (new[] { "1", "2", "3", "4", "5" }.Contains(choice)) { break; }
     ClearConsole();
 }
 ClearConsole();
@@ -97,12 +105,10 @@ else if (usernameChoice == "2") // enter username directly
 }
 else if (usernameChoice == "3") // search for a user
 {
-    searchForUser = true;
-
     var startInfo = new ProcessStartInfo()
     {
         FileName = "powershell.exe",
-        Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetUsers.ps1\" -Domain {domain}",
+        Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetDirectoryInfo.ps1\" -Domain {domain} -Action GetUsers",
         UseShellExecute = false,
         RedirectStandardOutput = true
     };
@@ -155,7 +161,8 @@ using (var rootEntry = new System.DirectoryServices.DirectoryEntry($"LDAP://{dom
             NNTPDirectoryEntry newUserEntry = new NNTPDirectoryEntry(user, "Gonavybeatarmy123!", rootEntry);
             Console.WriteLine($"Creating new user {user} in domain {domain}");
             // Additional code to set properties and commit changes would go here
-            newUserEntry.CreateUser();
+            DirectoryEntry _user = newUserEntry.CreateUser();
+            logger.Log($"Created new user {_user.Properties["distinguishedName"].Value}");
             return;
         }
         catch (Exception ex)
@@ -163,5 +170,11 @@ using (var rootEntry = new System.DirectoryServices.DirectoryEntry($"LDAP://{dom
             Console.WriteLine(ex.Message);
             return;
         }
+    }
+    else if (choice == "5") // View user
+    {
+        userEntry.GetUser();
+        logger.Log($"Viewed user {user}");
+        return;
     }
 }

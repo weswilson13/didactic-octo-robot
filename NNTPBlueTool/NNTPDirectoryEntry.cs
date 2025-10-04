@@ -140,7 +140,7 @@ class NNTPDirectoryEntry
         parentSearcher.Dispose();
         parentEntry.Dispose();
     }
-    public void CreateUser(string ParentOU = null)
+    public DirectoryEntry CreateUser(string ParentOU = null)
     {
         string domain = string.Join('.', DirectoryEntry.Properties["distinguishedName"].Value.ToString().Replace("DC=", "").Split(','));
         string parentOU = ParentOU ?? $"CN=Users,{DirectoryEntry.Properties["distinguishedName"].Value}";
@@ -184,6 +184,22 @@ class NNTPDirectoryEntry
         // clean up
         parentSearcher.Dispose();
         parentEntry.Dispose();
+
+        return new DirectorySearcher(DirectoryEntry, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
+    }
+    public void GetUser()
+    {
+        string domain = DirectoryEntry.Path.Split('/')[2];
+
+        var startInfo = new ProcessStartInfo()
+        {
+            FileName = "powershell.exe",
+            Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetDirectoryInfo.ps1\" -Domain {domain} -Username {Username} -Action ViewUser",
+            UseShellExecute = false,
+            RedirectStandardOutput = true
+        };
+        var proc = Process.Start(startInfo);
+        proc.WaitForExit();   
     }
     public string FindOU()
     {
@@ -192,7 +208,7 @@ class NNTPDirectoryEntry
         var startInfo = new ProcessStartInfo()
         {
             FileName = "powershell.exe",
-            Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetOUs.ps1\" -Domain {domain}",
+            Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetDirectoryInfo.ps1\" -Domain {domain} -Action GetOUs",
             UseShellExecute = false,
             RedirectStandardOutput = true
         };
