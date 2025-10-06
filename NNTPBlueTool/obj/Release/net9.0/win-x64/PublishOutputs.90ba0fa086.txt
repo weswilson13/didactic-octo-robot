@@ -1,0 +1,4 @@
+D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\publish\NNTPBlueTool.pdb
+D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\publish\appsettings.json
+D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\publish\GetDirectoryInfo.ps1
+D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\publish\NNTPBlueTool.exe
