@@ -1,21 +1,32 @@
 using System.Configuration;
 using System.DirectoryServices;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Management.Automation;
 using System.Threading.Tasks.Dataflow;
+using NNTPBlueTool.Models;
 class NNTPDirectoryEntry
 {
     public DirectoryEntry DirectoryEntry;
     public DirectoryEntry TargetEntry;
-    private string Domain = ConfigurationManager.AppSettings["Domain"];
-    private string Username;
+    public string Domain = ConfigurationManager.AppSettings["Domain"];
+    public string Username;
     private string Password;
-    private string Firstname;
-    private string Lastname;
-    private string Email;
-    private string sAMAccountName;
-    private string UserPrincipalName;
-    private string DisplayName;
+    public string? Firstname;
+    public string? Lastname;
+    public string? Email;
+    public string sAMAccountName;
+    public string UserPrincipalName;
+    public string DisplayName;
+    public string? DistinguishedName;
+    public string? Role; // STAFF or STUDENT
+    public string? RoleType; // NPS or NFAS
+    public NNTPDirectoryEntry()
+    {
+    }
+    public NNTPDirectoryEntry(DirectoryEntry RootDirectoryEntry)
+    {
+    }
     public NNTPDirectoryEntry(string Username, DirectoryEntry RootDirectoryEntry)
     {
         this.Username = Username;
@@ -27,31 +38,74 @@ class NNTPDirectoryEntry
         if (searchResult != null)
         {
             userEntry = searchResult.GetDirectoryEntry();
-            userDomain = userEntry.Properties["userPrincipalName"].Value.ToString().Split('@')[1];
-        }
 
+            // Extract domain from userPrincipalName (preferred) or distinguishedName
+            try
+            {
+                userDomain = userEntry.Properties["userPrincipalName"].Value.ToString().Split('@')[1];
+            }
+            catch
+            {
+                var rg = new Regex(@"(?<=DC=)(\w+)");
+                userDomain = string.Join('.', rg.Matches(RootDirectoryEntry.Properties["distinguishedName"].Value.ToString()));
+            }
+        }
+        else
+        {
+            throw new Exception($"User {Username} not found in Active Directory.");
+        }
+        Password = GeneratePassword();
         DirectoryEntry = RootDirectoryEntry;
         TargetEntry = userEntry;
         Domain = userDomain;
     }
-    public NNTPDirectoryEntry(string NewUsername, string Password, DirectoryEntry RootDirectoryEntry)
+    // public NNTPDirectoryEntry(string NewUsername, DirectoryEntry RootDirectoryEntry)
+    // {
+    //     this.Username = NewUsername;
+    //     this.Password = GeneratePassword();
+    //     DirectoryEntry = RootDirectoryEntry;
+    // }
+    public NNTPDirectoryEntry(PrsnlPerson person, DirectoryEntry RootDirectoryEntry)
     {
-        // test for existing user
-        try
+        if (string.IsNullOrWhiteSpace(person.UserName))
         {
-            DirectoryEntry directoryEntry = new DirectoryEntry($"WinNT://{Domain}/{NewUsername},user");
-            if (!string.IsNullOrWhiteSpace(directoryEntry.Path))
-            {
-                throw new Exception($"User {NewUsername} already exists in domain {Domain}");
-            }
+            throw new Exception("Username is required.");
         }
-        catch (Exception)
+
+        // Extract domain from root entry distinguishedName
+        var rg = new Regex(@"(?<=DC=)(\w+)");
+        Domain = string.Join('.', rg.Matches(RootDirectoryEntry.Properties["distinguishedName"].Value.ToString()));
+
+        var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={person.UserName})");
+        var searchResult = directorySearcher.FindOne();
+
+        Username = (searchResult?.Properties["sAMAccountName"]?.ToString() ?? person.UserName)?.Trim();
+        Password = GeneratePassword();
+        Firstname = (searchResult?.Properties["givenName"]?.ToString() ?? person.FirstName)?.Trim();
+        Lastname = (searchResult?.Properties["sn"]?.ToString() ?? person.LastName)?.Trim();
+        Email = (searchResult?.Properties["mail"]?.ToString() ?? person.EmailAddress)?.Trim();
+        sAMAccountName = Username;
+        UserPrincipalName = Username + "@" + Domain;
+        DisplayName = searchResult?.Properties["displayName"]?.ToString() ?? $"{person.Prefix} {person.LastName}, {person.FirstName}";
+        Role = person.Prsgroup;
+        string? hierCode = person.PrsnlOrgAssignments.FirstOrDefault()?.HierCode?.Trim();
+        if (Regex.Match(hierCode ?? "", @"[E,O]-|([A-D]-T)").Success)
         {
-            // user does not exist, continue
-            this.Username = NewUsername;
-            this.Password = Password;
-            DirectoryEntry = RootDirectoryEntry;
+            RoleType= "NPS";
         }
+        else if (Regex.Match(hierCode ?? "", @"A-").Success)
+        {
+            RoleType= "NFAS";
+        }
+        else
+        {
+            throw new Exception("Invalid HierCode. Must start with E-, O-, A-, A-T, B-T, C-T, or D-T.");
+        }
+
+        DistinguishedName = GetDefaultOU(); // get default OU based on Role and RoleType
+
+        DirectoryEntry = RootDirectoryEntry;
+        TargetEntry = searchResult?.GetDirectoryEntry() ?? null; 
     }
     public void UnlockAccount()
     {
@@ -100,17 +154,18 @@ class NNTPDirectoryEntry
     }
     public void MoveUser(string NewParentOU = null)
     {
-        string nfasStudents = "OU=NFAS-Students,OU=NNTP Users,DC=NNTP,DC=GOV";
-        string npsStudents = "OU=NPS-Students,OU=NNTP Users,DC=NNTP,DC=GOV";
-        string nfasInstructors = "OU=NFAS-Instructors,OU=NNTP Users,DC=NNTP,DC=GOV";
-        string npsInstructors = "OU=NPS-Instructors,OU=NNTP Users,DC=NNTP,DC=GOV";
+        string nfasStudents = DefaultOUs["NFAS-Students"];
+        string npsStudents = DefaultOUs["NPS-Students"];
+        string nfasInstructors = DefaultOUs["NFAS-Instructors"];
+        string npsInstructors = DefaultOUs["NPS-Instructors"];
+
         string message = "Choose from one of the following destination OUs:\n\n" +
                          $"1. NFAS-Students ({nfasStudents})\n" +
                          $"2. NPS-Students ({npsStudents})\n" +
                          $"3. NFAS-Instructors ({nfasInstructors})\n" +
                          $"4. NPS-Instructors ({npsInstructors})\n" +
                          "5. Other\n\n" +
-                         "Enter 1, 2, 3, 4, or 5: ";
+                         "Enter 1 - 5: ";
 
         Console.WriteLine(message);
         string choice = Console.ReadLine();
@@ -133,7 +188,7 @@ class NNTPDirectoryEntry
         // move the user to the new OU
         TargetEntry.MoveTo(parentEntry);
         TargetEntry.CommitChanges();
-
+        
         Console.WriteLine($"Moved user {Username} to OU {targetOU} successfully");
 
         // clean up
@@ -187,7 +242,13 @@ class NNTPDirectoryEntry
 
         return new DirectorySearcher(DirectoryEntry, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
     }
-    public void GetUser()
+    private string GeneratePassword() // generate a default password
+    {
+        string username = Username;
+        string lastThree = username.Substring(username.Length - 3);
+        return $"Gonavybeatarmy{lastThree}!";
+    }
+    public void GetUser() // return sAMAccountName from powershell Out-GridView selection
     {
         string domain = DirectoryEntry.Path.Split('/')[2];
 
@@ -199,9 +260,17 @@ class NNTPDirectoryEntry
             RedirectStandardOutput = true
         };
         var proc = Process.Start(startInfo);
-        proc.WaitForExit();   
+        proc.WaitForExit();
     }
-    public string FindOU()
+    private Boolean TestForUser(string Username) // check if user exists in AD
+    {
+        DirectoryEntry directoryEntry = new DirectoryEntry($"WinNT://{Domain}/{Username},user");
+        if (string.IsNullOrWhiteSpace(directoryEntry.Path)) // user does not exist
+            return false;
+
+        return true; // user exists
+    }
+    public string FindOU() // return OU distinguishedName from powershell Out-GridView selection
     {
         string domain = DirectoryEntry.Path.Split('/')[2];
 
@@ -222,6 +291,34 @@ class NNTPDirectoryEntry
         }
         return ou;
     }
+    private string GetDefaultOU() // return default OU based on user type (e.g., student, instructor)
+    {
+        string key = RoleType;
+        if (Role == "STUDENT")
+        {
+            key += "-Students";
+        }
+        else if (Role == "STAFF")
+        {
+            key += "-Instructors";
+        }
+
+        if (!DefaultOUs.ContainsKey(key))
+        {
+            return null;
+        }
+
+        return DefaultOUs[key];
+    }
+
+    private Dictionary<string, string> DefaultOUs = new Dictionary<string, string>()
+    {
+        { "NFAS-Students", "OU=NFAS-Students,OU=NNTP Users,DC=NNTP,DC=GOV" },
+        { "NPS-Students", "OU=NPS-Students,OU=NNTP Users,DC=NNTP,DC=GOV" },
+        { "NFAS-Instructors", "OU=NFAS-Instructors,OU=NNTP Users,DC=NNTP,DC=GOV" },
+        { "NPS-Instructors", "OU=NPS-Instructors,OU=NNTP Users,DC=NNTP,DC=GOV" }
+    };
+
     [Flags]
     public enum UserAccountControl
     {
