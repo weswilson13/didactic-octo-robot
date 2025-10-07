@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using NNTPBlueTool.Models;
 using System.Diagnostics;
 using System.DirectoryServices;
-using System.Security.Cryptography;
 
 void ClearConsole()
 
@@ -152,7 +151,7 @@ user = user.Trim();
 
 using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, password))
 {
-    NNTPDirectoryEntry adminEntry = new NNTPDirectoryEntry(domainUser, rootEntry);
+    // NNTPDirectoryEntry adminEntry = new NNTPDirectoryEntry(domainUser, rootEntry);
 
     // Console.WriteLine(adminEntry.DirectoryEntry.Properties["badPwdCount"].Value);
 
@@ -199,8 +198,12 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
             // NNTPDirectoryEntry newUserEntry = new NNTPDirectoryEntry(user, rootEntry);
             Console.WriteLine($"Creating new user {user} in domain {domain}");
 
-            DirectoryEntry _user = userEntry.CreateUser(userEntry.DistinguishedName);
-            logger.Log($"Created new user {_user.Properties["distinguishedName"].Value}");
+            NNTPDirectoryEntry _user = userEntry.CreateUser(userEntry.DistinguishedName);
+            logger.Log($"Created new user {_user.DistinguishedName}");
+
+            // _user.SetGroupMemberships();
+            userEntry.SetGroupMemberships();
+            logger.Log($"Set group memberships for new user {_user.DistinguishedName}");
             return;
         }
         catch (Exception ex)

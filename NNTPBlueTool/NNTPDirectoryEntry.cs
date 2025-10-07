@@ -21,6 +21,7 @@ class NNTPDirectoryEntry
     public string? DistinguishedName;
     public string? Role; // STAFF or STUDENT
     public string? RoleType; // NPS or NFAS
+    public string? JobCode;
     public NNTPDirectoryEntry()
     {
     }
@@ -80,22 +81,21 @@ class NNTPDirectoryEntry
         var searchResult = directorySearcher.FindOne();
 
         Username = (searchResult?.Properties["sAMAccountName"]?.ToString() ?? person.UserName)?.Trim();
-        Password = GeneratePassword();
         Firstname = (searchResult?.Properties["givenName"]?.ToString() ?? person.FirstName)?.Trim();
         Lastname = (searchResult?.Properties["sn"]?.ToString() ?? person.LastName)?.Trim();
         Email = (searchResult?.Properties["mail"]?.ToString() ?? person.EmailAddress)?.Trim();
         sAMAccountName = Username;
         UserPrincipalName = Username + "@" + Domain;
         DisplayName = searchResult?.Properties["displayName"]?.ToString() ?? $"{person.Prefix} {person.LastName}, {person.FirstName}";
-        Role = person.Prsgroup;
+        Role = person.Prsgroup?.Trim(); // STAFF or STUDENT
         string? hierCode = person.PrsnlOrgAssignments.FirstOrDefault()?.HierCode?.Trim();
         if (Regex.Match(hierCode ?? "", @"[E,O]-|([A-D]-T)").Success)
         {
-            RoleType= "NPS";
+            RoleType = "NPS";
         }
         else if (Regex.Match(hierCode ?? "", @"A-").Success)
         {
-            RoleType= "NFAS";
+            RoleType = "NFAS";
         }
         else
         {
@@ -103,9 +103,10 @@ class NNTPDirectoryEntry
         }
 
         DistinguishedName = GetDefaultOU(); // get default OU based on Role and RoleType
-
+        Password = GeneratePassword();  
+        
         DirectoryEntry = RootDirectoryEntry;
-        TargetEntry = searchResult?.GetDirectoryEntry() ?? null; 
+        TargetEntry = searchResult?.GetDirectoryEntry() ?? null;
     }
     public void UnlockAccount()
     {
@@ -188,14 +189,14 @@ class NNTPDirectoryEntry
         // move the user to the new OU
         TargetEntry.MoveTo(parentEntry);
         TargetEntry.CommitChanges();
-        
+
         Console.WriteLine($"Moved user {Username} to OU {targetOU} successfully");
 
         // clean up
         parentSearcher.Dispose();
         parentEntry.Dispose();
     }
-    public DirectoryEntry CreateUser(string ParentOU = null)
+    public NNTPDirectoryEntry CreateUser(string ParentOU = null)
     {
         string domain = string.Join('.', DirectoryEntry.Properties["distinguishedName"].Value.ToString().Replace("DC=", "").Split(','));
         string parentOU = ParentOU ?? $"CN=Users,{DirectoryEntry.Properties["distinguishedName"].Value}";
@@ -240,13 +241,29 @@ class NNTPDirectoryEntry
         parentSearcher.Dispose();
         parentEntry.Dispose();
 
-        return new DirectorySearcher(DirectoryEntry, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
+        TargetEntry = new DirectorySearcher(DirectoryEntry, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
+        return new NNTPDirectoryEntry(TargetEntry);
     }
-    private string GeneratePassword() // generate a default password
+    private string GeneratePassword(string Password="") // generate a default password
     {
-        string username = Username;
-        string lastThree = username.Substring(username.Length - 3);
-        return $"Gonavybeatarmy{lastThree}!";
+        if (Role == "STUDENT")
+        {
+            string username = Username;
+            string lastThree = username.Substring(username.Length - 3);
+            return $"Gonavybeatarmy{lastThree}!";
+        }
+        else if (Role == "STAFF")
+        {
+            return "Gonavybeatarmy123!";
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(Password))
+            {
+                throw new Exception("User Role is not STUDENT or STAFF, and no password was provided. Cannot generate default password.");
+            }
+            return Password;
+        }
     }
     public void GetUser() // return sAMAccountName from powershell Out-GridView selection
     {
@@ -310,15 +327,79 @@ class NNTPDirectoryEntry
 
         return DefaultOUs[key];
     }
+    public void SetGroupMemberships() // set group memberships based on user type (e.g., student, instructor)
+    {
+        List<string> keys = new List<string>();
 
+        string key = RoleType;
+        if (Role == "STUDENT")
+        {
+            key += "-Students";
+            if (!string.IsNullOrWhiteSpace(JobCode))
+            {
+                if (JobCode.Contains("RAN") || JobCode.Contains("UK")) // AUKUS student
+                {
+                    keys.Add("AUKUS");
+                }
+            }
+        }
+        else if (Role == "STAFF")
+        {
+            key += "-Instructors";
+            keys.Add("All-Instructors");
+        }
+
+        if (GroupMemberships.ContainsKey(key))
+        {
+            keys.Add(key);
+        }
+        else
+        {
+            Console.WriteLine($"No group membership found for key {key}");
+        }
+
+        foreach (var k in keys)
+        {
+            AddToGroup(GroupMemberships[k]);
+        }
+
+    }
+    private void AddToGroup(string GroupDN) // add user to group based on key
+    {
+        DirectorySearcher groupSearcher = new DirectorySearcher(DirectoryEntry, $"(distinguishedName={GroupDN})");
+        var groupResult = groupSearcher.FindOne();
+        var groupEntry = groupResult.GetDirectoryEntry();
+
+        if (groupEntry.Properties["member"].Contains(TargetEntry.Properties["distinguishedName"].Value))
+        {
+            Console.WriteLine($"User {Username} is already a member of group {GroupDN}");
+            return;
+        }
+
+        groupEntry.Properties["member"].Add(TargetEntry.Properties["distinguishedName"].Value);
+        groupEntry.CommitChanges();
+        Console.WriteLine($"Added user {Username} to group {GroupDN}");
+
+        // clean up
+        groupSearcher.Dispose();
+        groupEntry.Dispose();
+    }
     private Dictionary<string, string> DefaultOUs = new Dictionary<string, string>()
     {
-        { "NFAS-Students", "OU=NFAS-Students,OU=NNTP Users,DC=NNTP,DC=GOV" },
-        { "NPS-Students", "OU=NPS-Students,OU=NNTP Users,DC=NNTP,DC=GOV" },
-        { "NFAS-Instructors", "OU=NFAS-Instructors,OU=NNTP Users,DC=NNTP,DC=GOV" },
-        { "NPS-Instructors", "OU=NPS-Instructors,OU=NNTP Users,DC=NNTP,DC=GOV" }
+        { "NFAS-Students", "OU=NFAS-Students,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" },
+        { "NPS-Students", "OU=NPS-Students,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" },
+        { "NFAS-Instructors", "OU=NFAS-Instructors,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" },
+        { "NPS-Instructors", "OU=NPS-Instructors,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" }
     };
-
+    private Dictionary<string, string> GroupMemberships = new Dictionary<string, string>()
+    {
+        { "NFAS-Students", "CN=NNPTC-NFAS-Students,OU=NNTP Groups,DC=MYDOMAIN,DC=LOCAL" },
+        { "NPS-Students", "CN=NNPTC-NPS-Students,OU=NNTP Groups,DC=MYDOMAIN,DC=LOCAL" },
+        { "NFAS-Instructors", "CN=NNPTC-NFAS-Instructors,OU=NNTP Groups,DC=MYDOMAIN,DC=LOCAL" },
+        { "NPS-Instructors", "CN=NNPTC-NPS-Instructors,OU=NNTP Groups,DC=MYDOMAIN,DC=LOCAL" },
+        { "All-Instructors", "CN=NNTP-TC-NNPTC,OU=NNTP Groups,DC=MYDOMAIN,DC=LOCAL" },
+        { "AUKUS", "CN=AUKUS,OU=Permissions Model,OU=NNTP Groups,DC=MYDOMAIN,DC=LOCAL" }
+    };
     [Flags]
     public enum UserAccountControl
     {
