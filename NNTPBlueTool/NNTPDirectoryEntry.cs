@@ -77,7 +77,7 @@ class NNTPDirectoryEntry
         var rg = new Regex(@"(?<=DC=)(\w+)");
         Domain = string.Join('.', rg.Matches(RootDirectoryEntry.Properties["distinguishedName"].Value.ToString()));
 
-        var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={person.UserName})");
+        var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={person.UserName?.Trim()})");
         var searchResult = directorySearcher.FindOne();
 
         Username = (searchResult?.Properties["sAMAccountName"]?.ToString() ?? person.UserName)?.Trim();
@@ -179,7 +179,7 @@ class NNTPDirectoryEntry
             "5" => FindOU(),
             _ => throw new Exception("Invalid choice. Must be 1, 2, 3, 4, or 5.")
         };
-        Console.WriteLine($"Moving user {Username} to OU {targetOU}");
+        Console.WriteLine($"Moving user {Username} to {targetOU}");
 
         // find the parent OU in the context of the root directory entry
         DirectorySearcher parentSearcher = new DirectorySearcher(DirectoryEntry, $"(distinguishedName={targetOU})");
