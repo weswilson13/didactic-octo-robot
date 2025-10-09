@@ -60,12 +60,7 @@ class NNTPDirectoryEntry
         TargetEntry = userEntry;
         Domain = userDomain;
     }
-    // public NNTPDirectoryEntry(string NewUsername, DirectoryEntry RootDirectoryEntry)
-    // {
-    //     this.Username = NewUsername;
-    //     this.Password = GeneratePassword();
-    //     DirectoryEntry = RootDirectoryEntry;
-    // }
+
     public NNTPDirectoryEntry(PrsnlPerson person, DirectoryEntry RootDirectoryEntry)
     {
         if (string.IsNullOrWhiteSpace(person.UserName))
@@ -80,13 +75,13 @@ class NNTPDirectoryEntry
         var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={person.UserName?.Trim()})");
         var searchResult = directorySearcher.FindOne();
 
-        Username = (searchResult?.Properties["sAMAccountName"]?.ToString() ?? person.UserName)?.Trim();
-        Firstname = (searchResult?.Properties["givenName"]?.ToString() ?? person.FirstName)?.Trim();
-        Lastname = (searchResult?.Properties["sn"]?.ToString() ?? person.LastName)?.Trim();
-        Email = (searchResult?.Properties["mail"]?.ToString() ?? person.EmailAddress)?.Trim();
+        Username = (searchResult?.Properties["sAMAccountName"][0]?.ToString() ?? person.UserName)?.Trim();
+        Firstname = (searchResult?.Properties["givenName"][0]?.ToString() ?? person.FirstName)?.Trim();
+        Lastname = (searchResult?.Properties["sn"][0]?.ToString() ?? person.LastName)?.Trim();
+        Email = (searchResult?.Properties["mail"][0]?.ToString() ?? person.EmailAddress)?.Trim();
         sAMAccountName = Username;
         UserPrincipalName = Username + "@" + Domain;
-        DisplayName = searchResult?.Properties["displayName"]?.ToString() ?? $"{person.Prefix} {person.LastName}, {person.FirstName}";
+        DisplayName = searchResult?.Properties["displayName"][0]?.ToString() ?? $"{person.Prefix} {person.LastName}, {person.FirstName}";
         Role = person.Prsgroup?.Trim(); // STAFF or STUDENT
         string? hierCode = person.PrsnlOrgAssignments.FirstOrDefault()?.HierCode?.Trim();
         if (Regex.Match(hierCode ?? "", @"[E,O]-|([A-D]-T)").Success)
@@ -190,7 +185,7 @@ class NNTPDirectoryEntry
         TargetEntry.MoveTo(parentEntry);
         TargetEntry.CommitChanges();
 
-        Console.WriteLine($"Moved user {Username} to OU {targetOU} successfully");
+        Console.WriteLine($"Successfully moved user {Username} to {targetOU}");
 
         // clean up
         parentSearcher.Dispose();
