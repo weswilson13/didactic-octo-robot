@@ -76,30 +76,48 @@ class NNTPDirectoryEntry
         var searchResult = directorySearcher.FindOne();
 
         Username = (searchResult?.Properties["sAMAccountName"][0]?.ToString() ?? person.UserName)?.Trim();
-        Firstname = (searchResult?.Properties["givenName"][0]?.ToString() ?? person.FirstName)?.Trim();
-        Lastname = (searchResult?.Properties["sn"][0]?.ToString() ?? person.LastName)?.Trim();
+        try
+        {
+            Firstname = searchResult?.Properties["givenName"][0]?.ToString();
+        }
+        catch
+        {
+            Firstname = person.FirstName?.Trim();
+        }
+
+        try
+        {
+            Lastname = searchResult?.Properties["sn"][0]?.ToString();
+        }
+        catch
+        {
+            Lastname = person.LastName?.Trim();
+        }
         Email = (searchResult?.Properties["mail"][0]?.ToString() ?? person.EmailAddress)?.Trim();
         sAMAccountName = Username;
         UserPrincipalName = Username + "@" + Domain;
         DisplayName = searchResult?.Properties["displayName"][0]?.ToString() ?? $"{person.Prefix} {person.LastName}, {person.FirstName}";
         Role = person.Prsgroup?.Trim(); // STAFF or STUDENT
         string? hierCode = person.PrsnlOrgAssignments.FirstOrDefault()?.HierCode?.Trim();
-        if (Regex.Match(hierCode ?? "", @"[E,O]-|([A-D]-T)").Success)
+        if (!string.IsNullOrWhiteSpace(hierCode))
         {
-            RoleType = "NPS";
-        }
-        else if (Regex.Match(hierCode ?? "", @"A-").Success)
-        {
-            RoleType = "NFAS";
-        }
-        else
-        {
-            throw new Exception("Invalid HierCode. Must start with E-, O-, A-, A-T, B-T, C-T, or D-T.");
+            if (Regex.Match(hierCode, @"[E,O]-|([A-D]-T)").Success)
+            {
+                RoleType = "NPS";
+            }
+            else if (Regex.Match(hierCode, @"A-").Success)
+            {
+                RoleType = "NFAS";
+            }
+            else
+            {
+                throw new Exception("Invalid HierCode. Must start with E-, O-, A-, A-T, B-T, C-T, or D-T.");
+            }
         }
 
         DistinguishedName = GetDefaultOU(); // get default OU based on Role and RoleType
-        Password = GeneratePassword();  
-        
+        Password = GeneratePassword();
+
         DirectoryEntry = RootDirectoryEntry;
         TargetEntry = searchResult?.GetDirectoryEntry() ?? null;
     }
@@ -116,7 +134,11 @@ class NNTPDirectoryEntry
         {
             TargetEntry.Properties["userAccountControl"].Value = oldUAC & ~(int)UserAccountControl.ACCOUNTDISABLE;
             TargetEntry.CommitChanges();
-            Console.WriteLine($"Enabled account {DirectoryEntry.Properties["distinguishedName"].Value}");
+            Console.WriteLine($"Enabled account {TargetEntry.Properties["distinguishedName"].Value}");
+        }
+        else
+        {
+            Console.WriteLine($"{TargetEntry.Properties["distinguishedName"].Value} is already enabled");
         }
     }
     public void ResetPassword(string NewPassword = "")
@@ -130,6 +152,8 @@ class NNTPDirectoryEntry
         try
         {
             TargetEntry.Invoke("SetPassword", NewPassword);
+            TargetEntry.CommitChanges();
+            UnenforceSmartCardLogon();
         }
         catch
         {
@@ -239,7 +263,7 @@ class NNTPDirectoryEntry
         TargetEntry = new DirectorySearcher(DirectoryEntry, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
         return new NNTPDirectoryEntry(TargetEntry);
     }
-    private string GeneratePassword(string Password="") // generate a default password
+    private string GeneratePassword(string Password = "") // generate a default password
     {
         if (Role == "STUDENT")
         {
@@ -378,6 +402,21 @@ class NNTPDirectoryEntry
         // clean up
         groupSearcher.Dispose();
         groupEntry.Dispose();
+    }
+    private void UnenforceSmartCardLogon()
+    {
+        int oldUAC = (int)TargetEntry.Properties["userAccountControl"].Value;
+        bool smartCardRequired = (oldUAC & (int)UserAccountControl.SMARTCARD_REQUIRED) != 0;
+        if (smartCardRequired)
+        {
+            TargetEntry.Properties["userAccountControl"].Value = oldUAC & ~(int)UserAccountControl.SMARTCARD_REQUIRED;
+            TargetEntry.CommitChanges();
+            Console.WriteLine($"Unenforced Smart Card Logon for {TargetEntry.Properties["distinguishedName"].Value}");
+        }
+        else
+        {
+            Console.WriteLine($"Smart Card Logon not enforced for {TargetEntry.Properties["distinguishedName"].Value}");
+        }
     }
     private Dictionary<string, string> DefaultOUs = new Dictionary<string, string>()
     {

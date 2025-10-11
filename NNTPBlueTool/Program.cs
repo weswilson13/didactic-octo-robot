@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using NNTPBlueTool.Models;
 using System.Diagnostics;
 using System.DirectoryServices;
+using System.Text.RegularExpressions;
 
 void ClearConsole()
 
@@ -13,14 +14,24 @@ void ClearConsole()
         Console.Clear();
     }
 }
-
-Logo.PrintLogo();
-
-// Build configuration
-var builder = new ConfigurationBuilder();
-builder.SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-IConfiguration config = builder.Build();
+void ExitApp()
+{
+    if (Console.IsOutputRedirected == false && Console.IsInputRedirected == false)
+    {
+        Console.WriteLine("Press 1 to return to the Main Menu or press 'Enter' to exit...");
+        var key = Console.ReadKey();
+        if (key.Key == ConsoleKey.Enter)
+        {
+            Environment.Exit(0);
+        }
+        else if (key.Key == ConsoleKey.D1)
+        {
+            ClearConsole();
+            return;
+        }
+    }
+}
+var config = Builder.BuildConfiguration("appsettings.json");
 
 // Read settings from configuration
 string domain = config["AppSettings:Domain"] ?? throw new Exception("Domain is empty");
@@ -28,8 +39,6 @@ string domainUser = config["AppSettings:DomainUser"] ?? throw new Exception("Dom
 string password = config["AppSettings:Password"] ?? throw new Exception("Password is empty");
 string user = string.Empty;
 PrsnlPerson dbUser = new PrsnlPerson();
-
-string choice, usernameChoice = string.Empty;
 
 // Setup DbContext options
 var optionsBuilder = new DbContextOptionsBuilder<dbContext>();
@@ -54,11 +63,17 @@ Dictionary<int, string> programChoices = new Dictionary<int,string> {
     { 5, "View User" }
 };
 
+ProgramStart:
+
+Logo.PrintLogo();
+
 // Dictionary for username input methods
 Dictionary<int, string> usernameChoices = new Dictionary<int, string> {
     { 1, "Enter DoD ID" },
-    { 2, "Enter Username" },
+    { 2, "Enter Username" }
 };
+
+string choice, usernameChoice = string.Empty;
 
 // Prompt for program choice
 string message = "What would you like to do?\n\n" +
@@ -77,6 +92,8 @@ ClearConsole();
 // If the user didn't choose to create a new user, add the search option
 if (programChoices[Convert.ToInt32(choice)] != "Create new user")
     usernameChoices.Add(3, "Search for User");
+
+usernameChoices.Add(usernameChoices.Count + 1, "Back to Main Menu");
 
 // Prompt for username input method
 string enterUsernameMessage = "Scan the users NNPTC badge, or choose from the list below.\n\n" +
@@ -125,12 +142,12 @@ else if (usernameChoice == "2") // enter username directly
         return;
     }
 }
-else if (usernameChoice == "3") // search for a user
+else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Search for User") // search for a user
 {
     var startInfo = new ProcessStartInfo()
     {
         FileName = "powershell.exe",
-        Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetDirectoryInfo.ps1\" -Domain {domain} -Action GetUsers",
+        Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetDirectoryInfo.ps1\" -Domain '{domain}' -Action GetUsers",
         UseShellExecute = false,
         RedirectStandardOutput = true
     };
@@ -143,6 +160,11 @@ else if (usernameChoice == "3") // search for a user
         Console.WriteLine("No user selected");
         return;
     }
+}
+else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Back to Main Menu")
+{
+    ClearConsole();
+    goto ProgramStart;
 }
 
 // Trim any whitespace from the username
@@ -169,27 +191,39 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
     }
 
     string _distinctName = userEntry.UserPrincipalName ?? userEntry.TargetEntry.Properties["distinguishedName"].Value.ToString();
-   
+
     if (choice == "1") // Unlock and reset password
     {
         userEntry.UnlockAccount();
+        Console.WriteLine($"Unlocked {_distinctName}");
+
         userEntry.ResetPassword();
+        Console.WriteLine("Password reset to the default password.");
+
         userEntry.ExpirePassword();
+        Console.WriteLine("User must change password at next logon.");
+
         logger.Log($"Reset password for user {_distinctName}");
-        return;
+        // return;
+        ExitApp();
+        goto ProgramStart;
     }
     else if (choice == "2") // Enable only
     {
         userEntry.UnlockAccount();
         userEntry.EnableAccount();
         logger.Log($"Enabled user account {_distinctName}");
-        return;
+        // return;
+        ExitApp();
+        goto ProgramStart;
     }
     else if (choice == "3") // Move user to different OU
     {
         userEntry.MoveUser();
         logger.Log($"Moved user {_distinctName} to new OU");
-        return;
+        // return;
+        ExitApp();
+        goto ProgramStart;
     }
     else if (choice == "4") // Create new user
     {
