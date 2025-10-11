@@ -17,7 +17,7 @@ public partial class PrsnlPerson
 
     public DateOnly? DepartureDate { get; set; }
 
-    public string? UserName { get; set; }
+    // public string? UserName { get; set; }
 
     public string? Office { get; set; }
 
@@ -31,4 +31,17 @@ public partial class PrsnlPerson
     public virtual ICollection<PrsnlOrgAssignment> PrsnlOrgAssignments { get; set; } = new List<PrsnlOrgAssignment>();
 
     public virtual ICollection<User> Users { get; set; } = new List<User>();
+
+    public string GetUsername()
+    {
+        switch (this.Prsgroup)
+        {
+            case "STUDENT":
+                return this.Pid.ToString();
+            case "STAFF":
+                return this.Users.FirstOrDefault(u => u.Pid == this.Pid)?.WinLogonId ?? string.Empty;
+            default:
+                throw new Exception($"Unknown prsgroup {this.Prsgroup} for user {this.FirstName} {this.LastName}");
+        }
+    }
 }
