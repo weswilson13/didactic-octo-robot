@@ -22,12 +22,8 @@ public partial class dbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            optionsBuilder.UseSqlServer("Server=sql.mydomain.local,9999;Database=NP-NNPTC;User Id=wes;Password=1qaz!QAZ1qaz!QAZ;");
-        }
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=sql.mydomain.local,9999;Database=NP-NNPTC;User ID=wes;Password=1qaz!QAZ1qaz!QAZ;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,39 +60,30 @@ public partial class dbContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("PID");
             entity.Property(e => e.BadgeId)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
                 .HasColumnName("BadgeID");
             entity.Property(e => e.DepartureDate).HasColumnName("Departure_Date");
             entity.Property(e => e.Dodid)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
                 .HasColumnName("DODID");
             entity.Property(e => e.EmailAddress).HasMaxLength(50);
             entity.Property(e => e.FirstName)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
                 .HasColumnName("First_name");
+            entity.Property(e => e.JobCode)
+                .HasMaxLength(50)
+                .HasColumnName("Job_Code");
             entity.Property(e => e.LastName)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
                 .HasColumnName("Last_name");
-            entity.Property(e => e.Office)
-                .HasMaxLength(10)
-                .IsFixedLength();
+            entity.Property(e => e.Office).HasMaxLength(50);
             entity.Property(e => e.Prd)
                 .HasColumnType("datetime")
                 .HasColumnName("PRD");
-            entity.Property(e => e.Prefix)
-                .HasMaxLength(10)
-                .IsFixedLength();
+            entity.Property(e => e.Prefix).HasMaxLength(50);
             entity.Property(e => e.Prsgroup)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
                 .HasColumnName("PRSGROUP");
-            entity.Property(e => e.UserName)
-                .HasMaxLength(15)
-                .IsFixedLength();
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -108,8 +95,7 @@ public partial class dbContext : DbContext
                 .HasColumnName("UserID");
             entity.Property(e => e.Pid).HasColumnName("PID");
             entity.Property(e => e.WinLogonId)
-                .HasMaxLength(30)
-                .IsFixedLength()
+                .HasMaxLength(50)
                 .HasColumnName("WinLogonID");
 
             entity.HasOne(d => d.PidNavigation).WithMany(p => p.Users)

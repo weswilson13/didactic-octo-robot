@@ -33,9 +33,9 @@ class NNTPDirectoryEntry
         this.Username = Username;
         var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={Username})");
         var searchResult = directorySearcher.FindOne();
-        var userEntry = new DirectoryEntry();
-        var userDomain = string.Empty;
 
+        DirectoryEntry userEntry = new DirectoryEntry();
+        string? userDomain;
         if (searchResult != null)
         {
             userEntry = searchResult.GetDirectoryEntry();
@@ -63,45 +63,26 @@ class NNTPDirectoryEntry
 
     public NNTPDirectoryEntry(PrsnlPerson person, DirectoryEntry RootDirectoryEntry)
     {
-        if (string.IsNullOrWhiteSpace(person.UserName))
-        {
-            throw new Exception("Username is required.");
-        }
-
         // Extract domain from root entry distinguishedName
         var rg = new Regex(@"(?<=DC=)(\w+)");
         Domain = string.Join('.', rg.Matches(RootDirectoryEntry.Properties["distinguishedName"].Value.ToString()));
 
-        var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={person.UserName?.Trim()})");
+        var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={person.GetUsername()?.Trim()})");
         var searchResult = directorySearcher.FindOne();
 
-        Username = (searchResult?.Properties["sAMAccountName"][0]?.ToString() ?? person.UserName)?.Trim();
-        try
-        {
-            Firstname = searchResult?.Properties["givenName"][0]?.ToString();
-        }
-        catch
-        {
-            Firstname = person.FirstName?.Trim();
-        }
-
-        try
-        {
-            Lastname = searchResult?.Properties["sn"][0]?.ToString();
-        }
-        catch
-        {
-            Lastname = person.LastName?.Trim();
-        }
+        Username = person.GetUsername()?.Trim();
+        
+        Firstname = person.FirstName?.Trim();
+        Lastname = person.LastName?.Trim();
         Email = (searchResult?.Properties["mail"][0]?.ToString() ?? person.EmailAddress)?.Trim();
         sAMAccountName = Username;
         UserPrincipalName = Username + "@" + Domain;
-        DisplayName = searchResult?.Properties["displayName"][0]?.ToString() ?? $"{person.Prefix} {person.LastName}, {person.FirstName}";
+        DisplayName = $"{person.Prefix?.Trim()} {person.LastName?.Trim()}, {person.FirstName?.Trim()}";
         Role = person.Prsgroup?.Trim(); // STAFF or STUDENT
         string? hierCode = person.PrsnlOrgAssignments.FirstOrDefault()?.HierCode?.Trim();
         if (!string.IsNullOrWhiteSpace(hierCode))
         {
-            if (Regex.Match(hierCode, @"[E,O]-|([A-D]-T)").Success)
+            if (Regex.Match(hierCode, @"^([E,O]-?|([A-D]-T))").Success)
             {
                 RoleType = "NPS";
             }
@@ -217,7 +198,7 @@ class NNTPDirectoryEntry
     }
     public NNTPDirectoryEntry CreateUser(string ParentOU = null)
     {
-        string domain = string.Join('.', DirectoryEntry.Properties["distinguishedName"].Value.ToString().Replace("DC=", "").Split(','));
+        string domain = Domain ?? string.Join('.', DirectoryEntry.Properties["distinguishedName"].Value.ToString().Replace("DC=", "").Split(','));
         string parentOU = ParentOU ?? $"CN=Users,{DirectoryEntry.Properties["distinguishedName"].Value}";
 
         // find the parent OU in the context of the root directory entry
@@ -261,14 +242,18 @@ class NNTPDirectoryEntry
         parentEntry.Dispose();
 
         TargetEntry = new DirectorySearcher(DirectoryEntry, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
-        return new NNTPDirectoryEntry(TargetEntry);
+
+        NNTPDirectoryEntry NewUser = new NNTPDirectoryEntry(TargetEntry);
+        NewUser.DistinguishedName = TargetEntry.Properties["distinguishedName"].Value.ToString();
+
+        return NewUser;
     }
     private string GeneratePassword(string Password = "") // generate a default password
     {
         if (Role == "STUDENT")
         {
             string username = Username;
-            string lastThree = username.Substring(username.Length - 3);
+            string lastThree = username.Substring(Math.Max(0, username.Length - 3));
             return $"Gonavybeatarmy{lastThree}!";
         }
         else if (Role == "STAFF")

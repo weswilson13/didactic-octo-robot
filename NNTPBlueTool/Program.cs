@@ -111,13 +111,15 @@ ClearConsole();
 
 if (!usernameChoices.Keys.Contains(Convert.ToInt32(usernameChoice))) // use badge id to lookup username
 {
-    dbUser = dbContext.PrsnlPeople.Include(p => p.PrsnlOrgAssignments).FirstOrDefault(u => u.BadgeId == usernameChoice);
+    dbUser = dbContext.PrsnlPeople.Include(p => p.PrsnlOrgAssignments).Include(p => p.Users).FirstOrDefault(u => u.BadgeId == usernameChoice);
 
     if (dbUser == null)
     {
         Console.WriteLine($"No user found with Badge ID {usernameChoice}");
         return;
     }
+
+    user = dbUser.GetUsername();
 }
 else if (usernameChoice == "1") // enter dod id to lookup username
 {
@@ -168,20 +170,15 @@ else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Back to Main Menu"
 }
 
 // Trim any whitespace from the username
-user = dbUser.UserName ?? user;
 user = user.Trim();
 
 using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, password))
 {
-    // NNTPDirectoryEntry adminEntry = new NNTPDirectoryEntry(domainUser, rootEntry);
-
-    // Console.WriteLine(adminEntry.DirectoryEntry.Properties["badPwdCount"].Value);
-
     Console.WriteLine($"Retrieving {user} from {rootEntry.Path}");
 
     NNTPDirectoryEntry userEntry = new NNTPDirectoryEntry();
 
-    if (dbUser != null && !string.IsNullOrWhiteSpace(dbUser.UserName))
+    if (dbUser != null && !string.IsNullOrWhiteSpace(dbUser.GetUsername()))
     {
         userEntry = new NNTPDirectoryEntry(dbUser, rootEntry);
     }
@@ -238,18 +235,22 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
             // _user.SetGroupMemberships();
             userEntry.SetGroupMemberships();
             logger.Log($"Set group memberships for new user {_user.DistinguishedName}");
-            return;
+            // return;
+            ExitApp();
+            goto ProgramStart;
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return;
+            ExitApp();
+            goto ProgramStart;
         }
     }
     else if (choice == "5") // View user
     {
         userEntry.GetUser();
         logger.Log($"Viewed user {_distinctName}");
-        return;
+        ExitApp();
+        goto ProgramStart;
     }
 }
