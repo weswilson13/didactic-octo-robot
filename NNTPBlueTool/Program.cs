@@ -31,6 +31,7 @@ void ExitApp()
         }
     }
 }
+
 var config = Builder.BuildConfiguration("appsettings.json");
 
 // Read settings from configuration
@@ -38,7 +39,7 @@ string domain = config["AppSettings:Domain"] ?? throw new Exception("Domain is e
 string domainUser = config["AppSettings:DomainUser"] ?? throw new Exception("DomainUser is empty");
 string password = config["AppSettings:Password"] ?? throw new Exception("Password is empty");
 string user = string.Empty;
-PrsnlPerson dbUser = new PrsnlPerson();
+PrsnlPerson? dbUser = null;
 
 // Setup DbContext options
 var optionsBuilder = new DbContextOptionsBuilder<dbContext>();
@@ -55,12 +56,13 @@ var logContext = new LogContext(logOptionsBuilder.Options);
 Logger logger = new Logger(logContext, domainUser);
 
 // Dictionary for program choices
-Dictionary<int, string> programChoices = new Dictionary<int,string> {
+Dictionary<int, string> programChoices = new Dictionary<int, string> {
     { 1, "Reset password for existing user" },
     { 2, "Unlock and enable an existing user" },
     { 3, "Move user to different OU" },
     { 4, "Create new user" },
-    { 5, "View User" }
+    { 5, "View User" },
+    { 6, "Create User CSV" }
 };
 
 ProgramStart:
@@ -125,7 +127,7 @@ else if (usernameChoice == "1") // enter dod id to lookup username
 {
     Console.WriteLine("Enter the DoD ID:");
     var dodId = Console.ReadLine();
-    dbUser = dbContext.PrsnlPeople.FirstOrDefault(u => u.Dodid == dodId);
+    dbUser = dbContext.PrsnlPeople.Include(p => p.PrsnlOrgAssignments).Include(p => p.Users).FirstOrDefault(u => u.Dodid == dodId);
     if (dbUser == null)
     {
         Console.WriteLine($"No user found with DoD ID {dodId}");
@@ -146,10 +148,16 @@ else if (usernameChoice == "2") // enter username directly
 }
 else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Search for User") // search for a user
 {
+    string output = "";
+    if (choice == "6")
+    {
+        output = "-uID";
+    }
+
     var startInfo = new ProcessStartInfo()
     {
         FileName = "powershell.exe",
-        Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetDirectoryInfo.ps1\" -Domain '{domain}' -Action GetUsers",
+        Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetDirectoryInfo.ps1\" -Domain {domain} -Action GetUsers {output}",
         UseShellExecute = false,
         RedirectStandardOutput = true
     };
@@ -160,7 +168,8 @@ else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Search for User") 
     if (string.IsNullOrWhiteSpace(user))
     {
         Console.WriteLine("No user selected");
-        return;
+        ExitApp();
+        goto ProgramStart;
     }
 }
 else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Back to Main Menu")
@@ -172,6 +181,16 @@ else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Back to Main Menu"
 // Trim any whitespace from the username
 user = user.Trim();
 
+if (choice == "6" && dbUser == null)
+{
+    dbUser = dbContext.PrsnlPeople.Include(p => p.PrsnlOrgAssignments).Include(p => p.Users).FirstOrDefault(u => u.Pid == Convert.ToInt32(user));
+    if (dbUser == null)
+    {
+        Console.WriteLine($"No user found with PID {user}");
+        ExitApp();
+        goto ProgramStart;
+    }
+}
 using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, password))
 {
     Console.WriteLine($"Retrieving {user} from {rootEntry.Path}");
@@ -250,6 +269,13 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
     {
         userEntry.GetUser();
         logger.Log($"Viewed user {_distinctName}");
+        ExitApp();
+        goto ProgramStart;
+    }
+    else if (choice == "6") // Create user CSV
+    {
+        userEntry.WriteCSV();
+        logger.Log($"Created CSV for user {_distinctName}");
         ExitApp();
         goto ProgramStart;
     }

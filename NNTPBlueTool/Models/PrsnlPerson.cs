@@ -39,7 +39,7 @@ public partial class PrsnlPerson
             case "STUDENT":
                 return this.Pid.ToString();
             case "STAFF":
-                return this.Users.FirstOrDefault(u => u.Pid == this.Pid)?.WinLogonId ?? string.Empty;
+                return this.Users.FirstOrDefault(u => u.Pid == this.Pid)?.WinLogonId?.Split("\\")[1] ?? string.Empty;
             default:
                 throw new Exception($"Unknown prsgroup {this.Prsgroup.Trim().ToUpper()} for user {this.FirstName} {this.LastName}");
         }

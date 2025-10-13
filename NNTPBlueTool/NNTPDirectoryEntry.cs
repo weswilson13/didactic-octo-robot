@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Management.Automation;
 using System.Threading.Tasks.Dataflow;
 using NNTPBlueTool.Models;
-class NNTPDirectoryEntry
+class NNTPDirectoryEntry : DirectoryEntry
 {
     public DirectoryEntry DirectoryEntry;
     public DirectoryEntry TargetEntry;
@@ -21,20 +21,27 @@ class NNTPDirectoryEntry
     public string? DistinguishedName;
     public string? Role; // STAFF or STUDENT
     public string? RoleType; // NPS or NFAS
+    private string PID { get; set; }
+    private string DODID { get; set; }
     public string? JobCode;
-    public NNTPDirectoryEntry()
+    public NNTPDirectoryEntry() : base()
     {
     }
-    public NNTPDirectoryEntry(DirectoryEntry RootDirectoryEntry)
+    public NNTPDirectoryEntry(string Path) : base(Path)
     {
     }
-    public NNTPDirectoryEntry(string Username, DirectoryEntry RootDirectoryEntry)
+    public NNTPDirectoryEntry(DirectoryEntry RootDirectoryEntry) : base(RootDirectoryEntry.Path)
     {
-        this.Username = Username;
+        DirectoryEntry = RootDirectoryEntry;
+        TargetEntry = null;
+    }
+    public NNTPDirectoryEntry(string username, DirectoryEntry RootDirectoryEntry) : base(RootDirectoryEntry.Path)
+    {
+        this.Username = username;
         var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={Username})");
         var searchResult = directorySearcher.FindOne();
 
-        DirectoryEntry userEntry = new DirectoryEntry();
+        DirectoryEntry userEntry;
         string? userDomain;
         if (searchResult != null)
         {
@@ -50,28 +57,30 @@ class NNTPDirectoryEntry
                 var rg = new Regex(@"(?<=DC=)(\w+)");
                 userDomain = string.Join('.', rg.Matches(RootDirectoryEntry.Properties["distinguishedName"].Value.ToString()));
             }
+
+            TargetEntry = userEntry;
+            Domain = userDomain;
         }
         else
         {
-            throw new Exception($"User {Username} not found in Active Directory.");
+            Console.WriteLine($"User {Username} not found in Active Directory.");
         }
-        Password = GeneratePassword();
+        // Password = GeneratePassword();
         DirectoryEntry = RootDirectoryEntry;
-        TargetEntry = userEntry;
-        Domain = userDomain;
+        
     }
 
-    public NNTPDirectoryEntry(PrsnlPerson person, DirectoryEntry RootDirectoryEntry)
+    public NNTPDirectoryEntry(PrsnlPerson person, DirectoryEntry RootDirectoryEntry) : base(RootDirectoryEntry.Path)
     {
         // Extract domain from root entry distinguishedName
         var rg = new Regex(@"(?<=DC=)(\w+)");
-        Domain = string.Join('.', rg.Matches(RootDirectoryEntry.Properties["distinguishedName"].Value.ToString()));
+        Domain = string.Join('.', rg.Matches(this.Properties["distinguishedName"].Value.ToString()));
 
         var directorySearcher = new DirectorySearcher(RootDirectoryEntry, $"(sAMAccountName={person.GetUsername()?.Trim()})");
         var searchResult = directorySearcher.FindOne();
 
         Username = person.GetUsername()?.Trim();
-        
+
         Firstname = person.FirstName?.Trim();
         Lastname = person.LastName?.Trim();
         Email = (searchResult?.Properties["mail"][0]?.ToString() ?? person.EmailAddress)?.Trim();
@@ -96,6 +105,8 @@ class NNTPDirectoryEntry
             }
         }
 
+        PID = person.Pid.ToString();
+        DODID = person.Dodid?.Trim() ?? string.Empty;
         DistinguishedName = GetDefaultOU(); // get default OU based on Role and RoleType
         Password = GeneratePassword();
 
@@ -218,6 +229,9 @@ class NNTPDirectoryEntry
             newUser.CommitChanges();
             newUser.Properties["userPrincipalName"].Value = UserPrincipalName ?? $"{Username}@{domain}";
             newUser.CommitChanges();
+            newUser.Properties["uid"].Value = PID;
+            newUser.Properties["employeeID"].Value = DODID;
+            newUser.CommitChanges();
 
             // set the name properties
             newUser.Properties["givenName"].Value = Firstname;
@@ -241,7 +255,8 @@ class NNTPDirectoryEntry
         parentSearcher.Dispose();
         parentEntry.Dispose();
 
-        TargetEntry = new DirectorySearcher(DirectoryEntry, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
+        // TargetEntry = new DirectorySearcher(DirectoryEntry, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
+        TargetEntry = new DirectorySearcher(this, $"(sAMAccountName={Username})").FindOne().GetDirectoryEntry();
 
         NNTPDirectoryEntry NewUser = new NNTPDirectoryEntry(TargetEntry);
         NewUser.DistinguishedName = TargetEntry.Properties["distinguishedName"].Value.ToString();
@@ -271,7 +286,7 @@ class NNTPDirectoryEntry
     }
     public void GetUser() // return sAMAccountName from powershell Out-GridView selection
     {
-        string domain = DirectoryEntry.Path.Split('/')[2];
+        string domain = this.Path.Split('/')[2];
 
         var startInfo = new ProcessStartInfo()
         {
@@ -403,14 +418,36 @@ class NNTPDirectoryEntry
             Console.WriteLine($"Smart Card Logon not enforced for {TargetEntry.Properties["distinguishedName"].Value}");
         }
     }
-    private Dictionary<string, string> DefaultOUs = new Dictionary<string, string>()
+    public void WriteCSV()
+{
+    // string filePath = $"UserExport_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+    // List<PrsnlPerson> users = dbContext.PrsnlPeople
+    //     .Include(p => p.PrsnlOrgAssignments)
+    //     .Include(p => p.Users)
+    //     .Where(u => !string.IsNullOrEmpty(u.EmailAddress) && u.EmailAddress.EndsWith("@nntc.edu"))
+    //     .ToList();
+
+    // string csvContent = CsvHelper.ListToCsv(users);
+    // CsvHelper.SaveCsvToFile(csvContent, filePath);
+    // Console.WriteLine($"CSV file created at {filePath}");
+
+    var csvAD = new List<ADCsv>
+    {
+        new ADCsv { LastName = this.Lastname, FirstName = this.Firstname, Username = this.sAMAccountName, Email = this.Email, DoDID = this.DODID }
+    };
+    var csvADContent = CsvHelper.ListToCsv(csvAD);
+    var filePath = $"TSCR_AD.csv";
+    CsvHelper.SaveCsvToFile(csvADContent, filePath);
+}
+    private protected Dictionary<string, string> DefaultOUs = new Dictionary<string, string>()
     {
         { "NFAS-Students", "OU=NFAS-Students,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" },
         { "NPS-Students", "OU=NPS-Students,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" },
         { "NFAS-Instructors", "OU=NFAS-Instructors,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" },
         { "NPS-Instructors", "OU=NPS-Instructors,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" }
     };
-    private Dictionary<string, string> GroupMemberships = new Dictionary<string, string>()
+    private protected Dictionary<string, string> GroupMemberships = new Dictionary<string, string>()
     {
         { "NFAS-Students", "CN=NNPTC-NFAS-Students,OU=NNTP Groups,DC=MYDOMAIN,DC=LOCAL" },
         { "NPS-Students", "CN=NNPTC-NPS-Students,OU=NNTP Groups,DC=MYDOMAIN,DC=LOCAL" },
@@ -423,67 +460,67 @@ class NNTPDirectoryEntry
     public enum UserAccountControl
     {
         /// <summary>
-        /// The logon script is executed. 
+        /// The logon script is executed.
         ///</summary>
         SCRIPT = 1,
 
         /// <summary>
-        /// The user account is disabled. 
+        /// The user account is disabled.
         ///</summary>
         ACCOUNTDISABLE = 2,
 
         /// <summary>
-        /// The home directory is required. 
+        /// The home directory is required.
         ///</summary>
         HOMEDIR_REQUIRED = 8,
 
         /// <summary>
-        /// The account is currently locked out. 
+        /// The account is currently locked out.
         ///</summary>
         LOCKOUT = 16,
 
         /// <summary>
-        /// No password is required. 
+        /// No password is required.
         ///</summary>
         PASSWD_NOTREQD = 32,
 
         /// <summary>
-        /// The user cannot change the password. 
+        /// The user cannot change the password.
         ///</summary>
         /// <remarks>
-        /// Note:  You cannot assign the permission settings of PASSWD_CANT_CHANGE by directly modifying the UserAccountControl attribute. 
+        /// Note:  You cannot assign the permission settings of PASSWD_CANT_CHANGE by directly modifying the UserAccountControl attribute.
         /// For more information and a code example that shows how to prevent a user from changing the password, see User Cannot Change Password.
         /// </remarks>
         PASSWD_CANT_CHANGE = 64,
 
         /// <summary>
-        /// The user can send an encrypted password. 
+        /// The user can send an encrypted password.
         ///</summary>
         ENCRYPTED_TEXT_PASSWORD_ALLOWED = 128,
 
         /// <summary>
-        /// This is an account for users whose primary account is in another domain. This account provides user access to this domain, but not 
-        /// to any domain that trusts this domain. Also known as a local user account. 
+        /// This is an account for users whose primary account is in another domain. This account provides user access to this domain, but not
+        /// to any domain that trusts this domain. Also known as a local user account.
         ///</summary>
         TEMP_DUPLICATE_ACCOUNT = 256,
 
         /// <summary>
-        /// This is a default account type that represents a typical user. 
+        /// This is a default account type that represents a typical user.
         ///</summary>
         NORMAL_ACCOUNT = 512,
 
         /// <summary>
-        /// This is a permit to trust account for a system domain that trusts other domains. 
+        /// This is a permit to trust account for a system domain that trusts other domains.
         ///</summary>
         INTERDOMAIN_TRUST_ACCOUNT = 2048,
 
         /// <summary>
-        /// This is a computer account for a computer that is a member of this domain. 
+        /// This is a computer account for a computer that is a member of this domain.
         ///</summary>
         WORKSTATION_TRUST_ACCOUNT = 4096,
 
         /// <summary>
-        /// This is a computer account for a system backup domain controller that is a member of this domain. 
+        /// This is a computer account for a system backup domain controller that is a member of this domain.
         ///</summary>
         SERVER_TRUST_ACCOUNT = 8192,
 
@@ -492,49 +529,49 @@ class NNTPDirectoryEntry
         Unused2 = 32768,
 
         /// <summary>
-        /// The password for this account will never expire. 
+        /// The password for this account will never expire.
         ///</summary>
         DONT_EXPIRE_PASSWD = 65536,
 
         /// <summary>
-        /// This is an MNS logon account. 
+        /// This is an MNS logon account.
         ///</summary>
         MNS_LOGON_ACCOUNT = 131072,
 
         /// <summary>
-        /// The user must log on using a smart card. 
+        /// The user must log on using a smart card.
         ///</summary>
         SMARTCARD_REQUIRED = 262144,
 
         /// <summary>
-        /// The service account (user or computer account), under which a service runs, is trusted for Kerberos delegation. Any such service 
-        /// can impersonate a client requesting the service. 
+        /// The service account (user or computer account), under which a service runs, is trusted for Kerberos delegation. Any such service
+        /// can impersonate a client requesting the service.
         ///</summary>
         TRUSTED_FOR_DELEGATION = 524288,
 
         /// <summary>
-        /// The security context of the user will not be delegated to a service even if the service account is set as trusted for Kerberos delegation. 
+        /// The security context of the user will not be delegated to a service even if the service account is set as trusted for Kerberos delegation.
         ///</summary>
         NOT_DELEGATED = 1048576,
 
         /// <summary>
-        /// Restrict this principal to use only Data Encryption Standard (DES) encryption types for keys. 
+        /// Restrict this principal to use only Data Encryption Standard (DES) encryption types for keys.
         ///</summary>
         USE_DES_KEY_ONLY = 2097152,
 
         /// <summary>
-        /// This account does not require Kerberos pre-authentication for logon. 
+        /// This account does not require Kerberos pre-authentication for logon.
         ///</summary>
         DONT_REQUIRE_PREAUTH = 4194304,
 
         /// <summary>
-        /// The user password has expired. This flag is created by the system using data from the Pwd-Last-Set attribute and the domain policy. 
+        /// The user password has expired. This flag is created by the system using data from the Pwd-Last-Set attribute and the domain policy.
         ///</summary>
         PASSWORD_EXPIRED = 8388608,
 
         /// <summary>
-        /// The account is enabled for delegation. This is a security-sensitive setting; accounts with this option enabled should be strictly 
-        /// controlled. This setting enables a service running under the account to assume a client identity and authenticate as that user to 
+        /// The account is enabled for delegation. This is a security-sensitive setting; accounts with this option enabled should be strictly
+        /// controlled. This setting enables a service running under the account to assume a client identity and authenticate as that user to
         /// other remote servers on the network.
         ///</summary>
         TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION = 16777216,
