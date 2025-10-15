@@ -83,7 +83,7 @@ if ($NetworkSettings.PSObject.Properties.Name -contains 'SubnetMask') { # use th
 elseif ($config.AppSettings["SubnetMask"]) { # use the default SubnetMask from config
     $subnetMask = $config.AppSettings["SubnetMask"]
 }
-else { # default to
+else { # default to /24 if nothing else is configured
     $subnetMask = '255.255.255.0'
 }
 
