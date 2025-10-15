@@ -31,6 +31,9 @@ function ConfigurationBuilder ($configPath) {
 # load common parameters
 $config = ConfigurationBuilder "$PSScriptRoot\Switches.config"
 
+$configOutput = $config.AppSettings['OutputPath']
+$templatePath = $config.AppSettings['TemplatePath']
+
 $switch = @{Name = $SwitchName; Model = $Model}
 
 $network = switch ($SwitchName) {
@@ -39,29 +42,22 @@ $network = switch ($SwitchName) {
     Default { Write-Error "Switch name must start with 'NNPTC' or 'PTCL'." }
 }
 
-
 $_switchName = $SwitchName
 if($network -eq 'NNTP') { $_switchName = "$($SwitchName).nntp.gov"}
 
 # check if NetworkSettings was provided and contains an IPAddress
 if ($NetworkSettings.PSObject.Properties.Name -contains 'IPAddress') { # use the provided IP address
     if (!($dnsEntry = [System.Net.Dns]::GetHostEntry($NetworkSettings.IPAddress))) {
-        Write-Warning "DNS entry for $($NetworkSettings.IPAddress) not found. Config will be created using the provided IP address, but may not be accurate."
-    }
-    if ($dnsEntry) {
-        $ipAddress = $dnsEntry.AddressList.IPAddressToString
-    }
-    else {
-        $ipAddress = $NetworkSettings.IPAddress
+        Throw "DNS entry for $($NetworkSettings.IPAddress) not found. Verify the IP Address and/or check DNS, and try again."
     }
 }
 else { # resolve the switch name to an IP address using DNS
     if (!($dnsEntry = [System.Net.Dns]::GetHostEntry($_switchName))) {
         Throw "DNS entry for $SwitchName not found. Verify the switch name and/or check DNS, and try again."
     }
-    $ipAddress = $dnsEntry.AddressList.IPAddressToString
 }
 
+$ipAddress = $dnsEntry.AddressList.IPAddressToString
 
 # check if NetworkSettings was provided and contains a DefaultGateway
 if ($NetworkSettings.PSObject.Properties.Name -contains 'DefaultGateway') { # use the provided DefaultGateway
@@ -96,11 +92,7 @@ $switch.Add('IPAddress', $ipAddress)
 $switch.Add('DefaultGateway', $defaultGateway)
 $switch.Add('SubnetMask', $subnetMask)
 
-$template = switch ($Model) {
-    'C9300-24T' { 'Cisco-C9300-24T-Template' ; break }
-    'C9300-48T' { 'Cisco-C9300-48T-Template' ; break }
-    Default { Write-Error "Unsupported model. Supported models are 'C9300-24T' and 'C9300-48T'." }
-}
+$template = "{0}\_{1}.conf" -f $templatePath, $Model
 
 $switchConfig = Get-Content $template -Raw
 $switchConfig = $switchConfig -replace '<SWITCHNAME>', $switch.Name
