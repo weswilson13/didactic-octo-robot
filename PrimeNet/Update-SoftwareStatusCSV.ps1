@@ -58,11 +58,12 @@ foreach ($software in $softwareToUpdate) {
 
         $newVersion = Get-FileVersion $newestFile
 
-        $update = [ordered]@{Product = $software; Version = $newVersion; Date = $newestFile.CreationTime }
-        $update | Out-String | Write-Host
-
         # update the csv
         $entry = $softwareStatus | Where-Object {$_.FileMatch -eq $software}
+        
+        $update = [ordered]@{Product = $entry.SoftwareName; Version = $newVersion; Date = $newestFile.CreationTime }
+        $update | Out-String | Write-Host
+
         $entry.LatestVersion = $update.Version
         $entry.DateTime = $update.Date
         $ErrorActionPreference = 'Continue'
