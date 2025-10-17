@@ -29,6 +29,20 @@ function Import-FileTransferCSV {
     return $result
 }
 
+function Get-FileVersion ($FileInfo) {
+
+    if ($FileInfo.VersionInfo.FileVersion) {
+        $newVersion = $FileInfo.VersionInfo.FileVersion
+    }
+    elseif ($FileInfo.VersionInfo.ProductVersion) { # check ProductVersion property
+        $newVersion = $FileInfo.VersionInfo.ProductVersion
+    }
+    else { # try to get a version from the file name
+        $newVersion = [regex]::Match($FileInfo.BaseName, '(\d+\.?)+').Value
+    }
+
+    return $newVersion
+}
 # get a list of all software patterns to search for from the SoftwareVersions csv
 $softwareStatusPath = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\SoftwareVersions.csv"
 $softwareStatus = Import-Csv $softwareStatusPath
@@ -41,17 +55,8 @@ foreach ($software in $softwareToUpdate) {
     $newestFile = $filesTransferred | Where-Object {$_.BaseName -match $software} | Select-Object -First 1
     if ($newestFile) {
         $ErrorActionPreference = 'SilentlyContinue'
-        $versionInfo = $newestFile.VersionInfo
 
-        if ($versionInfo.FileVersion) {
-            $newVersion = $versionInfo.FileVersion
-        }
-        elseif ($versionInfo.ProductVersion) { # check ProductVersion property
-            $newVersion = $versionInfo.ProductVersion
-        }
-        else { # try to get a version from the file name
-            $newVersion = [regex]::Match($newestFile.BaseName, '(\d+\.?)+').Value
-        }
+        $newVersion = Get-FileVersion $newestFile
 
         $update = [ordered]@{Product = $software; Version = $newVersion; Date = $newestFile.CreationTime }
         $update | Out-String | Write-Host
