@@ -1,4 +1,4 @@
-$log = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\Documents\FileTransferLog.csv"
+$log = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\FileTransferLog.csv"
 
 while ($true) { # loop indefinitely
 
