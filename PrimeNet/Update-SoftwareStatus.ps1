@@ -104,7 +104,7 @@ $folder = switch -Regex ($env:USERDNSDOMAIN) {
     }
     default { $PSScriptRoot }
 }
-$template = Join-Path $folder "SoftwareStatusTemplate.html"
+$template = Join-Path $folder "Templates\SoftwareStatusTemplate.html"
 $firmware = Join-Path $folder "firmware.txt"
 $softwareVersionsCsv = Join-Path $folder "SoftwareVersions.csv"
 $serverVersionsCsv = Join-Path $folder "ServerSoftware.csv"
