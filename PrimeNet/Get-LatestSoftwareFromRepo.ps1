@@ -8,7 +8,7 @@ function Import-FileTransferCSV {
     $ErrorActionPreference = 'SilentlyContinue'
 
     $result = @()
-    $data = Import-Csv "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\Documents\FileTransferLog.csv"
+    $data = Import-Csv "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\FileTransferLog.csv"
 
     foreach ($obj in $data) {
         #$versionInfo = $obj.VersionInfo.Split("`n").foreach({$key,$value=$_.split(':',2); @{$key.trim()=$value.trim()}})
