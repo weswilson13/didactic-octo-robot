@@ -1,0 +1,39 @@
+This collection of files has been configured to aid in identifying various software maintained on the NNPP & NNTP networks at NNPTC, and assist in tracking and transferring files. If not already done, the user should link this channel/folder to their personal OneDrive. All files are found within the Files directory in the 'Naval Training and Computing Systems/SoftwareVersions' Teams channel. The powershell files may be executed AD HOC and/or configured using the Scheduled Tasks to create an automated process. General overview of the scripts and html are as follows:
+
+1. SoftwareStatus.html
+	HTML page to display an interactive table showing the latest Application software, server software/firmware, and printer firmware. Dependencies for this file include the SoftwareStatusTemplate.html file in the \Templates fodler, DataTables css and javascript files in the \DataTables folder, as well as the images located in the \images folder. 
+
+2. Update-SoftwareStatus.ps1
+	Takes the data in the SoftwareStatus.csv, ServerStatus.csv, and firmware.txt files combined with the SoftwareStatusTemplate.html and produces a new SoftwareStatus.html file. 
+	
+3. Get-PrinterFirmware.ps1
+	*Manual execution only* This file reaches out and grabs the latest printer firmware available for our HP printers (models defined in the script). If newer versions are found compared to the versions saved in the firmware.txt file, the user will be presented with the option to download the new files to the users Downloads folder.
+	
+4. Get-LatestSoftwareFromRepo.ps1
+	Uses the regex patterns defined in SoftwareStatus.csv to identify available software in 'Z:\Scripting\Automatic Downloads'. Any '.exe' or '.msi' files with identifiable versions are compared to files found in FileTransferLog.csv. If the versions in the repo are found to be newer, they will be transferred to the NNPP.
+
+5.  Invoke-MonitorFileTransfers.ps1
+	Monitors the NNPP transfer folder (%USERPROFILE%\OneDrive\OneDrive - PrimeNet\ToNNPP) for files added and adds these objects to a file for tracking purposes. The file is created in the 'SoftwareVersions' folder - %USERPROFILE%\OneDrive\OneDrive - PrimeNet\SoftwareVersions\FileTransferLog.csv (linked location)
+	
+6.  Update-SoftwareStatusCSV.ps1
+	Retrieves file data found in FileTransferLog.csv as well as SoftwareStatus.csv for the installers with regex patterns defined. Any entries found in the FileTransferLog.csv that are newer than those found in SoftwareStatus.csv will be updated in SoftwareStatus.csv. These changes would then be captured the next time Update-SoftwareStatus.ps1 was executed to recreate the HTML page. 
+	
+Scheduled Tasks:
+
+!!! Note: These tasks may be imported; however, the user will need to be updated to reflect the current user. !!!
+
+1.  MonitorFileTransfers_Headless.xml
+	Executes Invoke-MonitorFileTransfers.ps1. This will run 'hidden' to the user.
+	Pre-defined schedule - start at 0600 daily, run for 24 hours. Executes only while user is logged on.
+	
+2.  CheckSoftwareRepo.xml
+	Executes Get-LatestSoftwareFromRepo.ps1. This will create a new powershell window that the user can monitor.
+	Pre-defined schedule - Runs one time @ 0900 daily. Executes only while user is logged on.
+	
+3.  UpdateSoftwareStatusCSV_Headless.xml
+	Executes Update-SoftwareStatusCSV.ps1. This will run 'hidden' to the user.
+	Pre-defined schedule - Runs hourly starting at 0600, daily. Executes only while user is logged on.
+
+4.  UpdateSoftwareStatusHTML_Headless.xml
+	Executes Update-SoftwareStatus.ps1. This will run 'hidden' to the user.
+	Pre-defined schedule - Runs at user logon and/or hourly starting at 0500, daily. Executes only while user is logged on.
