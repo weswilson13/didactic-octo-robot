@@ -2,7 +2,7 @@
 param()
 
 function Get-MSIProperties ($FilePath) { # WILL NOT WORK ON PRIMENET DUE TO CONSTRAINED LANGUAGE MODE (CLM)
-    $WindowsInstaller = [WindowsInstaller]::Installer
+    $WindowsInstaller = New-Object -ComObject WindowsInstaller.Installer
     $WindowsInstallerDatabase = $WindowsInstaller.GetType().InvokeMember("OpenDatabase", "InvokeMethod", $null, $WindowsInstaller, @(($FilePath), 0))
     # Open the Property-view
     $WindowsInstallerDatabaseView = $WindowsInstallerDatabase.GetType().InvokeMember("OpenView", "InvokeMethod", $null, $WindowsInstallerDatabase, "SELECT * FROM File")
@@ -16,7 +16,7 @@ function Import-FileTransferCSV {
     $ErrorActionPreference = 'SilentlyContinue'
 
     $result = @()
-    $data = Import-Csv "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\Documents\FileTransferLog.csv"
+    $data = Import-Csv "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\FileTransferLog.csv"
 
     foreach ($obj in $data) {
         #$versionInfo = $obj.VersionInfo.Split("`n").foreach({$key,$value=$_.split(':',2); @{$key.trim()=$value.trim()}})
@@ -29,7 +29,9 @@ function Import-FileTransferCSV {
     return $result
 }
 
-function Get-FileVersion ($FileInfo) {
+function Get-FileVersion {
+    [cmdletbinding()]
+    param([object]$FileInfo)
 
     if ($FileInfo.VersionInfo.FileVersion) {
         $newVersion = $FileInfo.VersionInfo.FileVersion
@@ -43,6 +45,7 @@ function Get-FileVersion ($FileInfo) {
 
     return $newVersion
 }
+
 # get a list of all software patterns to search for from the SoftwareVersions csv
 $softwareStatusPath = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\SoftwareVersions.csv"
 $softwareStatus = Import-Csv $softwareStatusPath
