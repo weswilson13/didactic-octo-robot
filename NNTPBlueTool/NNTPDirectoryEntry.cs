@@ -419,27 +419,40 @@ class NNTPDirectoryEntry : DirectoryEntry
         }
     }
     public void WriteCSV()
-{
-    // string filePath = $"UserExport_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-
-    // List<PrsnlPerson> users = dbContext.PrsnlPeople
-    //     .Include(p => p.PrsnlOrgAssignments)
-    //     .Include(p => p.Users)
-    //     .Where(u => !string.IsNullOrEmpty(u.EmailAddress) && u.EmailAddress.EndsWith("@nntc.edu"))
-    //     .ToList();
-
-    // string csvContent = CsvHelper.ListToCsv(users);
-    // CsvHelper.SaveCsvToFile(csvContent, filePath);
-    // Console.WriteLine($"CSV file created at {filePath}");
-
-    var csvAD = new List<ADCsv>
     {
-        new ADCsv { LastName = this.Lastname, FirstName = this.Firstname, Username = this.sAMAccountName, Email = this.Email, DoDID = this.DODID }
-    };
-    var csvADContent = CsvHelper.ListToCsv(csvAD);
-    var filePath = $"TSCR_AD.csv";
-    CsvHelper.SaveCsvToFile(csvADContent, filePath);
-}
+        // string filePath = $"UserExport_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+        // List<PrsnlPerson> users = dbContext.PrsnlPeople
+        //     .Include(p => p.PrsnlOrgAssignments)
+        //     .Include(p => p.Users)
+        //     .Where(u => !string.IsNullOrEmpty(u.EmailAddress) && u.EmailAddress.EndsWith("@nntc.edu"))
+        //     .ToList();
+
+        // string csvContent = CsvHelper.ListToCsv(users);
+        // CsvHelper.SaveCsvToFile(csvContent, filePath);
+        // Console.WriteLine($"CSV file created at {filePath}");
+
+        var csvAD = new List<ADCsv>
+        {
+            new ADCsv { LastName = this.Lastname, FirstName = this.Firstname, Username = this.sAMAccountName, Email = this.Email, DoDID = this.DODID }
+        };
+        var csvADContent = CsvHelper.ListToCsv(csvAD);
+        var filePath = Global.MailMergeDataSource;
+
+        CsvHelper.SaveCsvToFile(csvADContent, filePath);
+
+        MyMailMessage mailMessage = new MyMailMessage("poweredge.t320.server@gmail.com",
+            "New NNTP User Created",
+            "See attached CSVs for user import.",
+            "smtp.gmail.com",
+            "poweredge.t320.server@gmail.com",
+            "dfnoafqoywisoykh",
+            587, true, [filePath]);
+
+        mailMessage.SendMail();
+        
+
+    }
     private protected Dictionary<string, string> DefaultOUs = new Dictionary<string, string>()
     {
         { "NFAS-Students", "OU=NFAS-Students,OU=NNPTC,OU=NNTP Users,DC=MYDOMAIN,DC=LOCAL" },

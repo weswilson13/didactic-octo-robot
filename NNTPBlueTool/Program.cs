@@ -1,13 +1,13 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Office.Interop.Word;
 using NNTPBlueTool.Models;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.Text.RegularExpressions;
 
 void ClearConsole()
-
 {
     if (Console.IsOutputRedirected == false && Console.IsInputRedirected == false)
     {
@@ -31,6 +31,55 @@ void ExitApp()
         }
     }
 }
+void OpenMailMerge()
+{
+    // Test for the MailMerge folder in the users temp folder
+    string mailMergeFolder = Global.MailMergeTarget;
+    if (!System.IO.Path.Exists(mailMergeFolder))
+    {
+        Directory.CreateDirectory(mailMergeFolder);
+    }
+
+    // make a local copy of the word doc in the users temp folder
+    Guid guid = Guid.NewGuid();
+    FileInfo sourceFile = new FileInfo(Global.MailMergeSource);
+
+    string destFile = System.IO.Path.Combine(mailMergeFolder, $"{guid.ToString()}.docx");
+    System.IO.File.Copy(Global.MailMergeSource, destFile, true);
+
+    // Process.Start("robocopy.exe", $"{sourceFile.DirectoryName} {mailMergeFolder} {sourceFile.Name}");
+
+    Process.Start("explorer.exe", destFile);
+
+    // Application wordApp = new Application();
+    // wordApp.Visible = true;
+    // object missing = System.Reflection.Missing.Value;
+    // object readOnly = false;
+    // object isVisible = true;
+    // object fileName = destFile;
+
+    // Document doc = wordApp.Documents.Open(ref fileName, ref missing, ref readOnly,
+    //     ref missing, ref missing, ref missing, ref missing, ref missing,
+    //     ref missing, ref missing, ref missing, ref isVisible, ref missing,
+    //     ref missing, ref missing, ref missing);
+}
+static void OnProcessExit(object sender, EventArgs e)
+{
+    DeleteFiles();
+}
+static void DeleteFiles()
+{
+    try
+    {
+        Directory.Delete(Global.MailMergeTarget, true);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred: {ex.Message}");
+    }
+}
+
+AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
 var config = Builder.BuildConfiguration("appsettings.json");
 
@@ -38,8 +87,15 @@ var config = Builder.BuildConfiguration("appsettings.json");
 string domain = config["AppSettings:Domain"] ?? throw new Exception("Domain is empty");
 string domainUser = config["AppSettings:DomainUser"] ?? throw new Exception("DomainUser is empty");
 string password = config["AppSettings:Password"] ?? throw new Exception("Password is empty");
+string smtpServer = config["MailSettings:SMTPServer"] ?? throw new Exception("SMTP Server is not configured");
+
+// set global variables
+Global.MailMergeDataSource = config["AppSettings:MailMergeDataSource"] ?? throw new Exception("No mail merge data source configured.");
+Global.MailMergeSource = config["AppSettings:MailMergeSourceFile"] ?? throw new Exception("No mail merge template configured.");
+Global.MailMergeTarget = System.IO.Path.Combine(Environment.GetEnvironmentVariable("TEMP"), "MailMerge");
+
 string user = string.Empty;
-PrsnlPerson? dbUser = null;
+// PrsnlPerson? dbUser = null;
 
 // Setup DbContext options
 var optionsBuilder = new DbContextOptionsBuilder<dbContext>();
@@ -76,6 +132,7 @@ Dictionary<int, string> usernameChoices = new Dictionary<int, string> {
 };
 
 string choice, usernameChoice = string.Empty;
+PrsnlPerson? dbUser = null;
 
 // Prompt for program choice
 string message = "What would you like to do?\n\n" +
@@ -274,8 +331,17 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
     }
     else if (choice == "6") // Create user CSV
     {
-        userEntry.WriteCSV();
-        logger.Log($"Created CSV for user {_distinctName}");
+        try
+        {
+            userEntry.WriteCSV();
+            logger.Log($"Created CSV for user {_distinctName}");
+            OpenMailMerge();
+        }
+        catch (System.IO.IOException e)
+        {
+            Console.WriteLine($"{e.Message}\n\rClose any open Mail Merge files and/or verify the Source CSV isn't being used and try again.");
+            // throw new Exception($"{e.Message}\n\rClose any open Mail Merge files and/or verify the Source CSV isn't being used and try again.");
+        }
         ExitApp();
         goto ProgramStart;
     }

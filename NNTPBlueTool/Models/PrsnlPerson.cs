@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 
 namespace NNTPBlueTool.Models;
@@ -44,4 +45,5 @@ public partial class PrsnlPerson
                 throw new Exception($"Unknown prsgroup {this.Prsgroup.Trim().ToUpper()} for user {this.FirstName} {this.LastName}");
         }
     }
+
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Office.Core;
 
 public static class CsvHelper
 {
@@ -28,8 +29,15 @@ public static class CsvHelper
 
     public static void SaveCsvToFile(string csvContent, string filePath)
     {
-        System.IO.File.WriteAllText(filePath, csvContent);
-        Console.WriteLine("CSV file created successfully.");
+        // try
+        // {
+            System.IO.File.WriteAllText(filePath, csvContent, Encoding.UTF8);
+            Console.WriteLine("CSV file created successfully.");
+        // }
+        // catch (System.IO.IOException e)
+        // {
+        //     Console.WriteLine (e.Message);
+        // }
     }
 }
 
