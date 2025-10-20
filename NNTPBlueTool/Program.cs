@@ -87,12 +87,15 @@ var config = Builder.BuildConfiguration("appsettings.json");
 string domain = config["AppSettings:Domain"] ?? throw new Exception("Domain is empty");
 string domainUser = config["AppSettings:DomainUser"] ?? throw new Exception("DomainUser is empty");
 string password = config["AppSettings:Password"] ?? throw new Exception("Password is empty");
+
 string smtpServer = config["MailSettings:SMTPServer"] ?? throw new Exception("SMTP Server is not configured");
+Global.SmtpPort = Convert.ToInt32(config["MailSettings:Port"] ?? "25");
 
 // set global variables
-Global.MailMergeDataSource = config["AppSettings:MailMergeDataSource"] ?? throw new Exception("No mail merge data source configured.");
-Global.MailMergeSource = config["AppSettings:MailMergeSourceFile"] ?? throw new Exception("No mail merge template configured.");
+Global.MailMergeDataSource = config["FileSettings:MailMergeDataSource"] ?? throw new Exception("No mail merge data source configured.");
+Global.MailMergeSource = config["FileSettings:MailMergeSourceFile"] ?? throw new Exception("No mail merge template configured.");
 Global.MailMergeTarget = System.IO.Path.Combine(Environment.GetEnvironmentVariable("TEMP"), "MailMerge");
+Global.SeawareCsvFile = config["FileSettings:SeawareImportFile"] ?? throw new Exception("No Seaware Import File configured");
 
 string user = string.Empty;
 // PrsnlPerson? dbUser = null;

@@ -50,7 +50,7 @@ public class ADCsv
     public string DoDID { get; set; }
 }
 
-public class SWcsv
+public class SWCsv
 {
     public string LastName { get; set; }
     public string FirstName { get; set; }

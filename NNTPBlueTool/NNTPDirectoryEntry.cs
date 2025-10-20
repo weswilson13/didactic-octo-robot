@@ -434,12 +434,31 @@ class NNTPDirectoryEntry : DirectoryEntry
 
         var csvAD = new List<ADCsv>
         {
-            new ADCsv { LastName = this.Lastname, FirstName = this.Firstname, Username = this.sAMAccountName, Email = this.Email, DoDID = this.DODID }
+            new ADCsv { LastName = this.Lastname,
+                        FirstName = this.Firstname,
+                        Username = this.sAMAccountName,
+                        Email = this.Email,
+                        DoDID = this.DODID
+            }
+        };
+        var csvSW = new List<SWCsv>
+        {
+            new SWCsv { LastName = this.Lastname,
+                        FirstName = this.Firstname,
+                        Username = this.sAMAccountName,
+                        Email = this.Email,
+                        UID = "DoD ID",
+                        DoDID = this.DODID
+            }
         };
         var csvADContent = CsvHelper.ListToCsv(csvAD);
-        var filePath = Global.MailMergeDataSource;
+        var csvSWContent = CsvHelper.ListToCsv(csvSW);
 
-        CsvHelper.SaveCsvToFile(csvADContent, filePath);
+        var adFilePath = Global.MailMergeDataSource;
+        var swFilePath = Global.SeawareCsvFile;
+
+        CsvHelper.SaveCsvToFile(csvADContent, adFilePath);
+        CsvHelper.SaveCsvToFile(csvSWContent, swFilePath);
 
         MyMailMessage mailMessage = new MyMailMessage("poweredge.t320.server@gmail.com",
             "New NNTP User Created",
@@ -447,11 +466,9 @@ class NNTPDirectoryEntry : DirectoryEntry
             "smtp.gmail.com",
             "poweredge.t320.server@gmail.com",
             "dfnoafqoywisoykh",
-            587, true, [filePath]);
+            Global.SmtpPort, true, [adFilePath, swFilePath]);
 
         mailMessage.SendMail();
-        
-
     }
     private protected Dictionary<string, string> DefaultOUs = new Dictionary<string, string>()
     {
