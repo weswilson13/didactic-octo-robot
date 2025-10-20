@@ -77,6 +77,15 @@ foreach ($software in $softwaretoUpdate) {
     # if more than 1 installer returned, try to filter out x86 versions or target the x64 version
     if ($exe.Count -gt 1) { $exe = $exe | Where-Object { $_.FullName -notmatch '86' } }
     if ($exe.Count -gt 1) { $exe = $exe | Where-Object { $_.FullName -match '64' } }
+    
+    # if still more than 1 installer returned, try to filter out by latest version
+    if ($exe.Count -gt 1) {
+        foreach ($e in $exe) {
+            $null = Add-Member -InputObject $e -NotePropertyMembers @{ Version = Get-FileVersion $e } -Force
+        }
+
+        $exe = $exe | Sort-Object Version -Descending | Select-Object -First 1
+    }
 
     # if count is still more than 1, inform user and move to next software directory
     if ($exe.Count -gt 1) { 
@@ -88,8 +97,11 @@ foreach ($software in $softwaretoUpdate) {
     Write-Host $exe.Name -ForegroundColor Cyan
 
     # get the file version of the installer in the repo
-    $version = Get-FileVersion $exe
+    if (!($version = $exe.Version)) {
+        $version = Get-FileVersion $exe
+    }
     if (!$version) { $version='0.0.0' }
+
     try {
         $_version = [version]$version
     }
