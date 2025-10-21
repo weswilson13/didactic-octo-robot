@@ -1,8 +1,12 @@
+using Microsoft.Office.Interop.Word;
+
 public class Banner
 {
     public static void GovBanner()
     {
-        Console.WriteLine(@"You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
+        string banner = @"
+        
+        You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
 
         By using this IS (which includes any device attached to this IS), you consent to the following conditions:
 
@@ -15,7 +19,77 @@ public class Banner
         -This IS includes security measures (e.g., authentication and access controls) to protect USG interests--not for your personal benefit or privacy.
 
         -Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details.
-        ");
+        ";
+
+        string newString="";
+        int index;
+        int maxLength = 110;
+
+        var lines = banner.Split("\r");
+        foreach (var line in lines)
+        {
+            if (line.Length > maxLength)
+            {
+                index = line.IndexOf(' ', maxLength);
+                if (index != -1)
+                {
+                    var rem = line.TrimStart();
+                    while (rem.Length > maxLength)
+                    {
+                        index = rem.IndexOf(' ', maxLength);
+                        if (index != -1)
+                        {
+                            newString += "\n";
+                            if (line.TrimStart().StartsWith('-')) // a bullet should be indented
+                            {
+                                newString += "   ";
+                                if (!rem.StartsWith('-')) { newString += " "; }
+                            }
+                            newString += rem.Substring(0, index);
+                            // newString += "\n";
+                            rem = rem.Substring(index + 1).TrimStart();
+                        }
+                        else // index = -1, so we are last word of remaining line
+                        {
+                            newString = "\n";
+                            if (line.TrimStart().StartsWith('-')) // a bullet should be indented
+                            {
+                                newString += "   ";
+                                if (!rem.StartsWith('-')) { newString += " "; }
+                            }
+                            break;
+                        }
+                    } // end while loop - rem <= maxLength
+                    newString += "\n";
+                    if (line.TrimStart().StartsWith('-')) // a bullet should be indented
+                    {
+                        newString += "   ";
+                        if (!rem.StartsWith('-')) { newString += " "; }
+                    }
+                    newString += rem;
+                }
+                else // index = -1, so we are at the last word of the line
+                {
+                    newString += "\n";
+                    if (line.TrimStart().StartsWith('-')) // a bullet should be indented
+                    {
+                        newString += "   ";
+                    }
+                    newString += line.TrimStart();
+                }
+            }
+            else // line < maxLength
+            {
+                newString += "\n";
+                if (line.TrimStart().StartsWith('-')) // a bullet should be indented
+                {
+                    newString += "   ";
+                }
+                newString += line.TrimStart();
+            }
+        }
+
+        Console.WriteLine(newString);
     }
     public static void PrintLogo()
     {

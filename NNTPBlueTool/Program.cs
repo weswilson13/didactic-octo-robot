@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Office.Interop.Word;
 using NNTPBlueTool.Models;
@@ -47,21 +48,7 @@ void OpenMailMerge()
     string destFile = System.IO.Path.Combine(mailMergeFolder, $"{guid.ToString()}.docx");
     System.IO.File.Copy(Global.MailMergeSource, destFile, true);
 
-    // Process.Start("robocopy.exe", $"{sourceFile.DirectoryName} {mailMergeFolder} {sourceFile.Name}");
-
     Process.Start("explorer.exe", destFile);
-
-    // Application wordApp = new Application();
-    // wordApp.Visible = true;
-    // object missing = System.Reflection.Missing.Value;
-    // object readOnly = false;
-    // object isVisible = true;
-    // object fileName = destFile;
-
-    // Document doc = wordApp.Documents.Open(ref fileName, ref missing, ref readOnly,
-    //     ref missing, ref missing, ref missing, ref missing, ref missing,
-    //     ref missing, ref missing, ref missing, ref isVisible, ref missing,
-    //     ref missing, ref missing, ref missing);
 }
 static void OnProcessExit(object sender, EventArgs e)
 {
@@ -114,8 +101,7 @@ void SetFilePaths(IConfiguration config, NNTPDirectoryEntry userEntry)
             break;
 
         default:
-            throw new Exception();
-            break;
+            throw new Exception("Unable to determine File Settings. User Agreement Forms unable to be generated.");
     }
     // set global variables
     Global.MailMergeSource = Path.Combine(mailMergeFolder, mailMergeFile);
@@ -123,6 +109,27 @@ void SetFilePaths(IConfiguration config, NNTPDirectoryEntry userEntry)
     Global.SeawareCsvFile = Path.Combine(seawareImportFolder, seawareImportFile);
     Global.MailMergeDataSource = Path.Combine(mailMergeDataFolder, mailMergeDataFile);
 }
+void LogonBanner()
+{
+    Banner.GovBanner();
+
+    if (Console.IsOutputRedirected == false && Console.IsInputRedirected == false)
+    {
+        Console.WriteLine("Press Enter to accept and continue");
+        var key = Console.ReadKey();
+        if (key.Key == ConsoleKey.Enter)
+        {
+            ClearConsole();
+            return;
+        }
+        else
+        {
+            Environment.Exit(0);
+        }
+    }
+}
+
+LogonBanner();
 
 AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
@@ -169,7 +176,7 @@ Dictionary<int, string> programChoices = new Dictionary<int, string> {
 
 ProgramStart:
 
-Logo.PrintLogo();
+Banner.PrintLogo();
 
 // Dictionary for username input methods
 Dictionary<int, string> usernameChoices = new Dictionary<int, string> {
