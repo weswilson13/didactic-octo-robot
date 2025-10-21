@@ -1,4 +1,5 @@
 using Microsoft.Office.Interop.Word;
+using Microsoft.PowerShell.Commands;
 
 public class Banner
 {
@@ -72,7 +73,7 @@ public class Banner
             }
         }
 
-        Console.WriteLine(newString);
+        Console.WriteLine("\n" + newString.TrimStart());
     }
     public static void PrintLogo()
     {

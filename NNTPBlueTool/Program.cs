@@ -1,8 +1,6 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Office.Interop.Word;
 using NNTPBlueTool.Models;
 using System.Diagnostics;
 using System.DirectoryServices;

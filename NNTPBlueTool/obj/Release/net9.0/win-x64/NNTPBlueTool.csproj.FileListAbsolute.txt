@@ -274,7 +274,6 @@ D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\createdump.exe
 D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\hostfxr.dll
 D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\hostpolicy.dll
 D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\mscordaccore.dll
-D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\mscordaccore_amd64_amd64_9.0.925.41916.dll
 D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\mscordbi.dll
 D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\mscorrc.dll
 D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\msquic.dll
@@ -290,3 +289,6 @@ D:\didactic-octo-robot\NNTPBlueTool\obj\Release\net9.0\win-x64\refint\NNTPBlueTo
 D:\didactic-octo-robot\NNTPBlueTool\obj\Release\net9.0\win-x64\NNTPBlueTool.pdb
 D:\didactic-octo-robot\NNTPBlueTool\obj\Release\net9.0\win-x64\NNTPBlueTool.genruntimeconfig.cache
 D:\didactic-octo-robot\NNTPBlueTool\obj\Release\net9.0\win-x64\ref\NNTPBlueTool.dll
+D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\Microsoft.Office.Interop.Word.dll
+D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\Office.dll
+D:\didactic-octo-robot\NNTPBlueTool\bin\Release\net9.0\win-x64\mscordaccore_amd64_amd64_9.0.1025.47515.dll

@@ -13,6 +13,8 @@
           "Microsoft.EntityFrameworkCore.Tools": "9.0.9",
           "Microsoft.Extensions.Configuration.Binder": "9.0.9",
           "Microsoft.Extensions.Configuration.Json": "9.0.9",
+          "Microsoft.Office.Interop.Word": "15.0.4797.1004",
+          "MicrosoftOfficeCore": "15.0.0",
           "System.DirectoryServices": "9.0.9",
           "System.Management.Automation": "7.5.3",
           "Thycotic.SecretServer.Sdk.Extensions.Integration": "1.5.9"
@@ -778,6 +780,14 @@
       },
       "Microsoft.NETCore.Platforms/1.1.0": {},
       "Microsoft.NETCore.Targets/1.1.0": {},
+      "Microsoft.Office.Interop.Word/15.0.4797.1004": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Office.Interop.Word.dll": {
+            "assemblyVersion": "15.0.0.0",
+            "fileVersion": "15.0.4797.1003"
+          }
+        }
+      },
       "Microsoft.PowerShell.CoreCLR.Eventing/7.5.3": {
         "dependencies": {
           "System.Diagnostics.EventLog": "9.0.8"
@@ -924,6 +934,14 @@
             "assetType": "runtime",
             "assemblyVersion": "9.0.0.0",
             "fileVersion": "9.0.825.36511"
+          }
+        }
+      },
+      "MicrosoftOfficeCore/15.0.0": {
+        "runtime": {
+          "lib/net35/Office.dll": {
+            "assemblyVersion": "15.0.0.0",
+            "fileVersion": "15.0.4420.1017"
           }
         }
       },
@@ -1766,6 +1784,13 @@
       "path": "microsoft.netcore.targets/1.1.0",
       "hashPath": "microsoft.netcore.targets.1.1.0.nupkg.sha512"
     },
+    "Microsoft.Office.Interop.Word/15.0.4797.1004": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lavTOrMGK/o/t3+gGr7JuVrL8XDdnS0DwPLcYv/StOiysXO4L0C36IXTVtEJo1Mh9Aoxo9a8dgGcPi+faTlv0g==",
+      "path": "microsoft.office.interop.word/15.0.4797.1004",
+      "hashPath": "microsoft.office.interop.word.15.0.4797.1004.nupkg.sha512"
+    },
     "Microsoft.PowerShell.CoreCLR.Eventing/7.5.3": {
       "type": "package",
       "serviceable": true,
@@ -1807,6 +1832,13 @@
       "sha512": "sha512-du0duQcAqGD++ciaKvxfBSFy64y4Ww6rnHNQI2JWrJwNsBNTYWRszo0kHHa3SLbIasyA4hF/+Mwnedcs2bHzNg==",
       "path": "microsoft.win32.registry.accesscontrol/9.0.8",
       "hashPath": "microsoft.win32.registry.accesscontrol.9.0.8.nupkg.sha512"
+    },
+    "MicrosoftOfficeCore/15.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/KgYw8uvv0Ut8FPvyEa1XJ/TrLSRgvTv3JgC2IT0/8NwoICzbEJWfmfwsE6Dwi8WH0jVkTEO7zRvGvaKqUOhqQ==",
+      "path": "microsoftofficecore/15.0.0",
+      "hashPath": "microsoftofficecore.15.0.0.nupkg.sha512"
     },
     "Mono.TextTemplating/3.0.0": {
       "type": "package",
