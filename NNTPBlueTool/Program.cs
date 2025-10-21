@@ -129,6 +129,9 @@ void LogonBanner()
     }
 }
 
+if (Console.IsOutputRedirected == false && Console.IsInputRedirected == false)
+    Console.WindowWidth = Global.WindowWidth;
+
 LogonBanner();
 
 AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);

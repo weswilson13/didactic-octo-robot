@@ -2,8 +2,20 @@ using Microsoft.Office.Interop.Word;
 
 public class Banner
 {
+    static string NewLine(string ParentString, string ChildString="")
+    {
+        string newString = "\n";
+        if (ParentString.TrimStart().StartsWith('-')) // a bullet should be indented
+        {
+            newString += "   ";
+            if (!string.IsNullOrWhiteSpace(ChildString) && !ChildString.StartsWith('-')) { newString += " "; }
+        }
+
+        return newString;
+    }
     public static void GovBanner()
     {
+
         string banner = @"
         
         You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
@@ -21,70 +33,41 @@ public class Banner
         -Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details.
         ";
 
-        string newString="";
+        string newString = "";
         int index;
-        int maxLength = 110;
+        int maxLength = Global.WindowWidth;
+        if (Console.IsOutputRedirected == false && Console.IsInputRedirected == false)
+            maxLength = (int)((float)0.8 * Console.WindowWidth);
 
         var lines = banner.Split("\r");
         foreach (var line in lines)
         {
             if (line.Length > maxLength)
             {
-                index = line.IndexOf(' ', maxLength);
-                if (index != -1)
+                var rem = line.TrimStart();
+                while (rem.Length > maxLength)
                 {
-                    var rem = line.TrimStart();
-                    while (rem.Length > maxLength)
+                    // find the end of the word closest to our maxLength cutoff
+                    // this will prevent splitting the string mid-word.
+                    index = rem.IndexOf(' ', maxLength);
+                    if (index != -1)
                     {
-                        index = rem.IndexOf(' ', maxLength);
-                        if (index != -1)
-                        {
-                            newString += "\n";
-                            if (line.TrimStart().StartsWith('-')) // a bullet should be indented
-                            {
-                                newString += "   ";
-                                if (!rem.StartsWith('-')) { newString += " "; }
-                            }
-                            newString += rem.Substring(0, index);
-                            // newString += "\n";
-                            rem = rem.Substring(index + 1).TrimStart();
-                        }
-                        else // index = -1, so we are last word of remaining line
-                        {
-                            newString = "\n";
-                            if (line.TrimStart().StartsWith('-')) // a bullet should be indented
-                            {
-                                newString += "   ";
-                                if (!rem.StartsWith('-')) { newString += " "; }
-                            }
-                            break;
-                        }
-                    } // end while loop - rem <= maxLength
-                    newString += "\n";
-                    if (line.TrimStart().StartsWith('-')) // a bullet should be indented
-                    {
-                        newString += "   ";
-                        if (!rem.StartsWith('-')) { newString += " "; }
+                        newString += NewLine(line, rem);
+                        newString += rem.Substring(0, index);
+                        rem = rem.Substring(index + 1).TrimStart();
                     }
-                    newString += rem;
-                }
-                else // index = -1, so we are at the last word of the line
-                {
-                    newString += "\n";
-                    if (line.TrimStart().StartsWith('-')) // a bullet should be indented
+                    else // index = -1, so we are last word of remaining line
                     {
-                        newString += "   ";
+                        newString += NewLine(line, rem);
+                        break;
                     }
-                    newString += line.TrimStart();
-                }
+                } // end while loop - rem <= maxLength
+                newString += NewLine(line, rem);
+                newString += rem;
             }
-            else // line < maxLength
+            else // index = -1, so we are at the last word of the line
             {
-                newString += "\n";
-                if (line.TrimStart().StartsWith('-')) // a bullet should be indented
-                {
-                    newString += "   ";
-                }
+                newString += NewLine(line);
                 newString += line.TrimStart();
             }
         }

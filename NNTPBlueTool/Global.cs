@@ -10,4 +10,5 @@ public static class Global
     public static string SeawareCsvFile;
     public static string SmtpServer;
     public static int SmtpPort;
+    public static int WindowWidth = 90;
 }
