@@ -5,7 +5,7 @@ public class MyMailMessage
 {
     SmtpClient smtpClient;
     MailMessage mailMessage;
-    public MyMailMessage(string From, string Subject, string Body, string SmtpServer, string Username, string Password, int Port = 25, bool EnableSsl = true, string[] Attachments = null)
+    public MyMailMessage(string From, string To, string Subject, string Body, string SmtpServer, string Username, string Password, int Port = 25, bool EnableSsl = true, string[] Attachments = null)
     {
         smtpClient = new SmtpClient(SmtpServer)
         {
@@ -34,7 +34,7 @@ public class MyMailMessage
             }
         }
 
-        mailMessage.To.Add(From);
+        mailMessage.To.Add(To);
     }
 
     public void SendMail()

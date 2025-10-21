@@ -420,18 +420,6 @@ class NNTPDirectoryEntry : DirectoryEntry
     }
     public void WriteCSV()
     {
-        // string filePath = $"UserExport_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-
-        // List<PrsnlPerson> users = dbContext.PrsnlPeople
-        //     .Include(p => p.PrsnlOrgAssignments)
-        //     .Include(p => p.Users)
-        //     .Where(u => !string.IsNullOrEmpty(u.EmailAddress) && u.EmailAddress.EndsWith("@nntc.edu"))
-        //     .ToList();
-
-        // string csvContent = CsvHelper.ListToCsv(users);
-        // CsvHelper.SaveCsvToFile(csvContent, filePath);
-        // Console.WriteLine($"CSV file created at {filePath}");
-
         var csvAD = new List<ADCsv>
         {
             new ADCsv { LastName = this.Lastname,
@@ -460,15 +448,23 @@ class NNTPDirectoryEntry : DirectoryEntry
         CsvHelper.SaveCsvToFile(csvADContent, adFilePath);
         CsvHelper.SaveCsvToFile(csvSWContent, swFilePath);
 
-        MyMailMessage mailMessage = new MyMailMessage("poweredge.t320.server@gmail.com",
-            "New NNTP User Created",
-            "See attached CSVs for user import.",
-            "smtp.gmail.com",
+        string[] attachments = [adFilePath, swFilePath];
+        bool enableSsl = true;
+
+        MyMailMessage mailMessage = new MyMailMessage(
+            Global.MailFrom,
+            Global.MailTo,
+            Global.MailSubject,
+            Global.MailBody,
+            Global.SmtpServer,
             "poweredge.t320.server@gmail.com",
             "dfnoafqoywisoykh",
-            Global.SmtpPort, true, [adFilePath, swFilePath]);
+            Global.SmtpPort,
+            enableSsl,
+            attachments);
 
         mailMessage.SendMail();
+        Console.WriteLine($"Sent user creation alert to {Global.MailTo}");
     }
     private protected Dictionary<string, string> DefaultOUs = new Dictionary<string, string>()
     {

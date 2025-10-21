@@ -78,6 +78,51 @@ static void DeleteFiles()
         Console.WriteLine($"An error occurred: {ex.Message}");
     }
 }
+void SetFilePaths(IConfiguration config, NNTPDirectoryEntry userEntry)
+{
+    // determine and set the file paths for the Seaware and AD Import files
+    // use the Role and Job Code fields of the User Entry
+
+    string mailMergeFile;
+    string mailMergeDataFile;
+    string seawareImportFile;
+
+    string mailMergeFolder = config["FileSettings:MailMergeSourceFile_Location"] ?? throw new Exception("No mail merge data source LOCATION configured.");
+    string mailMergeDataFolder = config["FileSettings:MailMergeDataSource_Location"] ?? throw new Exception("No mail merge data source LOCATION configured.");
+    string seawareImportFolder = config["FileSettings:SeawareImportLocation"] ?? throw new Exception("No Seaware import LOCATION configured.");
+
+    switch (userEntry.Role)
+    {
+        case "STAFF":
+            mailMergeFile = config["FileSettings:MailMergeSourceFile_Instructor"] ?? throw new Exception("No mail merge data source (Instructor) configured.");
+            mailMergeDataFile = config["FileSettings:MailMergeDataSource_Instructor"] ?? throw new Exception("No Mail Merge Data file (Instructor) configured.");
+            seawareImportFile = config["FileSettings:SeawareImportFileName_Instructor"] ?? throw new Exception("No Seaware Import file (Instructor) configured.");
+            break;
+
+        case "STUDENT":
+            if (Regex.Match(userEntry.JobCode, "RAN").Success) // if UK/RAN student, use the RAN Mail Merge File
+            {
+                mailMergeFile = config["FileSettings:MailMergSourceFile_StudentRAN"] ?? throw new Exception("No mail merge data source (RAN Student) configured.");
+            }
+            else // use the standard USN file
+            {
+                mailMergeFile = config["FileSettings:MailMergSourceFile_Student"] ?? throw new Exception("No mail merge data source (Student) configured.");
+            }
+
+            mailMergeDataFile = config["FileSettings:MailMergeDataSource_Student"] ?? throw new Exception("No Mail Merge Data file (Student) configured.");
+            seawareImportFile = config["FileSettings:SeawareImportFileName_Student"] ?? throw new Exception("No Seaware Import file (Student) configured.");
+            break;
+
+        default:
+            throw new Exception();
+            break;
+    }
+    // set global variables
+    Global.MailMergeSource = Path.Combine(mailMergeFolder, mailMergeFile);
+    Global.MailMergeTarget = System.IO.Path.Combine(Environment.GetEnvironmentVariable("TEMP"), "MailMerge");
+    Global.SeawareCsvFile = Path.Combine(seawareImportFolder, seawareImportFile);
+    Global.MailMergeDataSource = Path.Combine(mailMergeDataFolder, mailMergeDataFile);
+}
 
 AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
@@ -88,17 +133,15 @@ string domain = config["AppSettings:Domain"] ?? throw new Exception("Domain is e
 string domainUser = config["AppSettings:DomainUser"] ?? throw new Exception("DomainUser is empty");
 string password = config["AppSettings:Password"] ?? throw new Exception("Password is empty");
 
-string smtpServer = config["MailSettings:SMTPServer"] ?? throw new Exception("SMTP Server is not configured");
-Global.SmtpPort = Convert.ToInt32(config["MailSettings:Port"] ?? "25");
-
-// set global variables
-Global.MailMergeDataSource = config["FileSettings:MailMergeDataSource"] ?? throw new Exception("No mail merge data source configured.");
-Global.MailMergeSource = config["FileSettings:MailMergeSourceFile"] ?? throw new Exception("No mail merge template configured.");
-Global.MailMergeTarget = System.IO.Path.Combine(Environment.GetEnvironmentVariable("TEMP"), "MailMerge");
-Global.SeawareCsvFile = config["FileSettings:SeawareImportFile"] ?? throw new Exception("No Seaware Import File configured");
+// mail specific settings
+Global.SmtpServer = !string.IsNullOrWhiteSpace(config["MailSettings:SMTPServer"]) ? config["MailSettings:SMTPServer"] : throw new Exception("SMTP Server is not configured");
+Global.SmtpPort = !string.IsNullOrWhiteSpace(config["MailSettings:Port"]) ? Convert.ToInt32(config["MailSettings:Port"]) : 25;
+Global.MailBody = config["MailSettings:Body"] ?? "See attached user import files.";
+Global.MailSubject = config["MailSettings:Subject"] ?? "New NNTP User Created";
+Global.MailFrom = !string.IsNullOrWhiteSpace(config["MailSettings:From"]) ? config["MailSettings:From"] : "poweredge.t320.server@gmail.com";
+Global.MailTo = !string.IsNullOrWhiteSpace(config["MailSettings:To"]) ? config["MailSettings:To"] : "poweredge.t320.server@gmail.com";
 
 string user = string.Empty;
-// PrsnlPerson? dbUser = null;
 
 // Setup DbContext options
 var optionsBuilder = new DbContextOptionsBuilder<dbContext>();
@@ -119,7 +162,7 @@ Dictionary<int, string> programChoices = new Dictionary<int, string> {
     { 1, "Reset password for existing user" },
     { 2, "Unlock and enable an existing user" },
     { 3, "Move user to different OU" },
-    { 4, "Create new user" },
+    { 4, "Create new user (from NOTEPAD data)" },
     { 5, "View User" },
     { 6, "Create User CSV" }
 };
@@ -309,12 +352,29 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
             Console.WriteLine($"Creating new user {user} in domain {domain}");
 
             NNTPDirectoryEntry _user = userEntry.CreateUser(userEntry.DistinguishedName);
-            logger.Log($"Created new user {_user.DistinguishedName}");
 
-            // _user.SetGroupMemberships();
-            userEntry.SetGroupMemberships();
-            logger.Log($"Set group memberships for new user {_user.DistinguishedName}");
-            // return;
+            if (_user != null)
+            {
+                logger.Log($"Created new user {_user.DistinguishedName}");
+
+                userEntry.SetGroupMemberships();
+                logger.Log($"Set group memberships for new user {_user.DistinguishedName}");
+
+                try
+                {
+                    SetFilePaths(config, userEntry);
+                    
+                    userEntry.WriteCSV();
+                    logger.Log($"Created CSV for user {_distinctName}");
+                    OpenMailMerge();
+                }
+                catch (System.IO.IOException e)
+                {
+                    Console.WriteLine($"{e.Message}\n\rClose any open Mail Merge files and/or verify the Source CSV isn't being used and try again.");
+                    // throw new Exception($"{e.Message}\n\rClose any open Mail Merge files and/or verify the Source CSV isn't being used and try again.");
+                }
+            }
+
             ExitApp();
             goto ProgramStart;
         }
@@ -336,6 +396,8 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
     {
         try
         {
+            SetFilePaths(config, userEntry);
+
             userEntry.WriteCSV();
             logger.Log($"Created CSV for user {_distinctName}");
             OpenMailMerge();
