@@ -215,6 +215,9 @@ string enterUsernameMessage = "Scan the users NNPTC badge, or choose from the li
 
 while (true)
 {
+    string actionTitle = programChoices[Convert.ToInt32(choice)];
+    Console.WriteLine(actionTitle);
+    Console.WriteLine(new string('=', actionTitle.Length) + "\n");
     Console.WriteLine(enterUsernameMessage);
     usernameChoice = Console.ReadLine();
     if (!string.IsNullOrWhiteSpace(usernameChoice)) { break; }
