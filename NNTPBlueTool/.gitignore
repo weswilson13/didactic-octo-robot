@@ -1,4 +1,2 @@
-bin/debug
-!*.exe
-!bin/Release
-!obj/Release
+bin/*
+obj/*

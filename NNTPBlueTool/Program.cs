@@ -164,6 +164,7 @@ var logContext = new LogContext(logOptionsBuilder.Options);
 
 // Initialize Logger
 Logger logger = new Logger(logContext, domainUser);
+Logger appLogger = new Logger();
 
 // Dictionary for program choices
 Dictionary<int, string> programChoices = new Dictionary<int, string> {
@@ -275,9 +276,16 @@ else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Search for User") 
         UseShellExecute = false,
         RedirectStandardOutput = true
     };
-    var proc = Process.Start(startInfo);
-    proc.WaitForExit();
-    user = proc.StandardOutput.ReadToEnd().ReplaceLineEndings().Trim();
+    try
+    {
+        var proc = Process.Start(startInfo);
+        proc.WaitForExit();
+        user = proc.StandardOutput.ReadToEnd().ReplaceLineEndings().Trim();
+    }
+    catch (Exception e)
+    {
+        appLogger.LogError(e.Message, 5);
+    }
 
     if (string.IsNullOrWhiteSpace(user))
     {

@@ -16,7 +16,9 @@ public class Banner
     public static void GovBanner()
     {
 
-        string banner = @"You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
+        string banner = @"NOTICE:
+        
+        You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
 
         By using this IS (which includes any device attached to this IS), you consent to the following conditions:
 

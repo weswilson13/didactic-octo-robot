@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NNTPBlueTool.Models;
+using System.Diagnostics;
 
 public class Logger
 {
@@ -7,6 +8,18 @@ public class Logger
     private DateTime logDateTime= DateTime.Now;
     private string ImpersonatingUser = Environment.UserName;
     private string ServiceAccount;
+    public Logger()
+    {
+        
+    }
+    public void LogError(string message, short id = 0)
+    {
+        using (EventLog eventLog = new EventLog("Application"))
+        {
+            eventLog.Source = "Application";
+            eventLog.WriteEntry(message, EventLogEntryType.Error, 58008, id);
+        }
+    }
     public Logger(LogContext logContext, string ServiceAccount)
     {
         this.logContext = logContext;
