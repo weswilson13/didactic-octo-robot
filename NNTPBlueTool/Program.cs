@@ -274,17 +274,27 @@ else if (usernameChoices[Convert.ToInt32(usernameChoice)] == "Search for User") 
         FileName = "powershell.exe",
         Arguments = $"-NoProfile -ExecutionPolicy AllSigned -File \"GetDirectoryInfo.ps1\" -Domain {domain} -Action GetUsers {output}",
         UseShellExecute = false,
-        RedirectStandardOutput = true
+        RedirectStandardOutput = true,
+        RedirectStandardError = true
     };
     try
     {
         var proc = Process.Start(startInfo);
+        if (proc.StandardError != null)
+        {
+            throw new Exception(proc.StandardError.ReadToEnd().ReplaceLineEndings().Trim());
+        }
         proc.WaitForExit();
-        user = proc.StandardOutput.ReadToEnd().ReplaceLineEndings().Trim();
+        if (proc.StandardOutput != null)
+        {
+            user = proc.StandardOutput.ReadToEnd().ReplaceLineEndings().Trim();
+        }
     }
     catch (Exception e)
     {
         appLogger.LogError(e.Message, 5);
+        Console.WriteLine("Failed to retrieve user\n");
+        Console.WriteLine(e.Message + "\n");
     }
 
     if (string.IsNullOrWhiteSpace(user))
@@ -389,6 +399,7 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
                 }
                 catch (System.IO.IOException e)
                 {
+                    appLogger.LogError(e.Message, 10);
                     Console.WriteLine($"{e.Message}\n\rClose any open Mail Merge files and/or verify the Source CSV isn't being used and try again.");
                     // throw new Exception($"{e.Message}\n\rClose any open Mail Merge files and/or verify the Source CSV isn't being used and try again.");
                 }
@@ -399,6 +410,7 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
         }
         catch (Exception ex)
         {
+            appLogger.LogError(ex.Message, 15);
             Console.WriteLine(ex.Message);
             ExitApp();
             goto ProgramStart;
@@ -423,6 +435,7 @@ using (var rootEntry = new DirectoryEntry($"LDAP://{domain}", domainUser, passwo
         }
         catch (System.IO.IOException e)
         {
+            appLogger.LogError(e.Message, 20);
             Console.WriteLine($"{e.Message}\n\rClose any open Mail Merge files and/or verify the Source CSV isn't being used and try again.");
             // throw new Exception($"{e.Message}\n\rClose any open Mail Merge files and/or verify the Source CSV isn't being used and try again.");
         }
