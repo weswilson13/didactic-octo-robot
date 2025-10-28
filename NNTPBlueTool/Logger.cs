@@ -7,7 +7,7 @@ public class Logger
     private LogContext logContext = new LogContext();
     private DateTime logDateTime= DateTime.Now;
     private string ImpersonatingUser = Environment.UserName;
-    private string ServiceAccount;
+    private string? ServiceAccount;
     public Logger()
     {
         

@@ -1,8 +1,4 @@
-using System.Collections.Generic;
 using System.Text;
-using System.Linq;
-using System.Reflection;
-using Microsoft.Office.Core;
 
 public static class CsvHelper
 {
@@ -12,7 +8,7 @@ public static class CsvHelper
             return string.Empty;
 
         var sb = new StringBuilder();
-        var properties = typeof(T).GetProperties();  //BindingFlags.Public | BindingFlags.Instance);
+        var properties = typeof(T).GetProperties(); 
 
         // Header
         sb.AppendLine(string.Join(",", properties.Select(p => p.Name)));
@@ -29,15 +25,8 @@ public static class CsvHelper
 
     public static void SaveCsvToFile(string csvContent, string filePath)
     {
-        // try
-        // {
-            System.IO.File.WriteAllText(filePath, csvContent, Encoding.UTF8);
-            Console.WriteLine("CSV file created successfully.");
-        // }
-        // catch (System.IO.IOException e)
-        // {
-        //     Console.WriteLine (e.Message);
-        // }
+        System.IO.File.WriteAllText(filePath, csvContent, Encoding.UTF8);
+        Console.WriteLine("CSV file created successfully.");
     }
 }
 

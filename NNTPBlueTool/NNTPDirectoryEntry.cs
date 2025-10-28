@@ -2,8 +2,6 @@ using System.Configuration;
 using System.DirectoryServices;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Management.Automation;
-using System.Threading.Tasks.Dataflow;
 using NNTPBlueTool.Models;
 class NNTPDirectoryEntry : DirectoryEntry
 {

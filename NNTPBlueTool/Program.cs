@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NNTPBlueTool.Models;
 using System.Diagnostics;
@@ -85,7 +84,7 @@ void SetFilePaths(IConfiguration config, NNTPDirectoryEntry userEntry)
             break;
 
         case "STUDENT":
-            if (Regex.Match(userEntry.JobCode, "RAN").Success) // if UK/RAN student, use the RAN Mail Merge File
+            if (Regex.Match(userEntry.JobCode ?? "", "RAN").Success) // if UK/RAN student, use the RAN Mail Merge File
             {
                 mailMergeFile = config["FileSettings:MailMergSourceFile_StudentRAN"] ?? throw new Exception("No mail merge data source (RAN Student) configured.");
             }
