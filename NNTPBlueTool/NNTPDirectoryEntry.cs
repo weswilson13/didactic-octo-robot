@@ -1,4 +1,3 @@
-using System.Configuration;
 using System.DirectoryServices;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -7,7 +6,7 @@ class NNTPDirectoryEntry : DirectoryEntry
 {
     public DirectoryEntry DirectoryEntry;
     public DirectoryEntry TargetEntry;
-    public string Domain = ConfigurationManager.AppSettings["Domain"];
+    public string Domain;
     public string Username;
     private string Password;
     public string? Firstname;
