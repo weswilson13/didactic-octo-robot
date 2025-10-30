@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\Setup\Channels]
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\Setup\Channels\More meaningful name of my existing layout]
+"channelUri"="\\\\mydomain\\dfs\\Stuff\\Microsoft\\SQLServer\\SSMS_Layout\\ChannelManifest.json"
+"Description"="Test Channel Configuration"
