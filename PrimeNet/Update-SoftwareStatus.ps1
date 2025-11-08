@@ -48,7 +48,7 @@ function New-Html {
         }
 
         # set up img element
-        $src = Get-ChildItem $folder\images | Where-Object { $_.Name -match $software.Id } | Select-Object -ExpandProperty Name
+        $src = Get-ChildItem $folder\images | Where-Object { $_.Name -match $software.Id.Replace('+','\+') } | Select-Object -ExpandProperty Name
         if ($src) { $img = "<img height=`"30px`" src=`".\images\$src`">" }
 
         # get the software link(s)
