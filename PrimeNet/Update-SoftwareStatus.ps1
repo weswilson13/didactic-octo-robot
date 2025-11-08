@@ -1,5 +1,8 @@
 function New-Html {
-    param([switch]$Server)
+    param(
+        [switch]$Server,
+        [switch]$Switch
+    )
     
     function Get-Links {
         $links = $software.Link.split(',') 
@@ -16,6 +19,9 @@ function New-Html {
 
     if ($Server.IsPresent) { # use data from ServerSoftware.csv
         $collection = $serverSoftware
+    }
+    elseif ($switch.IsPresent) { # use data from SwitchImages.csv
+        $collection = $switchImages
     }
     else { # use date from SoftwareVersions.csv
         $collection = $softwareVersions
@@ -52,12 +58,22 @@ function New-Html {
         if ($Server.IsPresent) { # server software table format
             $html += "<tr class=`"$($software.ServerModel.Replace(' ',''))`">
                         <td class=`"ServerApp`">{0}</td>
-                        <td>{1}</td>
+                        <td class=`"$($software.ServerModel.Replace(' ',''))`">{1}</td>
                         <td id=`"{2}`" class=`"Version`">[{2}]</td>
                         <td>
                             {3}
                         </td>
                     </tr>" -f $software.ServerModel, $software.ProductType, $software.Id, $strLinks
+        }
+        elseif ($Switch.IsPresent) { # switch images table format
+            $html += "<tr class=`"$($software.SwitchModel)`">
+                        <td>{0}</td>
+                        <td class=`"$($software.SwitchModel)`">{0}</td>
+                        <td id=`"{1}`" class=`"Version`">[{1}]</td>
+                        <td>
+                            {2}
+                        </td>
+                    </tr>" -f $software.SwitchModel, $software.Id, $strLinks
         }
         else { # software versions table format
             $html += "<tr>
@@ -106,10 +122,15 @@ $folder = switch -Regex ($env:USERDNSDOMAIN) {
 }
 $template = Join-Path $folder "Templates\SoftwareStatusTemplate.html"
 $firmware = Join-Path $folder "firmware.txt"
+
+# CSV filepaths
 $softwareVersionsCsv = Join-Path $folder "SoftwareVersions.csv"
 $serverVersionsCsv = Join-Path $folder "ServerSoftware.csv"
+$switchImagesCsv = Join-Path $folder "SwitchImages.csv"
+
 $softwareVersions = Import-Csv $softwareVersionsCsv
 $serverSoftware = Import-Csv $serverVersionsCsv
+$switchImages = Import-Csv $switchImagesCsv
 
 # add more applications here as necessary. update html template accordingly.
 $printerModels = "8500,609,551,577,578,652,506,612,6800,776,5700"
@@ -119,11 +140,13 @@ $htmlContent = Get-Content $template -Raw -Encoding UTF8
 $htmlContent = $htmlContent.Replace('[date]',(Get-Date -f 'MM/dd/yyyy HH:mm'))
 $htmlContent = $htmlContent.Replace('[softwareHtml]', (New-Html))
 $htmlContent = $htmlContent.Replace('[serverHtml]', (New-Html -Server))
+$htmlContent = $htmlContent.Replace('[switchHtml]', (New-Html -Switch))
 
 # create button group
 $buttonHtml = @("<button class=`"btn btn-primary All`" type=`"button`">All</button>")
 $buttons = $softwareVersions | Select-Object @{n='Name';e={$_.Bin}}, @{n='Label';e={'Software'}} -Unique
 $buttons += $serverSoftware | Select-Object @{n='Name';e={$_.ServerModel}}, @{n='Label';e={'Server'}} -Unique
+$buttons += $switchImages | Select-Object @{n='Name';e={$_.SwitchModel}}, @{n='Label';e={'Switch'}} -Unique
 
 # review printer firmware
 $firmwareFileInfo = Get-ItemProperty $firmware
