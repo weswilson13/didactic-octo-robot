@@ -48,8 +48,10 @@ while ($true) { # loop indefinitely
         if ($file.Name -in $transferredFiles.Name) { # if the file already exists in the log, skip it
             Write-Host "`tFound a matching filename in the log. Comparing file versions..." -NoNewline
             $logEntry = $transferredFiles | Where-Object {$_.Name -eq $file.Name}
+            [string]$fileVersion = $file.VersionInfo.FileVersion
+            $logVersion = $logEntry.VersionInfo.FileVersion.Trim()
 
-            if ($file.VersionInfo.FileVersion -in $logEntry.VersionInfo.FileVersion) { 
+            if ($fileVersion -in $logVersion) { 
                 Write-Host "MATCH FOUND" -ForegroundColor Yellow
                 Write-Host "`t$($file.Name) @ $($file.VersionInfo.FileVersion) is already in the log."
                 continue 
@@ -74,6 +76,9 @@ while ($true) { # loop indefinitely
         Write-Host "`t$($file.Name) has finished downloading"
 
         # add file to log
+        if ([string]$file.VersionInfo.FileVersion -eq "") { # try to add the file version using our function
+            $file.VersionInfo.FileVersion = Get-FileVersion $file
+        }
         $file | Export-Csv $log -NoTypeInformation -Append 
         Write-Host "`tAdded $($file.Name) to log."
     }
