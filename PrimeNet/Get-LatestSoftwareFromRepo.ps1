@@ -113,29 +113,26 @@ foreach ($software in $softwaretoUpdate) {
     if (!($version = $exe.Version)) {
         $version = Get-FileVersion $exe
     }
-    if (!$version) { $version='0.0.0' }
+    if (!$version) { $version='0.0.0.0' }
 
-    try {
-        $_version = [version]$version
-    }
-    catch {
-        if ($_.FullyQualifiedErrorId -eq 'InvalidCastParseTargetInvocation') {
+    if (![version]::TryParse($version,[ref]$null)) {
             Write-Error "The value determined by the script to be the version - '$version' - could not be type cast as a [version] and may be invalid. No action will be taken for this software"
             continue
-        }
-        else { throw }
     }
+
+    Write-Host "File version: $version"
 
     # check against log to see if we should bring over this file
     # get the latest entry for this software, if it exists
     $latestFileTransferred = $filesTransferred | Where-Object { $_.BaseName -match $software }
 
     # get the version
-    $latestVersion = $latestFileTransferred._FileVersion | Sort-Object -Descending | Select-Object -First 1
-    if (!$latestVersion) { $latestVersion = '0.0.0.0' }
+    $latestVersion = $latestFileTransferred._FileVersion | Sort-Object @{e={[version]$_}} -Descending -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (!$latestVersion -or ![version]::TryParse($latestVersion,[ref]$null)) { $latestVersion = '0.0.0.0' }
+    Write-Host "Latest version: $latestVersion"
 
     # if the version in the repo is newer, bring it over
-    if (!$latestFileTransferred -or [version]$version -gt [version]$latestVersion) {
+    if (!$latestFileTransferred -or ([version]$version -gt [version]$latestVersion)) {
         Write-Host "  $($exe.Name) is new. Transferring to NNPP." -ForegroundColor Green
         Write-Host ""
 
