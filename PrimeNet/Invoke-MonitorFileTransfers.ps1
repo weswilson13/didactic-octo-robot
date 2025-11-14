@@ -128,6 +128,7 @@ while ($true) { # loop indefinitely
             }
             catch {
                 Write-Host "`t$($error[0].Exception.message)" -ForegroundColor Red
+                $failedToGetVersion = $true
             }
 
             $logVersion = $logEntry._FileVersion
@@ -145,7 +146,7 @@ while ($true) { # loop indefinitely
         }
 
         # add file to log
-        if (!$fileVersion) {
+        if (!$fileVersion -and !$failedToGetVersion) {
             try {
                 $fileVersion = ""
                 [string]$fileVersion = Get-FileVersion (Get-Item $file.FullName)
