@@ -22,10 +22,18 @@ function Import-FileTransferCSV {
 }
 
 function Get-FileVersion {
+<#
+    .SYNOPSIS
+    Returns string containing the file version, derived preferentially from the object VersionInfo.
+
+    We first check the FileVersion attribute. If this value is empty, then check the ProductVersion attribute. Next check filename for a valid version.
+    If still no version returned, use AppLocker to try to pull version info - this method requires the file to be present.
+#>
+
     [cmdletbinding()]
     param([object]$FileInfo)
 
-    if ($FileInfo.VersionInfo.FileVersion) {
+    if ($FileInfo.VersionInfo.FileVersion -and $FileInfo.BaseName -notmatch 'idrac|bios') { # DELL seems to store the actual version in the ProductVersion attribute
         $newVersion = $FileInfo.VersionInfo.FileVersion
     }
     elseif ($FileInfo.VersionInfo.ProductVersion) { # check ProductVersion property
@@ -33,6 +41,11 @@ function Get-FileVersion {
     }
     else { # try to get a version from the file name
         $newVersion = [regex]::Match($FileInfo.BaseName, '(\d+\.?)+').Value
+    }
+
+    if (($newVersion -eq "" -or $newVersion -eq $null -or ![version]::TryParse($newVersion,[ref]$null)) -and (Test-Path $FileInfo.FullName)) { # leverage applocker to try to pull out the version (SLOW!!!!)
+        #Write-Host "Collecting AppLocker file information"
+        $newVersion = (Get-AppLockerFileInformation -Path $FileInfo.FullName).Publisher.BinaryVersion.ToString()
     }
 
     return $newVersion
@@ -118,7 +131,7 @@ foreach ($software in $softwaretoUpdate) {
     $latestFileTransferred = $filesTransferred | Where-Object { $_.BaseName -match $software }
 
     # get the version
-    $latestVersion = Get-FileVersion $latestFileTransferred
+    $latestVersion = $latestFileTransferred._FileVersion | Sort-Object -Descending | Select-Object -First 1
     if (!$latestVersion) { $latestVersion = '0.0.0.0' }
 
     # if the version in the repo is newer, bring it over
@@ -126,7 +139,7 @@ foreach ($software in $softwaretoUpdate) {
         Write-Host "  $($exe.Name) is new. Transferring to NNPP." -ForegroundColor Green
         Write-Host ""
 
-        if (!$Test.IsPresent) { Copy-Item $exe.FullName "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\ToNNPP" }
+        if (!$Test.IsPresent) { Copy-Item $exe.FullName "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\ToNNPP\_$($exe.Name)" }
     }
     else {
         Write-Host "  Software is already up to date." -ForegroundColor DarkGreen
