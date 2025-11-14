@@ -5,6 +5,6 @@ $guid = [guid]::NewGuid().Guid
 $tempPath = "$env:TEMP\${guid}.xml"
 $xmlRaw | Out-File $tempPath
 
-schtasks.exe /Create /XML $tempPath /tn MonitorFileTransfers1
+schtasks.exe /Create /XML $tempPath /tn MonitorFileTransfers
 
 Remove-Item $tempPath -Force
