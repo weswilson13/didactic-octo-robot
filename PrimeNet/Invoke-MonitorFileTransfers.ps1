@@ -91,6 +91,7 @@ while ($true) { # loop indefinitely
             while ($true) {
                 Start-Sleep -Seconds 5
                 $newSize = Get-ItemPropertyValue -Path $file.FullName -Name Length
+               
                # ('"LastSize","NewSize"
                # "{0}","{1}"' -f $lastSize,$newSize) | ConvertFrom-Csv | format-table
 
@@ -105,13 +106,15 @@ while ($true) { # loop indefinitely
             }
 
             try { 
-                $_file = Rename-Item -Path $file.FullName -NewName $file.Name.TrimStart('_') -PassThru -ErrorAction Stop
-                $file = $_file
+                if($file.Name.StartsWith('_')) { # remove this artifact from the repository transfer
+                    $_file = Rename-Item -Path $file.FullName -NewName $file.Name.TrimStart('_') -PassThru -ErrorAction Stop
+                    $file = $_file
+                }
             }
             catch {
                 Write-Host "`t$($error[0].Exception.message)" -ForegroundColor Yellow
             }
-        } while ($file.Name.StartsWith('_'))
+        } while ($file.Name.StartsWith('_')) # files beginning with _ are being transferred from the NNL repository. This transfer is programmatically different than a file download.
 
         Write-Host "`t$($file.Name) has finished downloading"
 
@@ -142,6 +145,16 @@ while ($true) { # loop indefinitely
         }
 
         # add file to log
+        if (!$fileVersion) {
+            try {
+                $fileVersion = ""
+                [string]$fileVersion = Get-FileVersion (Get-Item $file.FullName)
+                $fileVersion = $fileVersion.Trim()
+            }
+            catch {
+                Write-Host "`t$($error[0].Exception.message)" -ForegroundColor Red
+            }
+        }
         $null=Add-Member -InputObject $file -NotePropertyName '_FileVersion' -NotePropertyValue $fileVersion.Trim() -Force -PassThru
         $file | Export-Csv $log -NoTypeInformation -Append 
         Write-Host "`tAdded $($file.Name) to log." -ForegroundColor Green
