@@ -120,7 +120,7 @@ foreach ($software in $softwaretoUpdate) {
             continue
     }
 
-    Write-Host "File version: $version"
+    Write-Host "`tFile version: $version"
 
     # check against log to see if we should bring over this file
     # get the latest entry for this software, if it exists
@@ -129,7 +129,7 @@ foreach ($software in $softwaretoUpdate) {
     # get the version
     $latestVersion = $latestFileTransferred._FileVersion | Sort-Object @{e={[version]$_}} -Descending -ErrorAction SilentlyContinue | Select-Object -First 1
     if (!$latestVersion -or ![version]::TryParse($latestVersion,[ref]$null)) { $latestVersion = '0.0.0.0' }
-    Write-Host "Latest version: $latestVersion"
+    Write-Host "`tLatest version: $latestVersion"
 
     # if the version in the repo is newer, bring it over
     if (!$latestFileTransferred -or ([version]$version -gt [version]$latestVersion)) {
@@ -143,3 +143,5 @@ foreach ($software in $softwaretoUpdate) {
         Write-Host ""
     }
 }
+
+timeout /T 30
