@@ -19,8 +19,6 @@ function Import-FileTransferCSV {
         $result += $obj
     }
 
-    $ErrorActionPreference = 'Continue'
-
     return $result
 }
 
@@ -71,50 +69,76 @@ function Get-FileVersion {
     throw "Unable to determine a valid file version"
 }
 
+# set $VerbosePreference to 'Continue' for testing, 'SilentlyContinue' for normal operation
+#$VerbosePreference = [System.Management.Automation.ActionPreference]::Continue
+VerbosePreference = [System.Management.Automation.ActionPreference]::SilentlyContinue
+
 $log = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\FileTransferLog.csv"
+$toNNPP = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\ToNNPP"
 
 while ($true) { # loop indefinitely
+    Clear-Host
+    Write-Verbose "[$(Get-Date -f 'MM\\dd\\yyyy hh:mm:ss tt')] Checking $toNNPP"
+    Write-Verbose "Cached File Version: $fileVersion"
+    Write-Verbose "Cached Log Version: $logVersion"
+    if ($fileVersion -or $logVersion) {
+        # reset the versions for the next iteration
+        $fileVersion = $null
+        $logVersion = $null
+        Write-Verbose "Reset version variables."
+    }
 
     $transferredFiles = Import-FileTransferCSV $log
-    $files = Get-ChildItem "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\ToNNPP" 
+    $files = Get-ChildItem $toNNPP
 
     foreach ($file in $files) { # check each file against the log
+        # reinitialize variables 
+        $fileVersion = [string]::Empty
+        $logVersion = [string]::Empty
+        [bool]$failedToGetVersion = $false
+
         Write-Host "New file detected - $($file.Name.TrimStart('_'))"
 
         # wait for the file to finish downloading
         Write-Host "`tWaiting for download to complete."
         $lastSize = 0
-        $waiting = "`t."
+        $waiting = "`t"
         # Loop until the file size remains unchanged for 10 seconds
 
-        do {
-            while ($true) {
-                Start-Sleep -Seconds 5
-                $newSize = Get-ItemPropertyValue -Path $file.FullName -Name Length
+        while ($true) {
+            Start-Sleep -Seconds 5
+            $newSize = Get-ItemPropertyValue -Path $file.FullName -Name Length
                
-               # ('"LastSize","NewSize"
-               # "{0}","{1}"' -f $lastSize,$newSize) | ConvertFrom-Csv | format-table
+            # ('"LastSize","NewSize"
+            # "{0}","{1}"' -f $lastSize,$newSize) | ConvertFrom-Csv | format-table
 
-                if ($newSize -eq $lastSize) {
-                    Write-Host "`tFile size is stable. Download complete."
-                    break
-                }
-                $lastSize = $newSize
-            
-                $waiting += "."
-                Write-Host $waiting
+            if ($newSize -eq $lastSize) {
+                Write-Host "" # ensures next console output is on a new line
+                Write-Host "`tFile size is stable. Download complete."
+                break
             }
+            $lastSize = $newSize
+            
+            Write-Host "." -NoNewLine
+        }
 
+        Write-Verbose "[Program] Enter Do Loop."
+        do {
+            Write-Verbose "Attempt to update file name"
             try { 
+                Start-Sleep 2 # short pause
+
                 if($file.Name.StartsWith('_')) { # remove this artifact from the repository transfer
                     $_file = Rename-Item -Path $file.FullName -NewName $file.Name.TrimStart('_') -PassThru -ErrorAction Stop
                     $file = $_file
+                    Write-Verbose "file name changed to: $($file.Name)"
                 }
             }
             catch {
                 Write-Host "`t$($error[0].Exception.message)" -ForegroundColor Yellow
             }
         } while ($file.Name.StartsWith('_')) # files beginning with _ are being transferred from the NNL repository. This transfer is programmatically different than a file download.
+        Write-Verbose "[Program] Exit Do Loop."
 
         Write-Host "`t$($file.Name) has finished downloading"
 
@@ -122,9 +146,10 @@ while ($true) { # loop indefinitely
             Write-Host "`tFound a matching filename in the log. Comparing file versions..." -NoNewline
 
             try {
-                $fileVersion = ""
+                $fileVersion = $null
                 [string]$fileVersion = Get-FileVersion (Get-Item $file.FullName)
                 $fileVersion = $fileVersion.Trim()
+                Write-Verbose "Set `$fileVersion to $fileVersion"
             }
             catch {
                 Write-Host "`t$($error[0].Exception.message)" -ForegroundColor Red
@@ -133,33 +158,50 @@ while ($true) { # loop indefinitely
 
             $logVersion = $logEntry._FileVersion
 
-            #'"File Version","Log Version"
-            # "{0}","{1}"' -f $fileVersion, (($logVersion | Sort-Object -Descending) -join ',') | ConvertFrom-Csv | Out-String | Write-Host -ForegroundColor Cyan
+            '"File Version","Log Version"
+             "{0}","{1}"' -f $fileVersion, (($logVersion | Sort-Object -Descending) -join ',') | ConvertFrom-Csv | Out-String | Write-Verbose
               
             if ($fileVersion.Trim() -in $logVersion) { 
                 Write-Host "MATCH FOUND" -ForegroundColor Yellow
                 Write-Host "`t$($file.Name) @ $($fileVersion) is already in the log."
                 Write-Host ""
+                # reset the versions for the next iteration
+                $fileVersion = $null
+                $logVersion = $null
+                Write-Verbose "Reset version variables."
                 continue 
             }
             Write-Host "NO MATCH" -ForegroundColor DarkGreen
         }
+        else {
+            Write-Verbose "No corresponding entry in file transfer log"
+        }
 
         # add file to log
-        if (!$fileVersion -and !$failedToGetVersion) {
+        Write-Verbose "Lookup file version: $(($fileVersion -eq '' -or $fileVersion -eq $null) -and !$failedToGetVersion)"
+        if (($fileVersion -eq "" -or $fileVersion -eq $null) -and !$failedToGetVersion) {
+            Write-Verbose "Attempting to determine file version..."
             try {
-                $fileVersion = ""
+                $fileVersion = $null
                 [string]$fileVersion = Get-FileVersion (Get-Item $file.FullName)
                 $fileVersion = $fileVersion.Trim()
+                Write-Verbose "File Version: $fileVersion"
             }
             catch {
                 Write-Host "`t$($error[0].Exception.message)" -ForegroundColor Red
             }
         }
         $null=Add-Member -InputObject $file -NotePropertyName '_FileVersion' -NotePropertyValue $fileVersion.Trim() -Force -PassThru
-        $file | Export-Csv $log -NoTypeInformation -Append 
+        $csvProperties = @{Property = '_FileVersion','VersionInfo','BaseName','Name','Length','DirectoryName','FullName','Extension','CreationTime','LastWriteTime'}
+
+        $file | Export-Csv  $log -NoTypeInformation -Append 
         Write-Host "`tAdded $($file.Name) to log." -ForegroundColor Green
         Write-Host ""
+
+        # reset the versions for the next iteration
+        $fileVersion = $null
+        $logVersion = $null
+        Write-Verbose "Reset version variables."
     }
 
     # wait 30 seconds between polls
