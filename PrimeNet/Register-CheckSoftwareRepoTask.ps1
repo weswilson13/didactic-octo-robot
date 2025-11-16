@@ -1,4 +1,6 @@
-$xmlRaw = Get-Content CheckSoftwareRepo.xml -Raw
+$path = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\ScheduledTask\XML"
+
+$xmlRaw = Get-Content $path\CheckSoftwareRepo.xml -Raw
 $xmlRaw = $xmLRaw -replace '%USERNAME%', $env:USERNAME
 
 $guid = [guid]::NewGuid().Guid
