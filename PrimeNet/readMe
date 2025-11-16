@@ -1,7 +1,7 @@
 This collection of files has been configured to aid in identifying various software maintained on the NNPP & NNTP networks at NNPTC, and assist in tracking and transferring files. If not already done, the user should link this channel/folder to their personal OneDrive. All files are found within the Files directory in the 'Naval Training and Computing Systems/SoftwareVersions' Teams channel. The powershell files may be executed AD HOC and/or configured using the Scheduled Tasks to create an automated process. General overview of the scripts and html are as follows:
 
 1. SoftwareStatus.html
-	HTML page to display an interactive table showing the latest Application software, server software/firmware, and printer firmware. Dependencies for this file include the SoftwareStatusTemplate.html file in the \Templates fodler, DataTables css and javascript files in the \DataTables folder, as well as the images located in the \images folder. 
+	HTML page to display an interactive table showing the latest Application software, server software/firmware, printer firmware, and switch firmware. Dependencies for this file include the SoftwareStatusTemplate.html file in the \Templates folder, DataTables css and javascript files in the \DataTables folder, as well as the images located in the \images folder. 
 
 2. Update-SoftwareStatus.ps1
 	Takes the data in the SoftwareStatus.csv, ServerStatus.csv, and firmware.txt files combined with the SoftwareStatusTemplate.html and produces a new SoftwareStatus.html file. 
