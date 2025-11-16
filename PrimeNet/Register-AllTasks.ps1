@@ -1,4 +1,5 @@
-$xml = Get-ChildItem | Where-Object {$_.Extension -eq '.xml'}
+$path = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\ScheduledTask\XML"
+$xml = Get-ChildItem $path | Where-Object {$_.Extension -eq '.xml'}
 
 foreach ($x in $xml) {
     $xmlRaw = Get-Content $x.FullName -Raw
