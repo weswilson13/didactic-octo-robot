@@ -1,4 +1,6 @@
-$xmlRaw = Get-Content UpdateSoftwareStatusCSV_Headless.xml -Raw
+$path = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\ScheduledTask\XML"
+
+$xmlRaw = Get-Content $path\UpdateSoftwareStatusCSV_Headless.xml -Raw
 $xmlRaw = $xmLRaw -replace '%USERNAME%', $env:USERNAME
 
 $guid = [guid]::NewGuid().Guid
