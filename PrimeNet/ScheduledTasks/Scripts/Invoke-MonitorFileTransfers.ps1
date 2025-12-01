@@ -1,98 +1,23 @@
-function Import-FileTransferCSV {
-    [cmdletbinding()]
-    param([string]$Log)
-
-    $ErrorActionPreference = 'SilentlyContinue'
-
-    $result = @()
-    $data = Import-Csv $Log
-
-    foreach ($obj in $data) {
-        #$versionInfo = $obj.VersionInfo.Split("`n").foreach({$key,$value=$_.split(':',2); @{$key.trim()=$value.trim()}})
-        $notePropertyMembers = @{
-            VersionInfo = $obj.VersionInfo.Split("`n").foreach({
-                $key,$value=$_.split(':',2)
-                [psobject]@{$key.trim()=$value.trim()}
-            })
-        }
-        $null=Add-Member -InputObject $obj -NotePropertyMembers $notePropertyMembers -Force -PassThru
-        $result += $obj
-    }
-
-    return $result
-}
-
-function Get-FileVersion {
-<#
-    .SYNOPSIS
-    Returns string containing the file version, derived preferentially from the object VersionInfo.
-
-    We first check the FileVersion attribute. If this value is empty, then check the ProductVersion attribute. Next check filename for a valid version.
-    If still no version returned, use AppLocker to try to pull version info - this method requires the file to be present.
-#>
-
-    [cmdletbinding()]
-    param([object]$FileInfo)
-
-    if ($FileInfo.VersionInfo.FileVersion -and $FileInfo.BaseName -notmatch 'idrac|bios') { # DELL seems to store the actual version in the ProductVersion attribute
-        $newVersion = $FileInfo.VersionInfo.FileVersion
-
-        if ([version]::TryParse($newVersion,[ref]$null)) {
-            return $newVersion
-        }
-    }
-    
-    if ($FileInfo.VersionInfo.ProductVersion) { # check ProductVersion property
-        $newVersion = $FileInfo.VersionInfo.ProductVersion
-
-        if ([version]::TryParse($newVersion,[ref]$null)) {
-            return $newVersion
-        }
-    } 
-    else { # try to get a version from the file name
-        $newVersion = [regex]::Match($FileInfo.BaseName, '(\d+\.?)+').Value
-
-        if ([version]::TryParse($newVersion,[ref]$null)) {
-            return $newVersion
-        }
-    }
-
-    if (Test-Path $FileInfo.FullName) { # leverage applocker to try to pull out the version (SLOW!!!!)
-        #Write-Host "Collecting AppLocker file information"
-        $newVersion = (Get-AppLockerFileInformation -Path $FileInfo.FullName).Publisher.BinaryVersion.ToString()
-        
-        if ([version]::TryParse($newVersion,[ref]$null)) {
-            return $newVersion
-        }
-    }
-
-    throw "Unable to determine a valid file version"
-}
-
-function Write-Log {
+function Get-RegistryValue {
     [cmdletbinding()]
     param(
-        [string]$Message,
-
-        [validateset('Information','Warning','Error')]
-        [string]$Severity = 'Information'
+        [ValidateSet('MonitoredFolder','TransferLog','SoftwareVersions','ActivityLog')]
+        [string]$Key
     )
 
-    if ($VerbosePreference -eq [System.Management.Automation.ActionPreference]::Continue) { return }
-
-    $logFile = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\Documents\FileTransferLogger.log"
-
-    $notePropertyMembers = [ordered]@{
-        FileTimeUTC = [datetime]::Now.ToFileTimeUtc()
-        User = $env:USERNAME
-        Severity = $Severity
-        Message = $Message
+    try { 
+        $value = Get-ItemProperty HKCU:\Environment\FileTransfer -Name $Key -ErrorAction Stop | Select-Object -ExpandProperty $Key
     }
-    $logger = New-Object psobject
-    $null = Add-Member -InputObject $logger -NotePropertyMembers $notePropertyMembers -PassThru 
+    catch {
+        throw "$($error[0].Exception.Message). Please run Set-RegistryKeys.ps1 in SoftwareVersions\Setup to configure the necessary registry settings."
+    }
 
-    $logger | Export-Csv $logFile -Append -NoTypeInformation
+    return $value
 }
+
+# load common functions into current session
+$functions = Get-Content (Join-Path (Get-RegistryValue SoftwareVersions) Setup\FileTransferFunctions.ps1) -Raw
+Invoke-Expression $functions
 
 # set $VerbosePreference to 'Continue' for testing, 'SilentlyContinue' for normal operation
 #$VerbosePreference = [System.Management.Automation.ActionPreference]::Continue
@@ -101,8 +26,8 @@ $VerbosePreference = [System.Management.Automation.ActionPreference]::SilentlyCo
 $tempIgnore = @{}
 $waitTime = 20
 
-$log = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\FileTransferLog.csv"
-$toNNPP = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\ToNNPP"
+$log = Get-RegistryValue TransferLog
+$toNNPP = Get-RegistryValue MonitoredFolder
 
 Write-Log "Begin Logging session. Monitoring '$toNNPP' and logging file data to '$log'"
 
@@ -118,7 +43,7 @@ while ($true) { # loop indefinitely
             }
             else {
                 $span = (New-TimeSpan -Start ([datetime]::Now) -End $tempIgnore.$key).TotalSeconds
-                Write-Verbose "Timeout $key is valid for $span seconds"
+                Write-Verbose "$key timeout is valid for $span seconds"
             }
         }
     }
@@ -141,6 +66,7 @@ while ($true) { # loop indefinitely
         # reinitialize variables 
         $fileVersion = [string]::Empty
         $logVersion = [string]::Empty
+        $fromNnlRepo = [string]::Empty
         [bool]$failedToGetVersion = $false
         if ($file.Name.StartsWith('_')) {
             $fromNnlRepo = " (from remote NNL repository)"
@@ -225,6 +151,11 @@ while ($true) { # loop indefinitely
                 $logVersion = $null
                 Write-Verbose "Reset version variables."
                 Write-Log "New file and version exist in transfer log. Version variables cleared, moving to next file"
+                # add the filename to the temporary hashtable. Ignore this filename for the next hour.
+                $timeout = [datetime]::Now.AddHours(1) 
+                $tempIgnore.Add($file.Name, $timeout)
+                Write-Verbose "Added file to temp ignore dictionary:`n$($tempIgnore | Out-String)"
+                Write-Log "$($file.name) will be ignored for further review until $timeout"
                 continue 
             }
             Write-Host "NO MATCH" -ForegroundColor DarkGreen
@@ -250,30 +181,36 @@ while ($true) { # loop indefinitely
             catch {
                 Write-Host "`t$($error[0].Exception.message)" -ForegroundColor Red
                 Write-Log "Failed to get file version of new file. The following error occurred: $($error[0].Exception.message)" -Severity Error
+                $fileVersion = ""
             }
         }
-        $null=Add-Member -InputObject $file -NotePropertyName '_FileVersion' -NotePropertyValue $fileVersion.Trim() -Force -PassThru
+        $null=Add-Member -InputObject $file -NotePropertyName '_FileVersion' -NotePropertyValue $fileVersion -Force -PassThru
         $csvProperties = @{Property = '_FileVersion','VersionInfo','BaseName','Name','Length','DirectoryName','FullName','Extension','CreationTime','LastWriteTime'}
 
-        $file | Export-Csv  $log -NoTypeInformation -Append 
+        try {
+            $file | Export-Csv $log -NoTypeInformation -Append -ErrorAction Stop
+            Write-Host "`tAdded $($file.Name) to log." -ForegroundColor Green
 
-        # add the filename to the temporary hashtable. Ignore this filename for the next hour.
-        $timeout = [datetime]::Now.AddHours(1) 
-        $tempIgnore.Add($file.Name, $timeout)
-        Write-Verbose "Added file to temp ignore dictionary:`n$($tempIgnore | Out-String)"
+            # add the filename to the temporary hashtable. Ignore this filename for the next hour.
+            $timeout = [datetime]::Now.AddHours(1) 
+            $tempIgnore.Add($file.Name, $timeout)
+            Write-Verbose "Added file to temp ignore dictionary:`n$($tempIgnore | Out-String)"
 
-        Write-Host "`tAdded $($file.Name) to log." -ForegroundColor Green
+            # reset the versions for the next iteration
+            $fileVersion = $null
+            $logVersion = $null
+            Write-Verbose "Reset version variables."
+            Write-Log "Added $($file.Name) to log. Reset version variables."
+            Write-Log "$($file.name) will be ignored for further review until $timeout"
+        }
+        catch {
+            Write-Host "Failed to add $($file.Name) to log. The following error occurred:`n$($error[0].Exception.Message)" -ForegroundColor Red
+            Write-Log "Failed to add $($file.Name) to log. The following error occurred:`n$($error[0].Exception.Message)"
+        }
         Write-Host ""
-
-        # reset the versions for the next iteration
-        $fileVersion = $null
-        $logVersion = $null
-        Write-Verbose "Reset version variables."
-        Write-Log "Added $($file.Name) to log. Reset version variables."
-        Write-Log "$($file.name) will be ignored for further review until $timeout"
         
-        $softwareVersionsFolder = Split-Path $log -Parent
-        $scriptsFolder = Join-Path -Path $softwareVersionsFolder -ChildPath ScheduledTask\Scripts
+        #$softwareVersionsFolder = Split-Path $log -Parent
+        #$scriptsFolder = Join-Path -Path $softwareVersionsFolder -ChildPath ScheduledTask\Scripts
         
         # run Update-SoftwareStatusCSV.ps1
         #Get-Content $scriptsFolder\Update-SoftwareStatusCSV.ps1 -Raw | Invoke-Expression | Out-Null
