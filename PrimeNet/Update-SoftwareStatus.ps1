@@ -115,10 +115,29 @@ function New-Html {
     return $html
 }
 
-$folder = switch -Regex ($env:USERDNSDOMAIN) {
-    'UNRPNET.GOV' { Get-ChildItem "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet" -Directory | 
-                    Where-Object {$_.Name -match 'SoftwareVersions'} | Select-Object -ExpandProperty FullName
+function Get-RegistryValue {
+    [cmdletbinding()]
+    param(
+        [ValidateSet('MonitoredFolder','TransferLog','SoftwareVersions','ActivityLog')]
+        [string]$Key
+    )
+
+    try { 
+        $value = Get-ItemProperty HKCU:\Environment\FileTransfer -Name $Key -ErrorAction Stop | Select-Object -ExpandProperty $Key
     }
+    catch {
+        throw "$($error[0].Exception.Message). Please run Set-RegistryKeys.ps1 in SoftwareVersions\Setup to configure the necessary registry settings."
+    }
+
+    return $value
+}
+
+# load common functions into current session
+$functions = Get-Content (Join-Path (Get-RegistryValue SoftwareVersions) Setup\FileTransferFunctions.ps1) -Raw
+Invoke-Expression $functions
+
+$folder = switch -Regex ($env:USERDNSDOMAIN) {
+    'UNRPNET.GOV' { Get-RegistryValue SoftwareVersions; break }
     default { $PSScriptRoot }
 }
 $template = Join-Path $folder "Templates\SoftwareStatusTemplate.html"
