@@ -1,4 +1,16 @@
-$path = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\ScheduledTask\XML"
+function Get-RegistryValue {
+    [cmdletbinding()]
+    param(
+        [ValidateSet('MonitoredFolder','TransferLog','SoftwareVersions','ActivityLog')]
+        [string]$Key
+    )
+
+    $value = Get-ItemProperty HKCU:\Environment\FileTransfer -Name $Key -ErrorAction Stop | Select-Object -ExpandProperty $Key
+
+    return $value
+}
+
+$path = Join-Path (Get-RegistryValue SoftwareVersions) ScheduledTask\XML
 $xml = Get-ChildItem $path | Where-Object {$_.Extension -eq '.xml'}
 
 foreach ($x in $xml) {
