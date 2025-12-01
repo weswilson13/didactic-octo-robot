@@ -1,6 +1,7 @@
 [cmdletbinding()]
 param([switch]$Test)
 
+<#
 function Import-FileTransferCSV {
     [cmdletbinding()]
     param()
@@ -28,7 +29,7 @@ function Get-FileVersion {
 
     We first check the FileVersion attribute. If this value is empty, then check the ProductVersion attribute. Next check filename for a valid version.
     If still no version returned, use AppLocker to try to pull version info - this method requires the file to be present.
-#>
+#`>
 
     [cmdletbinding()]
     param([object]$FileInfo)
@@ -50,9 +51,30 @@ function Get-FileVersion {
 
     return $newVersion
 }
+#>
+function Get-RegistryValue {
+    [cmdletbinding()]
+    param(
+        [ValidateSet('MonitoredFolder','TransferLog','SoftwareVersions','ActivityLog')]
+        [string]$Key
+    )
+
+    try { 
+        $value = Get-ItemProperty HKCU:\Environment\FileTransfer -Name $Key -ErrorAction Stop | Select-Object -ExpandProperty $Key
+    }
+    catch {
+        throw "$($error[0].Exception.Message). Please run Set-RegistryKeys.ps1 in SoftwareVersions\Setup to configure the necessary registry settings."
+    }
+
+    return $value
+}
+
+# load common functions into current session
+$functions = Get-Content (Join-Path (Get-RegistryValue SoftwareVersions) Setup\FileTransferFunctions.ps1) -Raw
+Invoke-Expression $functions
 
 # get a list of all software patterns to search for from the SoftwareVersions csv
-$softwareStatusPath = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions\SoftwareVersions.csv"
+$softwareStatusPath = Join-Path (Get-RegistryValue SoftwareVersions) SoftwareVersions.csv
 $softwareStatus = Import-Csv $softwareStatusPath
 $softwareToUpdate = $softwareStatus.FileMatch | Where-Object {![string]::IsNullOrWhiteSpace($_)}
 
@@ -136,7 +158,9 @@ foreach ($software in $softwaretoUpdate) {
         Write-Host "  $($exe.Name) is new. Transferring to NNPP." -ForegroundColor Green
         Write-Host ""
 
-        if (!$Test.IsPresent) { Copy-Item $exe.FullName "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\ToNNPP\_$($exe.Name)" }
+        $toNNPP = Get-RegistryValue MonitoredFolder
+        $copyDestination = Join-Path $toNNPP $exe.Name
+        if (!$Test.IsPresent) { Copy-Item $exe.FullName $copyDestination }
     }
     else {
         Write-Host "  Software is already up to date." -ForegroundColor DarkGreen
