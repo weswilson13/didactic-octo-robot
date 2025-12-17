@@ -9,6 +9,7 @@ function Get-MSIProperties ($FilePath) { # WILL NOT WORK ON PRIMENET DUE TO CONS
     $WindowsInstallerDatabaseView.GetType().InvokeMember("Execute", "InvokeMethod", $null, $WindowsInstallerDatabaseView, $null)
 }
 
+<#
 function Import-FileTransferCSV {
     [cmdletbinding()]
     param()
@@ -36,7 +37,7 @@ function Get-FileVersion {
 
     We first check the FileVersion attribute. If this value is empty, then check the ProductVersion attribute. Next check filename for a valid version.
     If still no version returned, use AppLocker to try to pull version info - this method requires the file to be present.
-#>
+#`>
 
     [cmdletbinding()]
     param([object]$FileInfo)
@@ -58,7 +59,7 @@ function Get-FileVersion {
 
     return $newVersion
 }
-
+#>
 function Update-File {
     [cmdletbinding()]
     param(
@@ -76,63 +77,90 @@ function Update-File {
     
     foreach ($item in $collection) { # loop through each software pattern/server model/switch model
 
-        $filesTransferWhereScriptBlock = {}
-        $fileTransferWhereScriptBlock = switch ($Type) { # filter to identify the file in the transfer csv
-            'Software' { {$_.BaseName -match $item}; break }
-            'Server' { {$_.BaseName -match $item -and $_.BaseName -match $serverSoftwareTypes}; break }
-            'Switch' { 
-                $pattern = ""
-                $pattern = ($csv | Where-Object {$_.SwitchModel -eq $item}).OS
-                if ($pattern -eq "" -or $pattern -eq $null) { continue }
-                {$_.BaseName -match $pattern -and $_.Extension -eq '.bin'}    
-                break 
+        $objects = $item
+        if ($Type -eq 'Server') { $objects = $serverSoftwareTypes.Split('|') }
+
+        foreach ($obj in $objects) {
+            $fileTransferWhereScriptBlock = {}
+            $fileTransferWhereScriptBlock = switch ($Type) { # filter to identify the file in the transfer csv
+                'Software' { {$_.BaseName -match $item}; break }
+                'Server' { {$_.BaseName -match $item -and $_.BaseName -match $obj}; break }
+                'Switch' { 
+                    $pattern = ""
+                    $pattern = ($csv | Where-Object {$_.SwitchModel -eq $item}).OS
+                    if ($pattern -eq "" -or $pattern -eq $null) { continue }
+                    {$_.BaseName -match $pattern -and $_.Extension -eq '.bin'}    
+                    break 
+                }
             }
-        }
 
-        if ($fileTransferWhereScriptBlock -eq $null) { continue }
-        #AWrite-Host "`$fileTransferWhereScriptBlock: $($fileTransferWhereScriptBlock | Out-String)" -ForegroundColor White
+            if ($fileTransferWhereScriptBlock -eq $null) { continue }
+            # Write-Host "`$fileTransferWhereScriptBlock: $($fileTransferWhereScriptBlock | Out-String)" -ForegroundColor White
 
-        $newestFile = $filesTransferred | Where-Object $fileTransferWhereScriptBlock | Select-Object -First 1
+            $newestFile = $filesTransferred | Where-Object $fileTransferWhereScriptBlock | Select-Object -First 1
 
-        if ($newestFile) {
-            $csvWhereScriptBlock = switch ($Type) {
-                'Software' { {$_.FileMatch -eq $item}; break }
-                'Server' { {$_.Id -match "${item}$([Regex]::Match($newestFile.BaseName,$serverSoftwareTypes, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase).Value)"} ;break }
-                'Switch' { {$_.Id -match $item.Replace('+','\+')}; break }
+            if ($newestFile) {
+                $csvWhereScriptBlock = switch ($Type) {
+                    'Software' { {$_.FileMatch -eq $item}; break }
+                    'Server' { {$_.Id -match "${item}$([Regex]::Match($newestFile.BaseName,$serverSoftwareTypes, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase).Value)"} ;break }
+                    'Switch' { {$_.Id -match $item.Replace('+','\+')}; break }
+                }
+            
+                #Write-Host "`$csvWhereScriptBlock: $($csvWhereScriptBlock | Out-String)" -ForegroundColor White
+
+                $ErrorActionPreference = 'SilentlyContinue'
+
+                $newVersion = $newestFile._FileVersion
+
+                # update the csv
+                $entry = $null
+                $entry = $csv | Where-Object $csvWhereScriptBlock
+            
+                $product = switch ($Type) {
+                    'Software' { $entry.SoftwareName; break }
+                    'Server' { '{0} {1}' -f $entry.ServerModel, $entry.ProductType; break }
+                    'Switch' { $entry.SwitchModel; break }
+                }
+            
+                Write-Host $item
+                $update = [ordered]@{Product = $product; Version = $newVersion; Date = $newestFile.CreationTime }
+                $update | Out-String | Write-Host
+
+                $entry.LatestVersion = $update.Version
+                $entry.DateTime = $update.Date
+                $ErrorActionPreference = 'Continue'
             }
-            
-            #Write-Host "`$csvWhereScriptBlock: $($csvWhereScriptBlock | Out-String)" -ForegroundColor White
-
-            $ErrorActionPreference = 'SilentlyContinue'
-
-            $newVersion = $newestFile._FileVersion
-
-            # update the csv
-            $entry = $null
-            $entry = $csv | Where-Object $csvWhereScriptBlock
-            
-            $product = switch ($Type) {
-                'Software' { $entry.SoftwareName; break }
-                'Server' { '{0} {1}' -f $entry.ServerModel, $entry.ProductType; break }
-                'Switch' { $entry.SwitchModel; break }
-            }
-            
-            #Write-Host $item
-            $update = [ordered]@{Product = $product; Version = $newVersion; Date = $newestFile.CreationTime }
-            $update | Out-String | Write-Host
-
-            $entry.LatestVersion = $update.Version
-            $entry.DateTime = $update.Date
-            $ErrorActionPreference = 'Continue'
-        }
-    } # end foreach
+        } # end foreach obj
+    } # end foreach item
 
     # write the csv
     $csv | Export-Csv -Path $csvPath -NoTypeInformation -Force
 }
 
+function Get-RegistryValue {
+    [cmdletbinding()]
+    param(
+        [ValidateSet('MonitoredFolder','TransferLog','SoftwareVersions','ActivityLog')]
+        [string]$Key
+    )
+
+    try { 
+        $value = Get-ItemProperty HKCU:\Environment\FileTransfer -Name $Key -ErrorAction Stop | Select-Object -ExpandProperty $Key
+    }
+    catch {
+        throw "$($error[0].Exception.Message). Please run Set-RegistryKeys.ps1 in SoftwareVersions\Setup to configure the necessary registry settings."
+    }
+
+    return $value
+}
+
+$softwareVersions = Get-RegistryValue SoftwareVersions
+
+# load common functions into current session
+$functions = Get-Content (Join-Path $softwareVersions Setup\FileTransferFunctions.ps1) -Raw
+Invoke-Expression $functions
+
 # get a list of all software patterns to search for from the SoftwareVersions csv
-$softwareVersions = "$env:USERPROFILE\OneDrive\OneDrive - PrimeNet\SoftwareVersions"
 $softwareStatusPath = Join-Path $softwareVersions SoftwareVersions.csv
 $serverSoftwareStatusPath = Join-Path $softwareVersions ServerSoftware.csv
 $switchImagesStatusPath = Join-Path $softwareVersions SwitchImages.csv
@@ -142,7 +170,7 @@ $serverSoftwareStatus = Import-Csv $serverSoftwareStatusPath
 $switchImageStatus = Import-Csv $switchImagesStatusPath
 
 # get all files transferred from the log
-$filesTransferred = Import-FileTransferCsv | Sort-Object CreationTime, Name -Descending
+$filesTransferred = Import-FileTransferCsv | Sort-Object @{e={$_._FileVersion -as [version]}}, CreationTime, Name -Descending
 
 # define the patterns to match
 $softwareToUpdate = $softwareStatus.FileMatch | Where-Object {![string]::IsNullOrWhiteSpace($_)}
