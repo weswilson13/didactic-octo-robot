@@ -18,7 +18,7 @@ function Get-RegistryValue {
 $path = Join-Path (Get-RegistryValue SoftwareVersions) ScheduledTask\XML
 
 $xmlRaw = Get-Content $path\MonitorFileTransfers_Headless.xml -Raw
-$xmlRaw = $xmLRaw -replace '%USERNAME%', $env:USERNAME
+$xmlRaw = $xmLRaw -replace '%DOMAIN%\\%USERNAME%', "$env:USERDOMAIN\$env:USERNAME"
 
 $guid = [guid]::NewGuid().Guid
 $tempPath = "$env:TEMP\${guid}.xml"

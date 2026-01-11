@@ -20,7 +20,7 @@ $xml = Get-ChildItem $path | Where-Object {$_.Extension -eq '.xml'}
 
 foreach ($x in $xml) {
     $xmlRaw = Get-Content $x.FullName -Raw
-    $xmlRaw = $xmLRaw -replace '%USERNAME%', $env:USERNAME
+    $xmlRaw = $xmLRaw -replace '%DOMAIN%\\%USERNAME%', "$env:USERDOMAIN\$env:USERNAME"
 
     $guid = [guid]::NewGuid().Guid
     $tempPath = "$env:TEMP\${guid}.xml"
